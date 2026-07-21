@@ -374,31 +374,74 @@ function CheckoutPageInner({ storeUserId, shopSlug, upiId, shopName }: CheckoutP
   )
 }
 
-// Wrapper
 export default function CheckoutPage() {
   const params = useParams()
   const shopSlug = params?.shopSlug as string
   const supabase = createClient()
   const [storeData, setStoreData] = useState<{ id: string; upi_id: string | null; shop_name: string | null } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!shopSlug) return
-    supabase
-      .from('profiles')
-      .select('id, upi_id, shop_name, business_name')
-      .eq('shop_slug', shopSlug)
-      .single()
-      .then(({ data }) => {
-        if (data) setStoreData({ id: data.id, upi_id: data.upi_id, shop_name: data.shop_name || data.business_name })
-      })
+    if (!shopSlug) {
+      setError('Invalid store URL')
+      setLoading(false)
+      return
+    }
+
+    async function loadStore() {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, upi_id, shop_name, business_name')
+          .eq('shop_slug', shopSlug)
+          .single()
+
+        if (error) {
+          console.error('Checkout load error:', error)
+          setError('We could not load this store checkout. It might not exist or may be configured incorrectly.')
+        } else if (!data) {
+          setError('Store checkout details not found.')
+        } else {
+          setStoreData({ id: data.id, upi_id: data.upi_id, shop_name: data.shop_name || data.business_name })
+        }
+      } catch (err: any) {
+        console.error('Checkout load catch error:', err)
+        setError('A network error occurred. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStore()
   }, [shopSlug]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!storeData) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Loading checkout...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !storeData) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4 text-center">
+        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm max-w-md w-full space-y-4">
+          <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-black text-slate-900 uppercase tracking-wider">Checkout Unavailable</h2>
+          <p className="text-sm text-slate-500">{error || 'Store settings could not be retrieved.'}</p>
+          <a
+            href={`/store/${shopSlug}`}
+            className="block w-full py-3 bg-slate-950 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-colors"
+          >
+            Return to Store
+          </a>
         </div>
       </div>
     )
