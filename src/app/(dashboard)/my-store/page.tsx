@@ -15,14 +15,62 @@ export default async function MyStorePage() {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
+  let { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
     .eq('id', user.id)
     .single()
 
+  if ((profileError || !profile) && user) {
+    console.log('Self-healing profile for user in MyStorePage:', user.id)
+    const { data: newProfile, error: pError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name || 'User',
+        email_verified: false,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' })
+      .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
+      .single()
+
+    if (!pError && newProfile) {
+      profile = newProfile
+      profileError = null
+    } else {
+      console.warn('MyStorePage profile upsert via authenticated client failed, trying admin client:', pError)
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const adminSupabase = await createAdminClient()
+      const { data: adminProfile, error: adminError } = await adminSupabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: user.user_metadata?.full_name || 'User',
+          email_verified: false,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' })
+        .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
+        .single()
+
+      if (!adminError && adminProfile) {
+        profile = adminProfile
+        profileError = null
+      } else {
+        console.error('MyStorePage profile creation via admin client also failed:', adminError)
+      }
+    }
+  }
+
   if (!profile) {
-    return <div className="p-6">Profile not found</div>
+    return (
+      <div className="p-6 space-y-4">
+        <div className="text-red-500 font-bold">Profile not found</div>
+        <div className="text-xs text-slate-500 font-mono">
+          User ID: {user.id}<br />
+          Error: {profileError ? JSON.stringify(profileError, null, 2) : 'No profile returned (self-healing failed)'}
+        </div>
+      </div>
+    )
   }
 
   // Get subscription to check eligibility

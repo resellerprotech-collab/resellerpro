@@ -5,7 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Search, ShoppingBag, Heart, User, Menu, X, Store, Instagram, Facebook, Twitter, Youtube, Sparkles } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
 import { CartDrawer } from './CartDrawer'
+import { WishlistDrawer } from './WishlistDrawer'
 import type { ShopTheme } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -29,10 +31,11 @@ export function StoreHeader({
   onSearch,
 }: StoreHeaderProps) {
   const { getItemCount, toggleCart } = useCartStore()
+  const toggleWishlist = useWishlistStore((s) => s.toggleWishlist)
   const [itemCount, setItemCount] = useState(0)
   const [query, setQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [wishlistCount, setWishlistCount] = useState(2) // Premium dummy count to match mockup
+  const [wishlistCount, setWishlistCount] = useState(0)
 
   // Sync cart count on client only (hydration safe)
   useEffect(() => {
@@ -42,6 +45,15 @@ export function StoreHeader({
     })
     return unsub
   }, [getItemCount])
+
+  // Sync wishlist count on client only (hydration safe)
+  useEffect(() => {
+    setWishlistCount(useWishlistStore.getState().items.length)
+    const unsub = useWishlistStore.subscribe((state) => {
+      setWishlistCount(state.items.length)
+    })
+    return unsub
+  }, [])
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -147,7 +159,7 @@ export function StoreHeader({
 
             {/* Wishlist Icon */}
             <button
-              onClick={() => setWishlistCount(p => (p > 0 ? 0 : 2))}
+              onClick={toggleWishlist}
               className="relative p-2 text-slate-600 hover:text-slate-950 transition-colors"
               aria-label="Wishlist"
             >
@@ -229,6 +241,9 @@ export function StoreHeader({
 
       {/* Cart Drawer */}
       <CartDrawer />
+
+      {/* Wishlist Drawer */}
+      <WishlistDrawer />
     </>
   )
 }

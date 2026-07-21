@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ShoppingBag, Heart, Star } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
 import { trackEvent } from '@/lib/analytics'
 import type { Product } from '@/types'
 import { cn } from '@/lib/utils/cn'
@@ -21,8 +22,18 @@ interface StoreProductCardProps {
 
 export function StoreProductCard({ product, storeUserId, layout = 'grid', theme }: StoreProductCardProps) {
   const addItem = useCartStore((s) => s.addItem)
+  const toggleWishlist = useWishlistStore((s) => s.toggleItem)
+  const hasWishlist = useWishlistStore((s) => s.hasItem)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const showPrices = theme?.showPrices !== false
+
+  useEffect(() => {
+    setIsWishlisted(hasWishlist(product.id))
+    const unsub = useWishlistStore.subscribe(() => {
+      setIsWishlisted(hasWishlist(product.id))
+    })
+    return unsub
+  }, [product.id, hasWishlist])
 
   const isOutOfStock =
     (product.stock_status === 'out_of_stock') ||
@@ -143,7 +154,12 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme 
       <button
         onClick={(e) => {
           e.stopPropagation()
-          setIsWishlisted(p => !p)
+          toggleWishlist({
+            productId: product.id,
+            name: product.name,
+            image: imageUrl,
+            price: price,
+          })
         }}
         className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-red-500 shadow-sm active:scale-90 transition-all"
         aria-label="Add to wishlist"

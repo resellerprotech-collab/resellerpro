@@ -56,7 +56,29 @@ export default async function DashboardLayout({
           .select()
           .single()
 
-        if (!pError) profile = newProfile
+        if (!pError && newProfile) {
+          profile = newProfile
+        } else {
+          console.warn('DashboardLayout profile upsert via authenticated client failed, trying admin client:', pError)
+          const { createAdminClient } = await import('@/lib/supabase/admin')
+          const adminSupabase = await createAdminClient()
+          const { data: adminProfile, error: adminError } = await adminSupabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              full_name: user.user_metadata?.full_name || 'User',
+              email_verified: false,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' })
+            .select()
+            .single()
+
+          if (!adminError && adminProfile) {
+            profile = adminProfile
+          } else {
+            console.error('DashboardLayout profile creation via admin client also failed:', adminError)
+          }
+        }
       }
 
       // 2. Ensure Default Subscription exists if missing
@@ -81,7 +103,38 @@ export default async function DashboardLayout({
             .select('plan:subscription_plans(display_name)')
             .single()
 
-          if (!sError) subscription = newSub
+          if (!sError && newSub) {
+            subscription = newSub
+          } else {
+            console.warn('DashboardLayout subscription upsert via authenticated client failed, trying admin client:', sError)
+            const { createAdminClient } = await import('@/lib/supabase/admin')
+            const adminSupabase = await createAdminClient()
+            const { data: adminFreePlan } = await adminSupabase
+              .from('subscription_plans')
+              .select('id, display_name')
+              .eq('name', 'free')
+              .single()
+
+            if (adminFreePlan) {
+              const { data: adminSub, error: adminSubError } = await adminSupabase
+                .from('user_subscriptions')
+                .upsert({
+                  user_id: user.id,
+                  plan_id: adminFreePlan.id,
+                  status: 'active',
+                  current_period_start: new Date().toISOString(),
+                  current_period_end: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString() // 10 years
+                }, { onConflict: 'user_id' })
+                .select('plan:subscription_plans(display_name)')
+                .single()
+
+              if (!adminSubError && adminSub) {
+                subscription = adminSub
+              } else {
+                console.error('DashboardLayout subscription creation via admin client also failed:', adminSubError)
+              }
+            }
+          }
         }
       }
     } catch (upsertError) {
