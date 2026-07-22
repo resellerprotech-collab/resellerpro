@@ -19,10 +19,18 @@ export function StoreShareWidget({ shopSlug, storeStatus = 'open' }: StoreShareW
   const handleCopy = () => {
     navigator.clipboard.writeText(fullUrl)
     toast({ title: 'Link Copied ✨', description: 'Store link copied to clipboard!' })
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rp_store_shared', '1')
+      window.dispatchEvent(new Event('rp_store_shared_updated'))
+    }
   }
 
   const handleShare = () => {
     window.open(`https://wa.me/?text=Check%20out%20my%20store:%20${fullUrl}`, '_blank')
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rp_store_shared', '1')
+      window.dispatchEvent(new Event('rp_store_shared_updated'))
+    }
   }
 
   return (
