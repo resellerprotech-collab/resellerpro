@@ -16,13 +16,15 @@ import { OtpService } from '@/lib/auth/otp'
 // - Backend is the security boundary - NEVER trust client input
 // - This is "defense in depth" - multiple layers of security
 
+// SIMPLIFIED SIGNUP SCHEMA
+// Only 3 fields collected at signup — business details collected during onboarding.
 const SignupSchema = z.object({
   // EMAIL VALIDATION
   // Why these rules?
   // - min 5: Shortest valid email is "a@b.c" (5 characters)
   // - max 254: RFC 5321 standard for email length
   // - trim(): Remove accidental whitespace from copy-paste
-  // - toLowerCase(): Emails are case-insensitive, prevents duplicate accounts (User@exXXXX.com vs user@exXXXX.com)
+  // - toLowerCase(): Emails are case-insensitive, prevents duplicate accounts
   email: z.string()
     .trim()
     .toLowerCase()
@@ -34,36 +36,21 @@ const SignupSchema = z.object({
   // Why these rules?
   // - min 8: NIST SP 800-63B and OWASP recommend minimum 8 characters
   // - max 72: bcrypt (our password hashing algorithm) truncates passwords beyond 72 bytes
-  // - NO complexity rules: Research shows passphrases are stronger than complex passwords
-  //   Example: "correct horse battery staple" > "P@ssw0rd1"
   password: z.string()
     .min(8, 'Password must be at least 8 characters.')
     .max(72, 'Password must not exceed 72 characters.'),
 
   // FULL NAME VALIDATION
-  // Why these rules?
   // - min 2: Allow short names like "Li", "Xi", "Ed"
   // - max 50: Reasonable UI/database constraint
-  // - trim(): Clean up whitespace
   fullName: z.string()
     .trim()
     .min(2, 'Name must be at least 2 characters.')
     .max(50, 'Name must not exceed 50 characters.'),
 
-  // BUSINESS NAME VALIDATION
-  // Made mandatory as per requirements
-  businessName: z.string()
-    .trim()
-    .min(2, 'Business name must be at least 2 characters.')
-    .max(50, 'Business name must not exceed 50 characters.'),
-
-  // PHONE VALIDATION
-  // Made optional as per requirements
-  // If you need phone validation, add .regex() or custom validation
+  // Business details are now optional at signup — collected during onboarding wizard
+  businessName: z.string().trim().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
-
-  // REFERRAL CODE
-  // Optional field, no specific validation needed
   referralCode: z.string().optional().or(z.literal('')),
 })
 
@@ -117,11 +104,12 @@ export async function signup(
   -------------------------------- */
   const validatedFields = SignupSchema.safeParse({
     fullName: formData.get('fullName'),
-    businessName: formData.get('businessName'),
     email: formData.get('email'),
-    phone: formData.get('phone'),
     password: formData.get('password'),
-    referralCode: formData.get('referralCode'),
+    // Optional at signup (collected during onboarding)
+    businessName: formData.get('businessName') || '',
+    phone: formData.get('phone') || '',
+    referralCode: formData.get('referralCode') || '',
   })
 
   if (!validatedFields.success) {
@@ -137,9 +125,9 @@ export async function signup(
     email,
     password,
     fullName,
-    businessName,
-    phone,
-    referralCode,
+    businessName = '',
+    phone = '',
+    referralCode = '',
   } = validatedFields.data
 
   /* -------------------------------
@@ -252,21 +240,8 @@ export async function signup(
 
   revalidatePath('/')
 
-  // Get user profile to check if first login
-  const { data: { user } } = await supabase.auth.getUser()
-  let redirectUrl = '/dashboard'
-
-  if (user?.id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('welcome_shown, referral_bonus_amount')
-      .eq('id', user.id)
-      .single()
-
-    if (profile && profile.welcome_shown === false) {
-      redirectUrl = `/dashboard?welcome=true&bonus=${profile.referral_bonus_amount || 0}`
-    }
-  }
+  // After signup, always redirect to onboarding so the user can set up their store
+  const redirectUrl = '/onboarding'
 
   return {
     success: true,

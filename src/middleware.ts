@@ -161,8 +161,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 🔒 Redirect logged-out users away from dashboard (only if online or no valid session)
-  if (!user && !isOffline && request.nextUrl.pathname.startsWith('/dashboard')) {
+  // 🔒 Redirect logged-out users away from dashboard & onboarding (only if online)
+  const isProtectedPage =
+    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/onboarding')
+
+  if (!user && !isOffline && isProtectedPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/signin'
     return NextResponse.redirect(url)
@@ -181,15 +185,16 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
+    // Redirect away from auth pages — let /onboarding page decide if wizard is needed
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/onboarding'
     return NextResponse.redirect(url)
   }
 
-  // 🆕 Redirect logged-in users from / → /dashboard
+  // 🆕 Redirect logged-in users from / → /onboarding (onboarding auto-redirects to /dashboard if complete)
   if (user && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/onboarding'
     return NextResponse.redirect(url)
   }
 

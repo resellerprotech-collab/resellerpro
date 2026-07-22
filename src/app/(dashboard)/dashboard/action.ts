@@ -626,3 +626,71 @@ export async function getUserProfile() {
     return null
   }
 }
+
+/**
+ * Fetches data needed for the onboarding checklist card on the dashboard.
+ * Returns null if onboarding is already completed (card should not show).
+ */
+export async function getOnboardingChecklistData() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  try {
+    // Profile: check onboarding completed status, active shop slug, and customization fields
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('onboarding_completed, shop_slug, shop_theme, shop_description, shop_logo_url')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error('getOnboardingChecklistData profile error:', profileError)
+      return null
+    }
+
+    // Always query total products (avoid non-existent is_active columns)
+    const { count: productCount, error: productError } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    if (productError) {
+      console.error('getOnboardingChecklistData product error:', productError)
+    }
+
+    // Always query total orders
+    const { count: orderCount, error: orderError } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    if (orderError) {
+      console.error('getOnboardingChecklistData order error:', orderError)
+    }
+
+    // Determine if the user has customized their shop settings
+    const shopTheme = profile?.shop_theme as Record<string, any> | null
+    const hasCustomized = !!(
+      profile?.shop_description ||
+      profile?.shop_logo_url ||
+      (shopTheme && (
+        Object.keys(shopTheme).length > 2 ||
+        (shopTheme.primaryColor && shopTheme.primaryColor !== '#4f46e5') ||
+        shopTheme.heroEnabled === true ||
+        shopTheme.bannerEnabled === true
+      ))
+    )
+
+    return {
+      onboardingCompleted: profile?.onboarding_completed ?? false,
+      shopSlug: profile?.shop_slug ?? null,
+      hasProducts: (productCount ?? 0) > 0,
+      hasOrders: (orderCount ?? 0) > 0,
+      hasCustomized,
+    }
+  } catch (error) {
+    console.error('Unexpected error in getOnboardingChecklistData:', error)
+    return null
+  }
+}
