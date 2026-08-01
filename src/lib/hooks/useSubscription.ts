@@ -47,15 +47,8 @@ export function useSubscription(): SubscriptionStatus {
 
                 const planName = (subscription?.subscription_plans as any)?.name || 'free'
 
-                // STRICT CHECK: Must be active + paid plan + NOT expired
-                const isActive = subscription?.status === 'active'
-                const isPaidPlan = planName !== 'free'
-                const isNotExpired = subscription?.current_period_end
-                    ? new Date(subscription.current_period_end) > new Date()
-                    : false
-
-                // All three conditions must be true for premium access
-                const isPremium = isActive && isPaidPlan && isNotExpired
+                // Free plan and paid plans have all features unlocked
+                const isPremium = true
 
                 setSubscriptionStatus({
                     isPremium,

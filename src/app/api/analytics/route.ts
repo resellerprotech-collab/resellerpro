@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
 
         const planData = subscription?.plan
         const planNameRaw = (Array.isArray(planData) ? planData[0]?.name : planData?.name)?.toLowerCase() || 'free'
-        const isPremium = planNameRaw !== 'free'
+        const isPremium = true
 
         // Enforce 7-day limit for free users
         if (!isPremium) {
