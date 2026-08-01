@@ -36,7 +36,10 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'resellerpro.in'
-  const subdomainUrl = `https://${shopSlug}.${rootDomain}`
+  
+  // Safe fallback to prevent invalid URLs
+  const activeSlug = shopSlug || domainInfo?.shopSlug || 'mystore'
+  const subdomainUrl = `https://${activeSlug}.${rootDomain}`
 
   useEffect(() => {
     fetchDomainStatus()
