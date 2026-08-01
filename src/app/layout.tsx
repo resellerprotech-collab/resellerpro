@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Spline_Sans, Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from '../components/providers/theme-provider'
@@ -9,8 +9,8 @@ import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script";
 
-
-const inter = Inter({ subsets: ['latin'] })
+const splineSans = Spline_Sans({ subsets: ['latin'], display: 'swap', variable: '--font-spline-sans' })
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'ResellerPro - Manage Your Reselling Business',
@@ -137,7 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `
         }} />
       </head>
-      <body className={inter.className}>
+      <body className={`${splineSans.variable} ${inter.variable} ${splineSans.className}`}>
         {/* <AppLoader /> */}
         <Providers>
           <AuthProvider>

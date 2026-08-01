@@ -2,6 +2,9 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import jwt from 'jsonwebtoken'
 import EkodrixPanelShell from '@/components/ekodrix-panel/ekodrix-panel-shell'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 const SESSION_COOKIE_NAME = 'ekodrix-session'
 
@@ -31,5 +34,9 @@ export default async function EkodrixPanelLayout({
     redirect('/ekodrix-panel/signin')
   }
 
-  return <EkodrixPanelShell>{children}</EkodrixPanelShell>
+  return (
+    <div className={`${inter.className} font-inter`} style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}>
+      <EkodrixPanelShell>{children}</EkodrixPanelShell>
+    </div>
+  )
 }

@@ -98,9 +98,10 @@ export default async function MyStorePage() {
           Configure your store web address, custom domains, branding appearance, color themes, and social checkout preferences.
         </p>
       </div>
-
-      {/* Domain Management Panel (Subdomain + Custom Domain) */}
-      <DomainSettingsForm shopSlug={profile.shop_slug || ''} isProUser={isEligible} />
+      <div className="border rounded-2xl pt-6 px-6 pb-6 bg-card">
+        {/* Domain Management Panel (Subdomain + Custom Domain) */}
+        <DomainSettingsForm shopSlug={profile.shop_slug || ''} isProUser={isEligible} />
+      </div>
 
       {/* Main Store Customizer */}
       <div className="border rounded-2xl p-6 bg-card shadow-sm">
