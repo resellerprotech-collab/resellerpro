@@ -82,7 +82,7 @@ export default async function MyStorePage() {
 
   const planName = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.name : subscription?.plan?.name)?.toLowerCase() || 'free'
   const planDisplay = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.display_name : subscription?.plan?.display_name) || 'Free Plan'
-  const isEligible = ['professional', 'business'].includes(planName)
+  const isEligible = true
 
   // Get product count for the preview
   const { count: productCount } = await supabase

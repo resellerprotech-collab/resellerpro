@@ -44,7 +44,7 @@ interface ShopSettingsFormProps {
 
 export default function ShopSettingsForm({
   profile,
-  isEligible = false,
+  isEligible = true,
   planName = 'free',
   planDisplay = 'Free Plan',
   productCount = 0,
