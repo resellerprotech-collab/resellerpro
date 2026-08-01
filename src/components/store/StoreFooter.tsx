@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Instagram, Facebook, Twitter, MessageCircle, Youtube, Heart } from 'lucide-react'
+import { Instagram, Facebook, Twitter, MessageCircle, Youtube, Heart, MapPin, Mail, Phone, Clock } from 'lucide-react'
 import type { Profile, ShopTheme } from '@/types'
 
 interface StoreFooterProps {
@@ -13,6 +13,10 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
   const waClean = waNum?.replace(/\D/g, '')
   const waLink = waClean ? `https://wa.me/91${waClean}?text=${encodeURIComponent('Hi! I wanted to inquire about a product.')}` : null
 
+  const address = theme?.footerAddress || profile.business_address
+  const email = theme?.footerEmail || profile.business_email
+  const phone = theme?.footerPhone || profile.business_phone || profile.whatsapp_number
+
   return (
     <footer className="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-900 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,89 +27,107 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-white font-black text-xl tracking-tight uppercase">{storeName}</h3>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm">
-              Your one-stop shop for premium quality products at the best prices. Crafted for your modern lifestyle with direct shipping and hassle-free updates.
+              {theme?.footerAbout || profile.shop_description || 'Your destination for premium quality products. Direct shipping, easy returns, and dedicated support.'}
             </p>
+
+            {/* Merchant Contact Info */}
+            <div className="pt-2 space-y-2 text-xs text-slate-300">
+              {address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                  <span>{address}</span>
+                </div>
+              )}
+              {email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <a href={`mailto:${email}`} className="hover:text-white transition-colors">{email}</a>
+                </div>
+              )}
+              {phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <a href={`tel:${phone}`} className="hover:text-white transition-colors">{phone}</a>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+                <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>Support Hours: Mon - Sat (9:00 AM - 8:00 PM)</span>
+              </div>
+            </div>
           </div>
 
-          {/* Column 2: Shop */}
+          {/* Column 2: Quick Links */}
           <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Shop</h4>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Navigation</h4>
             <ul className="space-y-2.5 text-xs sm:text-sm font-semibold">
               <li>
                 <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  All Products
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href={`/store/${profile.shop_slug}#new-arrivals`} className="hover:text-white transition-colors">
-                  New Arrivals
+                <Link href={`/store/${profile.shop_slug}/shop`} className="hover:text-white transition-colors">
+                  Shop All Products
                 </Link>
               </li>
               <li>
-                <Link href={`/store/${profile.shop_slug}#best-sellers`} className="hover:text-white transition-colors">
-                  Best Sellers
+                <Link href={`/store/${profile.shop_slug}/about`} className="hover:text-white transition-colors">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link href={`/store/${profile.shop_slug}#offers`} className="hover:text-white transition-colors">
-                  Offers
+                <Link href={`/store/${profile.shop_slug}/contact`} className="hover:text-white transition-colors">
+                  Contact Support
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Help & Support */}
+          {/* Column 3: Trust & Policies */}
           <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Help & Support</h4>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Customer Policies</h4>
             <ul className="space-y-2.5 text-xs sm:text-sm font-semibold">
               <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
+                <Link href={`/store/${profile.shop_slug}/shipping-policy`} className="hover:text-white transition-colors">
                   Shipping & Delivery
                 </Link>
               </li>
               <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  Returns & Refunds
+                <Link href={`/store/${profile.shop_slug}/return-policy`} className="hover:text-white transition-colors">
+                  Return & Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  Contact Us
+                <Link href={`/store/${profile.shop_slug}/privacy-policy`} className="hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href={`/store/${profile.shop_slug}/terms`} className="hover:text-white transition-colors">
+                  Terms & Conditions
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 4: Account & Store Info */}
+          {/* Column 4: Quick Contact & Help */}
           <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Account</h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm font-semibold">
-              <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  My Account
-                </Link>
-              </li>
-              <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  Orders
-                </Link>
-              </li>
-              <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  Wishlist
-                </Link>
-              </li>
-              <li>
-                <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
-                  Track Order
-                </Link>
-              </li>
-            </ul>
+            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Connect With Us</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Have questions about an order? Message us directly on WhatsApp for instant assistance.
+            </p>
+            {waLink && (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Chat on WhatsApp
+              </a>
+            )}
           </div>
         </div>
 
@@ -119,16 +141,12 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
           </div>
 
           {/* We Accept Payment Icons */}
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-slate-500 mr-1">We Accept:</span>
-            {/* Visa */}
-            <span className="bg-slate-900 px-2.5 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">VISA</span>
-            {/* Mastercard */}
-            <span className="bg-slate-900 px-2.5 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">MASTERCARD</span>
-            {/* RuPay */}
-            <span className="bg-slate-900 px-2.5 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">RUPAY</span>
-            {/* UPI */}
-            <span className="bg-slate-900 px-2.5 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">UPI</span>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <span className="text-[10px] font-bold text-slate-500 mr-1">Accepted Payments:</span>
+            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">UPI</span>
+            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">COD</span>
+            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">VISA</span>
+            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">MASTERCARD</span>
           </div>
 
           {/* Social Media Link Buttons */}
@@ -144,24 +162,28 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
                 <Instagram className="w-4 h-4" />
               </a>
             )}
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-              aria-label="Facebook"
-            >
-              <Facebook className="w-4 h-4" />
-            </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-              aria-label="Twitter"
-            >
-              <Twitter className="w-4 h-4" />
-            </a>
+            {theme?.socialFacebook && (
+              <a
+                href={theme.socialFacebook}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+            )}
+            {theme?.socialTwitter && (
+              <a
+                href={theme.socialTwitter}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-4 h-4" />
+              </a>
+            )}
             {waLink && (
               <a
                 href={waLink}
@@ -173,15 +195,6 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
                 <MessageCircle className="w-4 h-4" />
               </a>
             )}
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noreferrer"
-              className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-              aria-label="YouTube"
-            >
-              <Youtube className="w-4 h-4" />
-            </a>
           </div>
         </div>
       </div>

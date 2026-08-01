@@ -90,6 +90,22 @@ export default async function MyStorePage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
+  // Get active products for banner click actions
+  const { data: dbProducts } = await supabase
+    .from('products')
+    .select('id, name, category')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+
+  const activeProducts = dbProducts || []
+  const distinctCategories = Array.from(
+    new Set(
+      activeProducts
+        .map(p => p.category)
+        .filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+    )
+  )
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-6">
       <div>
@@ -105,6 +121,8 @@ export default async function MyStorePage() {
           planName={planName}
           planDisplay={planDisplay}
           productCount={productCount || 0}
+          products={activeProducts.map(p => ({ id: p.id, name: p.name }))}
+          categories={distinctCategories}
         />
       </div>
     </div>

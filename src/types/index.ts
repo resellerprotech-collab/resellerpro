@@ -13,8 +13,22 @@ export type PaymentMethod = 'cod' | 'upi' | 'online'
 export type StoreStatus = 'open' | 'closed' | 'paused'
 // ─── Shop Theme ──────────────────────────────────────────────────────────────
 
+export interface HeroBannerItem {
+  id?: string
+  imageUrl: string
+  link?: string
+  clickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
+}
+
+export interface PromoItem {
+  imageUrl?: string
+  clickAction?: 'shop' | 'category' | 'product' | 'collection' | 'custom_url'
+  clickTarget?: string
+}
+
 export interface ShopTheme {
   primaryColor: string
+  secondaryColor?: string
   accentColor: string
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
@@ -31,7 +45,25 @@ export interface ShopTheme {
   heroPattern?: 'none' | 'dots' | 'waves' | 'gradient'
   heroImageUrl?: string
   heroBackgroundImage?: string
+  heroTemplate?: 'split' | 'banner'
+  heroBadge?: string
+  heroSecondaryCtaText?: string
+  heroSecondaryCtaLink?: string
+  heroBadge1?: string
+  heroBadge2?: string
+  heroBadge3?: string
+  heroImages?: string[]
+  heroBanners?: HeroBannerItem[]
+  heroBannerClickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
 
+  // Promotional Section
+  promoSectionEnabled?: boolean
+  promoLayout?: 'full_width' | 'two_cards'
+  promoFullBanner?: PromoItem
+  promoCard1?: PromoItem
+  promoCard2?: PromoItem
+
+  bannerText?: string
   announcementEnabled?: boolean
   announcementText?: string
   testimonialsEnabled?: boolean
@@ -94,6 +126,7 @@ export interface Profile {
   email_verified?: boolean
   business_email?: string | null
   business_phone?: string | null
+  business_address?: string | null
   created_at: string
   updated_at: string
 }
