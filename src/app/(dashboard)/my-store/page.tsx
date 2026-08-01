@@ -114,7 +114,7 @@ export default async function MyStorePage() {
           Configure your public storefront branding, color themes, catalog appearance, and social checkout preferences.
         </p>
       </div>
-      <div className="border rounded-2xl p-6 bg-card">
+      <div className="border rounded-2xl pt-6 px-6 bg-card">
         <ShopSettingsForm
           profile={profile}
           isEligible={isEligible}
