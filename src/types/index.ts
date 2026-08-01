@@ -26,10 +26,20 @@ export interface PromoItem {
   clickTarget?: string
 }
 
+export interface PolicyBlock {
+  id: string
+  heading: string
+  subheading?: string
+  icon?: string
+  description?: string
+  points?: string[]
+}
+
 export interface ShopTheme {
   primaryColor: string
   secondaryColor?: string
   accentColor: string
+  neutralDarkColor?: string
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
   // Advanced (existing)
@@ -63,13 +73,29 @@ export interface ShopTheme {
   promoCard1?: PromoItem
   promoCard2?: PromoItem
 
+  // Special Offer Banner Strip
+  offerBannerEnabled?: boolean
+  offerBannerBadge?: string
+  offerBannerTitle?: string
+  offerBannerCode?: string
+  offerBannerSubtext?: string
+  offerBannerBtnText?: string
+
+  newsletterEnabled?: boolean
+  newsletterTitle?: string
+  newsletterSubtitle?: string
+  newsletterBtnText?: string
+  newsletterPlaceholder?: string
+
   bannerText?: string
+  bannerEnabled?: boolean
   announcementEnabled?: boolean
   announcementText?: string
   testimonialsEnabled?: boolean
   testimonials?: Array<{ name: string; text: string; rating: number }>
   trustBadgesEnabled?: boolean
   trustBadges?: string[]
+  trustBadgeItems?: Record<string, { id?: string; title?: string; description?: string; iconUrl?: string }>
   chatWidgetEnabled?: boolean
   chatWidgetMessage?: string
   categoryShowcase?: boolean
@@ -80,6 +106,12 @@ export interface ShopTheme {
   socialFacebook?: string
   socialTwitter?: string
   socialWhatsApp?: string
+  socialYoutube?: string
+  shippingPolicyText?: string
+  returnPolicyText?: string
+  privacyPolicyText?: string
+  termsPolicyText?: string
+  policyBlocks?: Record<string, PolicyBlock[]>
   seoTitle?: string
   seoDescription?: string
   ctaSectionEnabled?: boolean

@@ -122,9 +122,13 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme 
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all active:scale-95 shadow-sm ${
-                added ? 'bg-emerald-600' : 'bg-slate-950 hover:bg-slate-800'
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white transition-all active:scale-95 shadow-sm ${
+                added ? 'bg-emerald-600' : 'hover:opacity-90'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
+              style={{
+                borderRadius: 'var(--store-btn-radius, 8px)',
+                ...(!added ? { backgroundColor: 'var(--store-primary)' } : {})
+              }}
             >
               {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
               {added ? 'Added' : 'Add'}
@@ -223,9 +227,13 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme 
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className={`w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-white rounded-xl transition-all active:scale-[0.98] shadow-sm ${
-              added ? 'bg-emerald-600' : 'bg-slate-950 hover:bg-slate-800'
+            className={`w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-white transition-all active:scale-[0.98] shadow-sm ${
+              added ? 'bg-emerald-600' : 'hover:opacity-90'
             } disabled:bg-slate-200 disabled:text-slate-400 disabled:opacity-60 disabled:cursor-not-allowed`}
+            style={{
+              borderRadius: 'var(--store-btn-radius, 12px)',
+              ...(!added && !isOutOfStock ? { backgroundColor: 'var(--store-primary)' } : {})
+            }}
           >
             {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
             {isOutOfStock ? 'Out of Stock' : added ? 'Added to Cart' : 'Add to Cart'}

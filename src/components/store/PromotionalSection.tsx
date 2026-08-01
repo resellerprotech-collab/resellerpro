@@ -39,7 +39,7 @@ export function resolvePromoLink(item: PromoItem | undefined | null, shopSlug: s
 }
 
 export function PromotionalSection({ theme, shopSlug }: PromotionalSectionProps) {
-  // If explicitly disabled in settings, do not render
+  // If explicitly disabled or no DB images set, do not render
   if (theme?.promoSectionEnabled === false) {
     return null
   }
@@ -50,8 +50,12 @@ export function PromotionalSection({ theme, shopSlug }: PromotionalSectionProps)
   const card2 = theme?.promoCard2
 
   if (layout === 'two_cards') {
-    const card1Img = card1?.imageUrl || DEFAULT_CARD_1
-    const card2Img = card2?.imageUrl || DEFAULT_CARD_2
+    const card1Img = card1?.imageUrl
+    const card2Img = card2?.imageUrl
+
+    if (!card1Img && !card2Img) {
+      return null
+    }
 
     const link1 = resolvePromoLink(card1, shopSlug)
     const link2 = resolvePromoLink(card2, shopSlug)
@@ -63,63 +67,70 @@ export function PromotionalSection({ theme, shopSlug }: PromotionalSectionProps)
       <section className="mb-14">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Card 1 */}
-          <div className="group relative rounded-2xl md:rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800 bg-slate-950 aspect-[16/9] sm:aspect-[16/10] md:aspect-[4/3] lg:aspect-[16/10]">
-            <Image
-              src={card1Img}
-              alt="Promotional Card 1"
-              fill
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            {isExternal1 ? (
-              <a
-                href={link1}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 z-10"
-                aria-label="Promotional banner link 1"
+          {card1Img && (
+            <div className="group relative rounded-2xl md:rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800 bg-slate-950 aspect-[16/9] sm:aspect-[16/10] md:aspect-[4/3] lg:aspect-[16/10]">
+              <Image
+                src={card1Img}
+                alt="Promotional Card 1"
+                fill
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
-            ) : (
-              <Link
-                href={link1}
-                className="absolute inset-0 z-10"
-                aria-label="Promotional banner link 1"
-              />
-            )}
-          </div>
+              {isExternal1 ? (
+                <a
+                  href={link1}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 z-10"
+                  aria-label="Promotional banner link 1"
+                />
+              ) : (
+                <Link
+                  href={link1}
+                  className="absolute inset-0 z-10"
+                  aria-label="Promotional banner link 1"
+                />
+              )}
+            </div>
+          )}
 
           {/* Card 2 */}
-          <div className="group relative rounded-2xl md:rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800 bg-slate-950 aspect-[16/9] sm:aspect-[16/10] md:aspect-[4/3] lg:aspect-[16/10]">
-            <Image
-              src={card2Img}
-              alt="Promotional Card 2"
-              fill
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            {isExternal2 ? (
-              <a
-                href={link2}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute inset-0 z-10"
-                aria-label="Promotional banner link 2"
+          {card2Img && (
+            <div className="group relative rounded-2xl md:rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800 bg-slate-950 aspect-[16/9] sm:aspect-[16/10] md:aspect-[4/3] lg:aspect-[16/10]">
+              <Image
+                src={card2Img}
+                alt="Promotional Card 2"
+                fill
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
-            ) : (
-              <Link
-                href={link2}
-                className="absolute inset-0 z-10"
-                aria-label="Promotional banner link 2"
-              />
-            )}
-          </div>
+              {isExternal2 ? (
+                <a
+                  href={link2}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 z-10"
+                  aria-label="Promotional banner link 2"
+                />
+              ) : (
+                <Link
+                  href={link2}
+                  className="absolute inset-0 z-10"
+                  aria-label="Promotional banner link 2"
+                />
+              )}
+            </div>
+          )}
         </div>
       </section>
     )
   }
 
   // Default: Full Width Banner Layout
-  const bannerImg = fullBanner?.imageUrl || DEFAULT_FULL_BANNER
+  const bannerImg = fullBanner?.imageUrl
+  if (!bannerImg) {
+    return null
+  }
   const link = resolvePromoLink(fullBanner, shopSlug)
   const isExternal = link.startsWith('http://') || link.startsWith('https://')
 

@@ -14,8 +14,10 @@ import { PromotionalSection } from '@/components/store/PromotionalSection'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import { WhyChooseUs } from '@/components/store/WhyChooseUs'
 import { Testimonials } from '@/components/store/Testimonials'
+import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
+import { useToast } from '@/hooks/use-toast'
 import type { Product, Profile, ShopTheme } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -40,6 +42,11 @@ function getCategoryIcon(categoryName: string) {
 export function StorefrontClient({ profile, products, categories, theme }: StorefrontClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const setShopSlug = useCartStore((s) => s.setShopSlug)
+  const { toast } = useToast()
+
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterSubscribing, setNewsletterSubscribing] = useState(false)
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
 
   const shopSlug = profile.shop_slug!
   const primaryColor = theme?.primaryColor || '#6366f1'
@@ -91,99 +98,9 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
     return () => clearInterval(interval)
   }, [heroBanners.length])
 
-  // Mock products matching reference aesthetic for default/preview state
-  const mockProducts: Product[] = [
-    {
-      id: 'mock-1',
-      user_id: profile.id,
-      sku: 'PROD-001',
-      name: 'Premium Chronograph Watch',
-      description: 'Elegant luxury watch featuring multi-dial chronograph performance, black dial, and premium link strap.',
-      price: 2799,
-      selling_price: 2799,
-      compare_at_price: 3499,
-      image_url: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=800&auto=format&fit=crop',
-      stock_status: 'in_stock',
-      category: 'Watches',
-      cost_price: 1500,
-      stock_quantity: 15,
-      is_active: true,
-      profit: 1299,
-      profit_margin: 46,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: 'mock-2',
-      user_id: profile.id,
-      sku: 'PROD-002',
-      name: 'Wireless Earbuds Pro',
-      description: 'Pro-tier wireless earbuds with active noise cancellation, adaptive transparency, and spatial audio.',
-      price: 1899,
-      selling_price: 1899,
-      compare_at_price: 2299,
-      image_url: 'https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=800&auto=format&fit=crop',
-      stock_status: 'in_stock',
-      category: 'Electronics',
-      cost_price: 900,
-      stock_quantity: 25,
-      is_active: true,
-      profit: 999,
-      profit_margin: 52,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: 'mock-3',
-      user_id: profile.id,
-      sku: 'PROD-003',
-      name: 'Noise Canceling Headphones',
-      description: 'Over-ear headphones with custom audio driver engineering, premium leather cushions, and 30-hour battery.',
-      price: 3999,
-      selling_price: 3999,
-      compare_at_price: 4699,
-      image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop',
-      stock_status: 'in_stock',
-      category: 'Electronics',
-      cost_price: 2000,
-      stock_quantity: 8,
-      is_active: true,
-      profit: 1999,
-      profit_margin: 50,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: 'mock-4',
-      user_id: profile.id,
-      sku: 'PROD-004',
-      name: 'Travel Laptop Backpack',
-      description: 'Minimalist water-resistant laptop travel bag with custom padded compartments and USB charging port.',
-      price: 1599,
-      selling_price: 1599,
-      compare_at_price: 1999,
-      image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop',
-      stock_status: 'low_stock',
-      category: 'Fashion',
-      cost_price: 800,
-      stock_quantity: 3,
-      is_active: true,
-      profit: 799,
-      profit_margin: 50,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  ]
-
-  // Products to render
-  const displayProducts = useMemo(() => {
-    return products.length > 0 ? products : mockProducts
-  }, [products])
-
-  const displayCategories = useMemo(() => {
-    if (products.length > 0) return categories
-    return ['Watches', 'Electronics', 'Fashion', 'Jewellery', 'Shoes']
-  }, [products, categories])
+  // Products to render (strictly fetched from DB)
+  const displayProducts = products
+  const displayCategories = categories
 
   // Featured Products (Curated subset of products for Homepage)
   const featuredProducts = useMemo(() => {
@@ -222,9 +139,9 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
           {(!theme?.heroTemplate || theme.heroTemplate === 'split') ? (
             /* Template 1: Luxury Split Design */
-            <div className="relative rounded-2xl overflow-hidden bg-slate-950 text-white min-h-[440px] md:min-h-[500px] flex items-center shadow-2xl">
+            <div className="relative rounded-2xl overflow-hidden text-white min-h-[440px] md:min-h-[500px] flex items-center shadow-2xl" style={{ backgroundColor: theme?.heroBgColor || 'var(--store-neutral-dark)' }}>
               {/* Visual gradient backdrop */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black z-0" />
+              <div className="absolute inset-0 bg-black/20 z-0" />
               <div className="absolute top-0 right-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_#ffffff_1px,_transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
               <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-6 py-10 md:px-14 w-full">
@@ -242,13 +159,15 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
                   <div className="flex flex-wrap gap-3 pt-2">
                     <Link
                       href={`/store/${shopSlug}/shop`}
-                      className="px-7 py-3.5 bg-white hover:bg-slate-100 text-slate-950 font-black text-xs sm:text-sm rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
+                      className="px-7 py-3.5 hover:opacity-90 text-white font-black text-xs sm:text-sm transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
                     >
                       {theme?.heroCtaText || 'Explore Shop'}
                     </Link>
                     <Link
                       href={`/store/${shopSlug}/about`}
-                      className="px-7 py-3.5 border border-white/20 hover:border-white/40 text-white font-black text-xs sm:text-sm rounded-xl transition-all hover:bg-white/5 active:scale-[0.98]"
+                      className="px-7 py-3.5 border border-white/20 hover:border-white/40 text-white font-black text-xs sm:text-sm transition-all hover:bg-white/5 active:scale-[0.98]"
+                      style={{ borderRadius: 'var(--store-btn-radius, 12px)' }}
                     >
                       {theme?.heroSecondaryCtaText || 'About Our Brand'}
                     </Link>
@@ -313,7 +232,7 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
             </div>
           ) : (
             /* Template 2: Promotion Banner Carousel */
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[260px] sm:min-h-[340px] md:min-h-[400px] bg-slate-950 group">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[260px] sm:min-h-[340px] md:min-h-[400px] group" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
               {heroBanners.length > 0 ? (
                 <>
                   {heroBanners.map((banner, idx) => (
@@ -424,7 +343,8 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
             </div>
             <Link
               href={`/store/${shopSlug}/shop`}
-              className="text-xs font-extrabold text-slate-950 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              className="text-xs font-extrabold text-white px-4 py-2 transition-colors flex items-center gap-1.5 hover:opacity-90"
+              style={{ backgroundColor: 'var(--store-secondary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
             >
               <span>View All Products</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -455,7 +375,8 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
             </div>
             <Link
               href={`/store/${shopSlug}/shop`}
-              className="text-xs font-extrabold text-slate-950 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              className="text-xs font-extrabold text-white px-4 py-2 transition-colors flex items-center gap-1.5 hover:opacity-90"
+              style={{ backgroundColor: 'var(--store-secondary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
             >
               <span>Explore All</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -475,78 +396,122 @@ export function StorefrontClient({ profile, products, categories, theme }: Store
         </section>
 
         {/* 5. Offers / Promotion Banner Strip */}
-        <section className="mb-14">
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white p-8 md:p-10 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                ⚡ Special Promotion
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                {theme?.bannerText || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
-              </h3>
-              <p className="text-xs text-slate-400 font-medium">Use code <span className="text-white font-extrabold bg-white/10 px-2 py-0.5 rounded">SAVE10</span> at checkout.</p>
+        {theme?.offerBannerEnabled !== false && (
+          <section className="mb-14">
+            <div className="relative rounded-2xl overflow-hidden text-white p-8 md:p-10 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
+              <div className="space-y-2 text-center md:text-left">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  {theme?.offerBannerBadge || '⚡ Special Promotion'}
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  {theme?.offerBannerTitle || theme?.bannerText || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
+                </h3>
+                <p className="text-xs text-slate-400 font-medium">
+                  {theme?.offerBannerSubtext || (
+                    <>Use code <span className="text-white font-extrabold bg-white/10 px-2 py-0.5 rounded">{theme?.offerBannerCode || 'SAVE10'}</span> at checkout.</>
+                  )}
+                </p>
+              </div>
+              <Link
+                href={`/store/${shopSlug}/shop`}
+                className="px-8 py-3.5 text-white font-black text-xs uppercase transition-all shadow-md shrink-0 active:scale-95 hover:opacity-90"
+                style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
+              >
+                {theme?.offerBannerBtnText || 'Claim Offer Now'}
+              </Link>
             </div>
-            <Link
-              href={`/store/${shopSlug}/shop`}
-              className="px-8 py-3.5 bg-white hover:bg-slate-100 text-slate-950 font-black text-xs uppercase rounded-xl transition-all shadow-md shrink-0 active:scale-95"
-            >
-              Claim Offer Now
-            </Link>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* 6. Why Choose Us (Trust Cards) */}
-        <WhyChooseUs primaryColor={primaryColor} />
+        <WhyChooseUs primaryColor={primaryColor} theme={theme} />
 
         {/* 7. Customer Reviews / Testimonials */}
-        <Testimonials primaryColor={primaryColor} />
+        {theme?.testimonialsEnabled && theme?.testimonials && theme.testimonials.length > 0 && (
+          <Testimonials primaryColor={primaryColor} customReviews={theme.testimonials} />
+        )}
 
         {/* 8. Newsletter Signup */}
-        <section className="mt-14 mb-6">
-          <div className="relative rounded-2xl overflow-hidden bg-slate-950 text-white p-8 md:p-12 flex items-center justify-between flex-col lg:flex-row gap-8 shadow-xl">
-            <div className="space-y-2 text-center lg:text-left max-w-md">
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight">Join Our VIP Circle</h2>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed">
-                Subscribe to get exclusive discount codes, new arrival alerts, and special event invites.
-              </p>
-            </div>
+        {theme?.newsletterEnabled !== false && (
+          <section className="mt-14 mb-6">
+            <div className="relative rounded-2xl overflow-hidden text-white p-8 md:p-12 flex items-center justify-between flex-col lg:flex-row gap-8 shadow-xl" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
+              <div className="space-y-2 text-center lg:text-left max-w-md">
+                <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight">
+                  {theme?.newsletterTitle || 'JOIN OUR VIP CIRCLE'}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed">
+                  {theme?.newsletterSubtitle || 'Subscribe to get exclusive discount codes, new arrival alerts, and special event invites.'}
+                </p>
+              </div>
 
-            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto max-w-md">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                required
-                className="h-11 px-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 w-full sm:w-64 transition-colors font-medium"
-              />
-              <button
-                type="submit"
-                className="h-11 px-6 bg-slate-100 hover:bg-white text-slate-950 font-black text-xs uppercase rounded-xl transition-all shadow-md shrink-0 active:scale-95"
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault()
+                  if (!newsletterEmail || newsletterSubscribing) return
+                  setNewsletterSubscribing(true)
+                  try {
+                    const res = await fetch('/api/newsletter', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        email: newsletterEmail,
+                        shopSlug,
+                        storeUserId: profile.id
+                      })
+                    })
+                    const data = await res.json()
+                    if (res.ok && data.success) {
+                      setNewsletterSubscribed(true)
+                      setNewsletterEmail('')
+                      toast({
+                        title: 'Subscribed! 🎉',
+                        description: 'Thank you for joining our VIP Circle!',
+                      })
+                    } else {
+                      toast({
+                        title: 'Subscription Failed',
+                        description: data.error || 'Failed to subscribe',
+                        variant: 'destructive',
+                      })
+                    }
+                  } catch (err) {
+                    toast({
+                      title: 'Error',
+                      description: 'Failed to subscribe. Please try again.',
+                      variant: 'destructive',
+                    })
+                  } finally {
+                    setNewsletterSubscribing(false)
+                  }
+                }}
+                className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto max-w-md"
               >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </section>
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder={theme?.newsletterPlaceholder || 'Enter your email address'}
+                  required
+                  disabled={newsletterSubscribing || newsletterSubscribed}
+                  className="h-11 px-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-slate-500 w-full sm:w-64 transition-colors font-medium"
+                />
+                <button
+                  type="submit"
+                  disabled={newsletterSubscribing || newsletterSubscribed}
+                  className="h-11 px-6 text-white font-black text-xs uppercase transition-all shadow-md shrink-0 active:scale-95 hover:opacity-90 disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
+                >
+                  {newsletterSubscribed ? 'Subscribed ✓' : newsletterSubscribing ? 'Subscribing...' : (theme?.newsletterBtnText || 'SUBSCRIBE')}
+                </button>
+              </form>
+            </div>
+          </section>
+        )}
 
       </main>
 
-      {/* Floating WhatsApp Quick Chat Button */}
-      {waLink && (
-        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2 group">
-          <div className="bg-white text-slate-900 font-bold text-[11px] px-3.5 py-2 rounded-xl shadow-xl border border-slate-100 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300 pointer-events-none select-none">
-            Need help? Chat with us!
-          </div>
-          <a
-            href={waLink}
-            target="_blank"
-            rel="noreferrer"
-            className="w-13 h-13 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:scale-110 active:scale-95 transition-transform p-3"
-            aria-label="Chat on WhatsApp"
-          >
-            <MessageCircle className="w-6 h-6 text-white" />
-          </a>
-        </div>
-      )}
+      {/* Floating WhatsApp Quick Chat Widget */}
+      <WhatsAppWidget profile={profile} theme={theme} />
 
       {/* 9. Premium Footer */}
       <StoreFooter profile={profile} theme={theme} />

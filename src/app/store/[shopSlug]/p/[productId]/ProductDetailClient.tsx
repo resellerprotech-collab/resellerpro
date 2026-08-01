@@ -10,6 +10,7 @@ import { trackEvent } from '@/lib/analytics'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreProductCard } from '@/components/store/StoreProductCard'
 import { StoreFooter } from '@/components/store/StoreFooter'
+import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import type { Product, Profile, ShopTheme } from '@/types'
 
 interface ProductDetailClientProps {
@@ -245,6 +246,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
         )}
       </div>
 
+      <WhatsAppWidget profile={profile} theme={theme} />
       <StoreFooter profile={profile} theme={theme} />
     </div>
   )

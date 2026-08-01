@@ -8,6 +8,7 @@ import { FilterBar, SortOption } from './FilterBar'
 import { HeroSlider } from './HeroSlider'
 import { ExternalLink, HelpCircle, Inbox, Tag, Star, MapPin, Mail, Phone, MessageCircle, Shield, Truck, RotateCcw, HeartHandshake, Check, Youtube, Facebook, Instagram, Twitter } from 'lucide-react'
 import Image from 'next/image'
+import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 
 interface ShopClientProps {
   profile: any
@@ -300,21 +301,7 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
       </main>
 
       {/* Floating WhatsApp Widget */}
-      {chatWidgetEnabled && (theme.socialWhatsApp || profile.business_phone) && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
-          <div className="bg-white px-4 py-3 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 hidden md:block animate-fade-in-up">
-             <p className="text-xs font-bold text-slate-700 w-max tracking-wide">Hi! Need help? Chat with us.</p>
-          </div>
-          <a 
-            href={`https://wa.me/${(theme.socialWhatsApp || profile.business_phone).replace(/[^\d]/g, '')}?text=${encodeURIComponent(theme.chatWidgetMessage || 'Hi!')}`}
-            target="_blank" rel="noreferrer"
-            className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-xl shadow-green-500/40 hover:scale-110 active:scale-95 transition-all duration-300 text-white relative group"
-          >
-            <MessageCircle className="w-8 h-8" />
-            <div className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-20 group-hover:opacity-0" />
-          </a>
-        </div>
-      )}
+      <WhatsAppWidget profile={profile} theme={theme} />
 
       {/* Premium Footer */}
       <footer className="bg-white border-t border-slate-200 pt-20 pb-10 mt-auto">
@@ -336,10 +323,10 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
               </p>
               
               <div className="flex items-center gap-3">
-                {theme.socialInstagram && <a href={`https://instagram.com/${theme.socialInstagram.replace('@','')}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all shadow-sm"><Instagram className="w-5 h-5" /></a>}
-                {theme.socialFacebook && <a href={`https://facebook.com/${theme.socialFacebook}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"><Facebook className="w-5 h-5" /></a>}
-                {theme.socialWhatsApp && <a href={`https://wa.me/${theme.socialWhatsApp.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all shadow-sm"><MessageCircle className="w-5 h-5" /></a>}
-                {theme.socialYoutube && <a href={`https://youtube.com/${theme.socialYoutube}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"><Youtube className="w-5 h-5" /></a>}
+                {theme.socialInstagram && <a href={theme.socialInstagram.startsWith('http') ? theme.socialInstagram : `https://instagram.com/${theme.socialInstagram.replace(/^@/, '')}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all shadow-sm" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>}
+                {theme.socialFacebook && <a href={theme.socialFacebook.startsWith('http') ? theme.socialFacebook : `https://facebook.com/${theme.socialFacebook}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>}
+                {theme.socialTwitter && <a href={theme.socialTwitter.startsWith('http') ? theme.socialTwitter : `https://x.com/${theme.socialTwitter.replace(/^@/, '')}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all shadow-sm" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>}
+                {(theme.socialWhatsApp || profile.whatsapp_number || profile.business_phone) && <a href={`https://wa.me/${(theme.socialWhatsApp || profile.whatsapp_number || profile.business_phone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all shadow-sm" aria-label="WhatsApp"><MessageCircle className="w-5 h-5" /></a>}
               </div>
             </div>
 
@@ -379,23 +366,25 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
             </div>
 
             {/* Policies Column */}
-            <div className="lg:col-span-3">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4 inline-block w-full">Store Policies</h3>
-              <ul className="space-y-6">
-                {(theme.shippingInfo || true) && (
-                  <li className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p className="text-xs font-black text-slate-900 mb-2 uppercase tracking-wide">Shipping</p>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">{theme.shippingInfo || 'We deliver nationwide securely and fast.'}</p>
-                  </li>
-                )}
-                {(theme.returnPolicy || true) && (
-                  <li className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p className="text-xs font-black text-slate-900 mb-2 uppercase tracking-wide">Returns</p>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">{theme.returnPolicy || '7-day easy returns policy.'}</p>
-                  </li>
-                )}
-              </ul>
-            </div>
+            {(theme.shippingInfo || theme.returnPolicy) && (
+              <div className="lg:col-span-3">
+                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-100 pb-4 inline-block w-full">Store Policies</h3>
+                <ul className="space-y-6">
+                  {theme.shippingInfo && (
+                    <li className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-xs font-black text-slate-900 mb-2 uppercase tracking-wide">Shipping</p>
+                      <p className="text-xs text-slate-500 leading-relaxed font-medium">{theme.shippingInfo}</p>
+                    </li>
+                  )}
+                  {theme.returnPolicy && (
+                    <li className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-xs font-black text-slate-900 mb-2 uppercase tracking-wide">Returns</p>
+                      <p className="text-xs text-slate-500 leading-relaxed font-medium">{theme.returnPolicy}</p>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Bottom Bar */}

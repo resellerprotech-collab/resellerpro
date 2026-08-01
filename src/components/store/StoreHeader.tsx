@@ -81,17 +81,19 @@ export function StoreHeader({
     { key: 'contact', label: 'Contact', href: `/store/${shopSlug}/contact` },
   ]
 
-  const announcementText = announcement || 'Free Delivery on orders above ₹999 | Cash on Delivery Available'
+  const showAnnouncement = theme?.bannerEnabled !== undefined ? theme.bannerEnabled : (theme?.announcementEnabled !== undefined ? theme.announcementEnabled : true)
+  const announcementText = theme?.bannerText || theme?.announcementText || announcement || 'Free Delivery on orders above ₹999 | Cash on Delivery Available'
 
   return (
     <>
       {/* Announcement Bar */}
-      <div className="w-full bg-slate-950 text-[10px] sm:text-xs font-medium text-slate-200 border-b border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="truncate">{announcementText}</span>
-          </div>
+      {showAnnouncement && (
+        <div className="w-full text-[10px] sm:text-xs font-medium text-slate-200 border-b border-slate-900" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
+          <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="truncate">{announcementText}</span>
+            </div>
           <div className="hidden md:flex items-center gap-4 text-slate-300">
             <span>⚡ Express Dispatch</span>
             <span>•</span>
@@ -123,6 +125,7 @@ export function StoreHeader({
           </div>
         </div>
       </div>
+      )}
 
       {/* Sticky Main Navbar */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
@@ -135,7 +138,7 @@ export function StoreHeader({
                 <Image src={logoUrl} alt={shopName} fill className="object-cover" />
               </div>
             ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-950 text-white font-black text-xs shadow-sm">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shadow-sm" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
                 {shopName.charAt(0).toUpperCase()}
               </div>
             )}
@@ -270,8 +273,9 @@ export function StoreHeader({
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`text-sm font-black uppercase px-3 py-2.5 rounded-xl transition-colors ${
-                        isActive ? 'bg-slate-950 text-white' : 'text-slate-700 hover:bg-slate-50'
+                        isActive ? 'text-white' : 'text-slate-700 hover:bg-slate-50'
                       }`}
+                      style={isActive ? { backgroundColor: 'var(--store-neutral-dark)' } : {}}
                     >
                       {item.label}
                     </Link>
