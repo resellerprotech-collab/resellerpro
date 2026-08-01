@@ -990,7 +990,7 @@ export default function ShopSettingsForm({
           <div className="flex-1">
             <p className={cn("text-sm font-bold",
               formData.storeStatus === 'open' ? 'text-emerald-800 dark:text-emerald-300' : formData.storeStatus === 'vacation' ? 'text-amber-800 dark:text-amber-300' : 'text-red-800 dark:text-red-300')}>
-              {formData.storeStatus === 'open' ? '🟢 Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
+              {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
             </p>
             <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
               resellerpro.in/{formData.shop_slug} · {productCount} products
