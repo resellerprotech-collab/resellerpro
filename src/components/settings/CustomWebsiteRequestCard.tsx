@@ -100,8 +100,23 @@ export default function CustomWebsiteRequestCard({
     )
   }
 
-  // Case 2: Request already submitted (Pending / Under Review)
+  // Case 2: Request already submitted or approved
   if (requestState) {
+    // If approved and currently in standard mode, render a clean, compact status bar
+    if (requestState.status === 'approved') {
+      return (
+        <div className="p-3 rounded-xl border bg-muted/30 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <span>Custom Website Request: <strong className="text-foreground">Approved</strong></span>
+          </div>
+          <a href="/settings/headless" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+            Manage Headless API →
+          </a>
+        </div>
+      )
+    }
+
     const formattedDate = new Date(requestState.created_at).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -110,22 +125,22 @@ export default function CustomWebsiteRequestCard({
 
     return (
       <Card className="border shadow-sm bg-muted/20">
-        <CardContent className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              <Clock className="h-6 w-6" />
+        <CardContent className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <Clock className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base">Custom Website Request</span>
-                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 capitalize">
+                <span className="font-bold text-sm">Custom Website Request</span>
+                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 text-[10px] capitalize">
                   {requestState.status === 'pending' ? 'Pending Review' : requestState.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                <span>Requested On: <strong className="text-foreground">{formattedDate}</strong></span>
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                <span>Requested: <strong className="text-foreground">{formattedDate}</strong></span>
                 <span>•</span>
-                <span className="flex items-center gap-1"><PhoneCall className="h-3 w-3" /> Ekodrix team will contact you shortly</span>
+                <span className="flex items-center gap-1"><PhoneCall className="h-3 w-3" /> Ekodrix team will contact you</span>
               </p>
             </div>
           </div>

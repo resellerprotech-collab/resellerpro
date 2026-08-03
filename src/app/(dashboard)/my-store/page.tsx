@@ -118,29 +118,31 @@ export default async function MyStorePage() {
         storeMode={(profile.store_mode as 'standard' | 'headless') || 'standard'}
       />
 
-      {/* Modular CMS Sections Link Banner */}
-      <div className="border rounded-2xl p-6 bg-gradient-to-r from-indigo-500/5 via-card to-card flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-indigo-600 text-white">
-            <Layers className="h-6 w-6" />
+      {/* Modular CMS Sections Link Banner (Visible only when Headless Mode is active) */}
+      {profile.store_mode === 'headless' && (
+        <div className="border rounded-2xl p-6 bg-gradient-to-r from-indigo-500/5 via-card to-card flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white">
+              <Layers className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                Modular Homepage CMS
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-full">Headless</span>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Reorder sections, toggle visibility, and manage content blocks for your Headless REST APIs.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-              Modular Homepage CMS
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-full">New</span>
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Reorder sections, toggle visibility, and manage content blocks for your storefront &amp; Headless APIs.
-            </p>
-          </div>
+          <a
+            href="/my-store/cms"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-xl shadow-sm transition-all shrink-0 active:scale-95"
+          >
+            Open Headless CMS →
+          </a>
         </div>
-        <a
-          href="/my-store/cms"
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-xl shadow-sm transition-all shrink-0 active:scale-95"
-        >
-          Open CMS Manager →
-        </a>
-      </div>
+      )}
 
       {/* Domain Management Panel (Subdomain + Custom Domain) */}
       <div className="border rounded-2xl pt-6 px-6 pb-6 bg-card">

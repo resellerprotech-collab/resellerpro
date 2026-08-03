@@ -39,7 +39,7 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
   
   // Safe fallback to prevent invalid URLs
   const activeSlug = shopSlug || domainInfo?.shopSlug || 'mystore'
-  const subdomainUrl = `https://${activeSlug}.${rootDomain}`
+  const storefrontUrl = `https://${rootDomain}/${activeSlug}`
 
   useEffect(() => {
     fetchDomainStatus()
@@ -154,13 +154,13 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-900 text-base">Standard Storefront Subdomain</h3>
+                <h3 className="font-bold text-slate-900 text-base">Standard Storefront URL</h3>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 tracking-wider">
                   Included Free
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Every ResellerPro seller gets an automatic, instant storefront address.
+                Every ResellerPro seller gets an automatic, instant storefront web address.
               </p>
             </div>
           </div>
@@ -170,18 +170,18 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
           <div className="flex items-center gap-2 truncate">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Live URL:</span>
             <a 
-              href={subdomainUrl} 
+              href={storefrontUrl} 
               target="_blank" 
               rel="noreferrer"
               className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline flex items-center gap-1.5 truncate"
             >
-              {subdomainUrl}
+              {storefrontUrl}
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
             </a>
           </div>
 
           <button
-            onClick={() => copyToClipboard(subdomainUrl, setCopiedSlug)}
+            onClick={() => copyToClipboard(storefrontUrl, setCopiedSlug)}
             className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <Copy className="w-3.5 h-3.5 text-slate-400" />

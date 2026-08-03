@@ -39,6 +39,29 @@ export default function HeadlessSettingsForm({
   const [generating, setGenerating] = useState(false)
 
   const isHeadless = storeMode === 'headless'
+  const hasEverBeenApproved = !!prefix
+
+  const handleToggleMode = async (checked: boolean) => {
+    const targetMode = checked ? 'headless' : 'standard'
+    setLoading(true)
+
+    const formData = new FormData()
+    formData.append('store_mode', targetMode)
+    formData.append('connected_domain', connectedDomain)
+
+    const res = await updateHeadlessSettings(formData)
+    setLoading(false)
+
+    if (res.success) {
+      setStoreMode(targetMode)
+      toast.success(`Store mode switched to ${targetMode.toUpperCase()}!`)
+      if (res.newApiKey) {
+        setNewlyGeneratedKey(res.newApiKey)
+      }
+    } else {
+      toast.error(res.message)
+    }
+  }
 
   const handleSaveDomain = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,7 +130,8 @@ export default function HeadlessSettingsForm({
             </div>
             <Switch
               checked={isHeadless}
-              disabled={true}
+              disabled={loading || !hasEverBeenApproved}
+              onCheckedChange={handleToggleMode}
             />
           </div>
 
