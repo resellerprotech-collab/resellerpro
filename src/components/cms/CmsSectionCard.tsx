@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   GripVertical, ChevronDown, ChevronUp, Eye, EyeOff, Sparkles,
-  Layout, PanelTop, Grid, Star, MessageSquare, Shield, Mail, RefreshCw, Check
+  Layout, PanelTop, Grid, Star, MessageSquare, Shield, Mail, RefreshCw, Check, Upload
 } from 'lucide-react'
 import { updateCmsSectionAction, reorderCmsSectionsAction } from '@/app/actions/cms-sections'
 import { toast } from 'sonner'
@@ -36,6 +36,7 @@ export default function CmsSectionCard({
   const [enabled, setEnabled] = useState(section.is_enabled)
   const [content, setContent] = useState(section.content || {})
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const handleToggle = async (checked: boolean) => {
     setEnabled(checked)
@@ -155,38 +156,155 @@ export default function CmsSectionCard({
         {expanded && (
           <form onSubmit={handleSaveContent} className="mt-5 pt-4 border-t space-y-4 animate-in fade-in-50 duration-200">
             {section.section_type === 'hero' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Hero Title</Label>
-                  <Input
-                    value={content.heroTitle || ''}
-                    onChange={(e) => setContent({ ...content, heroTitle: e.target.value })}
-                    placeholder="e.g. Premium Quality. Timeless Style."
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Hero Title</Label>
+                    <Input
+                      value={content.heroTitle || ''}
+                      onChange={(e) => setContent({ ...content, heroTitle: e.target.value })}
+                      placeholder="e.g. Premium Quality. Timeless Style."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Hero Subtitle</Label>
+                    <Input
+                      value={content.heroSubtitle || ''}
+                      onChange={(e) => setContent({ ...content, heroSubtitle: e.target.value })}
+                      placeholder="e.g. Discover our curated collection."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Primary CTA Button Text</Label>
+                    <Input
+                      value={content.heroCtaText || ''}
+                      onChange={(e) => setContent({ ...content, heroCtaText: e.target.value })}
+                      placeholder="Shop Now"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Primary CTA Link</Label>
+                    <Input
+                      value={content.heroCtaLink || ''}
+                      onChange={(e) => setContent({ ...content, heroCtaLink: e.target.value })}
+                      placeholder="#products or /shop"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Hero Subtitle</Label>
-                  <Input
-                    value={content.heroSubtitle || ''}
-                    onChange={(e) => setContent({ ...content, heroSubtitle: e.target.value })}
-                    placeholder="e.g. Discover our curated collection."
-                  />
+
+                {/* Hero Showcase Images Upload */}
+                <div className="space-y-2 pt-2 border-t">
+                  <Label className="text-xs font-semibold flex items-center justify-between">
+                    <span>Hero Showcase Image</span>
+                    {uploading && <span className="text-[10px] text-indigo-600 animate-pulse font-medium">Uploading image...</span>}
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      value={content.heroImageUrl || (content.heroImages?.[0] || '')}
+                      onChange={(e) => setContent({ ...content, heroImageUrl: e.target.value, heroImages: [e.target.value] })}
+                      placeholder="https://... or upload file"
+                    />
+                    <label className="cursor-pointer shrink-0">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          setUploading(true)
+                          try {
+                            const { createClient } = await import('@/lib/supabase/client')
+                            const supabase = createClient()
+                            const fileExt = file.name.split('.').pop()
+                            const fileName = `cms-hero-${Date.now()}.${fileExt}`
+                            const filePath = `cms/${fileName}`
+                            const { error } = await supabase.storage.from('product-images').upload(filePath, file, { upsert: true })
+                            if (error) throw error
+                            const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath)
+                            const publicUrl = urlData.publicUrl
+                            setContent(prev => ({ ...prev, heroImageUrl: publicUrl, heroImages: [publicUrl] }))
+                            toast.success('Hero image uploaded! ✨')
+                          } catch (err: any) {
+                            toast.error(err.message || 'Image upload failed')
+                          } finally {
+                            setUploading(false)
+                          }
+                        }}
+                      />
+                      <div className="px-3 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-bold border border-indigo-200 flex items-center gap-1.5 transition-colors">
+                        <Upload className="h-3.5 w-3.5" />
+                        Upload
+                      </div>
+                    </label>
+                  </div>
+                  {(content.heroImageUrl || content.heroImages?.[0]) && (
+                    <div className="relative w-24 h-24 rounded-xl overflow-hidden border bg-muted mt-2">
+                      <img src={content.heroImageUrl || content.heroImages?.[0]} alt="Hero preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
+              </div>
+            )}
+
+            {section.section_type === 'promotional_banner' && (
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Primary CTA Button Text</Label>
-                  <Input
-                    value={content.heroCtaText || ''}
-                    onChange={(e) => setContent({ ...content, heroCtaText: e.target.value })}
-                    placeholder="Shop Now"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Primary CTA Link</Label>
-                  <Input
-                    value={content.heroCtaLink || ''}
-                    onChange={(e) => setContent({ ...content, heroCtaLink: e.target.value })}
-                    placeholder="#products or /shop"
-                  />
+                  <Label className="text-xs font-semibold flex items-center justify-between">
+                    <span>Promotional Full Banner Image</span>
+                    {uploading && <span className="text-[10px] text-indigo-600 animate-pulse font-medium">Uploading...</span>}
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      value={content.promoFullBanner?.imageUrl || ''}
+                      onChange={(e) => setContent({
+                        ...content,
+                        promoFullBanner: { ...(content.promoFullBanner || {}), imageUrl: e.target.value }
+                      })}
+                      placeholder="Banner Image URL or Upload"
+                    />
+                    <label className="cursor-pointer shrink-0">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          setUploading(true)
+                          try {
+                            const { createClient } = await import('@/lib/supabase/client')
+                            const supabase = createClient()
+                            const fileExt = file.name.split('.').pop()
+                            const fileName = `cms-promo-${Date.now()}.${fileExt}`
+                            const filePath = `cms/${fileName}`
+                            const { error } = await supabase.storage.from('product-images').upload(filePath, file, { upsert: true })
+                            if (error) throw error
+                            const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath)
+                            const publicUrl = urlData.publicUrl
+                            setContent(prev => ({
+                              ...prev,
+                              promoFullBanner: { ...(prev.promoFullBanner || {}), imageUrl: publicUrl }
+                            }))
+                            toast.success('Promotional banner uploaded! ✨')
+                          } catch (err: any) {
+                            toast.error(err.message || 'Upload failed')
+                          } finally {
+                            setUploading(false)
+                          }
+                        }}
+                      />
+                      <div className="px-3 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-bold border border-indigo-200 flex items-center gap-1.5 transition-colors">
+                        <Upload className="h-3.5 w-3.5" />
+                        Upload
+                      </div>
+                    </label>
+                  </div>
+                  {content.promoFullBanner?.imageUrl && (
+                    <div className="relative h-28 w-full rounded-xl overflow-hidden border bg-muted mt-2">
+                      <img src={content.promoFullBanner.imageUrl} alt="Promo preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
