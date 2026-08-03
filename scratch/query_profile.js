@@ -6,37 +6,19 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function run() {
-  const { data: profiles, error } = await supabase
+  // Rename raz@gmail.com to razstore
+  await supabase
     .from('profiles')
-    .select('id, email, business_name, shop_slug')
-    .or('shop_slug.is.null,shop_slug.eq.""');
+    .update({ shop_slug: 'razstore' })
+    .eq('id', '5bd9e4dc-9193-4eef-a552-2ce5dc392a87');
 
-  if (error) {
-    console.error('Error fetching null shop_slugs:', error);
-    return;
-  }
+  // Set mhdrashid142@gmail.com (main account with 28 products) to rashidstore
+  await supabase
+    .from('profiles')
+    .update({ shop_slug: 'rashidstore' })
+    .eq('id', '4934d9be-8cdb-4b62-b0ab-a40dcbfaa943');
 
-  console.log(`Found ${profiles.length} remaining profiles with missing shop_slug.`);
-
-  for (const profile of profiles) {
-    const rawName = profile.business_name || (profile.email ? profile.email.split('@')[0] : 'shop');
-    let cleanSlug = rawName.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-    if (!cleanSlug || cleanSlug.length < 3) cleanSlug = 'shop';
-    cleanSlug = `${cleanSlug}-${profile.id.slice(0, 4)}`;
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ shop_slug: cleanSlug })
-      .eq('id', profile.id);
-
-    if (updateError) {
-      console.error(`Failed to update user ${profile.id}:`, updateError.message);
-    } else {
-      console.log(`Updated user ${profile.email || profile.id} -> shop_slug: ${cleanSlug}`);
-    }
-  }
-
-  console.log('All remaining profiles backfilled successfully!');
+  console.log('Successfully set mhdrashid142@gmail.com shop_slug to rashidstore!');
 }
 
 run();
