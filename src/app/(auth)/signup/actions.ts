@@ -80,27 +80,7 @@ export async function signup(
     'unknown'
 
   /* -------------------------------
-     2️⃣ IP signup limit
-  -------------------------------- */
-  const { count: ipCount, error: ipCountError } = await supabase
-    .from('signup_ip_log')
-    .select('id', { count: 'exact' })
-    .eq('ip_address', ip)
-
-  if (ipCountError) {
-    console.error('❌ IP COUNT ERROR:', ipCountError)
-  }
-
-  if ((ipCount ?? 0) >= 2) {
-    console.warn('🚫 IP LIMIT REACHED')
-    return {
-      success: false,
-      message: 'You already have an account on ResellerPro. Please login.',
-    }
-  }
-
-  /* -------------------------------
-     3️⃣ Validate input
+     2️⃣ Validate input
   -------------------------------- */
   const validatedFields = SignupSchema.safeParse({
     fullName: formData.get('fullName'),
@@ -131,12 +111,10 @@ export async function signup(
   } = validatedFields.data
 
   /* -------------------------------
-     4️⃣ Create Auth user (Admin API)
+     3️⃣ Create Auth user (Admin API)
   -------------------------------- */
   // We use the Admin API to create the user with `email_confirm: true`
   // so they can login immediately without clicking a link.
-  // We will enforce "business verification" via the `profiles.email_verified` column.
-
   const adminSupabase = await createAdminClient()
 
   const { data: adminUser, error: adminError } = await adminSupabase.auth.admin.createUser({
@@ -167,35 +145,51 @@ export async function signup(
   }
 
   // ---------------------------------------------------------
-  // 5️⃣ Sign In Immediately (Create Session)
+  // 4️⃣ Sign In Immediately (Create Session)
   // ---------------------------------------------------------
   // Now that the user exists and is confirmed, we can sign them in.
-  const { error: signInError } = await supabase.auth.signInWithPassword({
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
   if (signInError) {
     console.error('❌ AUTO-LOGIN ERROR:', signInError.message)
-    // We don't fail the whole request, but we can't redirect to dashboard logged in.
-    // However, for UX, we should probably return specific message.
     return {
-      success: true, // Account created successfully
+      success: true,
       message: 'Account created. Please sign in.',
+      redirectUrl: '/signin',
+    }
+  }
+
+  // Track session if session created
+  if (signInData?.session) {
+    try {
+      const { trackSession } = await import('@/lib/security/session-tracker')
+      const userAgent = headersList.get('user-agent') || 'Unknown'
+      await trackSession({
+        userId: adminUser.user.id,
+        sessionToken: signInData.session.access_token,
+        ipAddress: ip,
+        userAgent,
+        isCurrent: true,
+      })
+    } catch (e) {
+      console.warn('Session tracking error during signup:', e)
     }
   }
 
   /* -------------------------------
-     6️⃣ Log IP usage
+     5️⃣ Log IP usage (using adminSupabase)
   -------------------------------- */
-  const { error: ipInsertError } = await supabase
-    .from('signup_ip_log')
-    .insert({
-      ip_address: ip,
-    })
-
-  if (ipInsertError) {
-    console.error('❌ IP LOG INSERT ERROR:', ipInsertError)
+  if (ip && ip !== 'unknown') {
+    try {
+      await adminSupabase
+        .from('signup_ip_log')
+        .insert({ ip_address: ip })
+    } catch (e) {
+      console.error('❌ IP LOG INSERT ERROR:', e)
+    }
   }
 
 
