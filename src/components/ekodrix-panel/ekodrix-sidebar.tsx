@@ -19,6 +19,8 @@ import {
   Store,
   Sparkles,
 } from 'lucide-react'
+import { useState } from 'react'
+import { LogoutConfirmModal } from '@/components/layout/LogoutConfirmModal'
 
 export function SidebarContent({
   pathname,
@@ -29,6 +31,7 @@ export function SidebarContent({
   handleLogout: () => void;
   pendingRequestsCount?: number;
 }) {
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const navGroups = [
     {
       title: 'Overview',
@@ -141,7 +144,7 @@ export function SidebarContent({
       {/* Logout */}
       <div className="p-4 bg-white/[0.02] border-t border-white/5">
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           className="flex items-center gap-3 w-full text-sm font-bold text-gray-500 hover:text-red-400 
                      hover:bg-red-500/10 px-4 py-3 rounded-xl transition-all group"
         >
@@ -149,6 +152,17 @@ export function SidebarContent({
           <span>Terminate Session</span>
         </button>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onOpenChange={setShowLogoutModal}
+        onConfirm={async () => {
+          await handleLogout()
+        }}
+        title="Terminate Admin Session"
+        description="Are you sure you want to terminate your administrative session? You will be signed out of the Ekodrix panel."
+        confirmButtonText="Terminate Session"
+      />
     </div>
   )
 }
