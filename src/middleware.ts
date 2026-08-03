@@ -5,11 +5,33 @@ import { NextResponse, type NextRequest } from 'next/server'
 const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'dashboard', 'ekodrix', 'ekodrix-panel', 'auth', 'onboarding']
 
 export async function middleware(request: NextRequest) {
+  // 🔓 CORS handling for Headless Commerce API routes
+  if (request.nextUrl.pathname.startsWith('/api/v1/headless')) {
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, apikey',
+          'Access-Control-Max-Age': '86400'
+        }
+      })
+    }
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
+
+  // Add CORS headers to all headless API responses
+  if (request.nextUrl.pathname.startsWith('/api/v1/headless')) {
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, apikey')
+  }
 
   const hostname = (request.headers.get('host') || '').toLowerCase().replace(/:\d+$/, '') // strip port
   const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'resellerpro.in').toLowerCase()

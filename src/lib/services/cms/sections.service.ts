@@ -173,6 +173,33 @@ export class CmsSectionsService {
       .single()
 
     if (error) throw error
+
+    // Sync hero content back to profile.shop_theme for Storefront compatibility
+    if (sectionType === 'hero' && payload.content) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('shop_theme')
+        .eq('id', userId)
+        .single()
+
+      const currentTheme = profile?.shop_theme || {}
+      const updatedTheme = {
+        ...currentTheme,
+        heroTitle: payload.content.heroTitle ?? currentTheme.heroTitle,
+        heroSubtitle: payload.content.heroSubtitle ?? currentTheme.heroSubtitle,
+        heroCtaText: payload.content.heroCtaText ?? currentTheme.heroCtaText,
+        heroCtaLink: payload.content.heroCtaLink ?? currentTheme.heroCtaLink,
+        heroImageUrl: payload.content.heroImageUrl ?? currentTheme.heroImageUrl,
+        heroImages: payload.content.heroImages ?? currentTheme.heroImages,
+        heroBanners: payload.content.heroBanners ?? currentTheme.heroBanners
+      }
+
+      await supabase
+        .from('profiles')
+        .update({ shop_theme: updatedTheme, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+    }
+
     return data
   }
 

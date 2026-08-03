@@ -37,6 +37,7 @@ export class CommerceOrdersService {
 
     const productMap = new Map(products.map(p => [p.id, p]))
     let subtotal = 0
+    let totalCost = 0
     let totalProfit = 0
     const orderItems = []
 
@@ -47,9 +48,11 @@ export class CommerceOrdersService {
       const unitPrice = Number(prod.selling_price)
       const costPrice = Number(prod.cost_price || 0)
       const itemTotal = unitPrice * item.quantity
+      const itemCost = costPrice * item.quantity
       const itemProfit = (unitPrice - costPrice) * item.quantity
 
       subtotal += itemTotal
+      totalCost += itemCost
       totalProfit += itemProfit
 
       orderItems.push({
@@ -90,20 +93,18 @@ export class CommerceOrdersService {
       if (newCust) customerId = newCust.id
     }
 
-    // 3. Generate Order Number & insert order
-    const orderNumber = `ORD-${Date.now()}`
+    // 3. Insert order (letting Postgres sequence generate order_number integer)
     const { data: newOrder, error: orderErr } = await supabase
       .from('orders')
       .insert({
         user_id: storeId,
         customer_id: customerId,
-        order_number: orderNumber,
         status: 'pending',
-        payment_status: payload.payment_method === 'cod' ? 'cod' : 'pending',
+        payment_status: payload.payment_method === 'cod' ? 'cod' : 'unpaid',
         payment_method: payload.payment_method || 'cod',
         subtotal,
         total_amount: subtotal,
-        total_profit: totalProfit,
+        total_cost: totalCost,
         shipping_address: payload.shipping_address,
         shipping_city: payload.shipping_city,
         shipping_state: payload.shipping_state,
