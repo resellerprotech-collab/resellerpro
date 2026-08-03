@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import type { ShopTheme } from '@/types'
-import { RotateCcw, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { RotateCcw, ShieldCheck, CheckCircle2, Truck, Clock, Lock, FileText } from 'lucide-react'
 
 interface Props {
   params: { shopSlug: string }
@@ -17,6 +17,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `Return & Refund Policy | ${storeName}` }
 }
 
+function getPolicyIcon(iconName?: string) {
+  switch (iconName) {
+    case 'truck': return <Truck className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'rotate': return <RotateCcw className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+    case 'shield': return <ShieldCheck className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'clock': return <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+    case 'check': return <CheckCircle2 className="w-5 h-5 text-purple-600 flex-shrink-0" />
+    case 'lock': return <Lock className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'file': return <FileText className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    default: return <RotateCcw className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+  }
+}
+
 export default async function ReturnPolicyPage({ params }: Props) {
   const { shopSlug } = params
   const supabase = await createAdminClient()
@@ -25,6 +38,7 @@ export default async function ReturnPolicyPage({ params }: Props) {
 
   const storeName = profile.shop_name || profile.business_name || 'Store'
   const theme = profile.shop_theme as ShopTheme | null
+  const returnBlocks = theme?.policyBlocks?.returns
 
   return (
     <div className="min-h-screen bg-white pb-12">
@@ -37,35 +51,47 @@ export default async function ReturnPolicyPage({ params }: Props) {
           <p className="text-xs text-slate-500 font-medium mt-1">Last updated: {new Date().toLocaleDateString('en-IN')}</p>
         </div>
 
-        <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed space-y-6 bg-slate-50/70 p-6 sm:p-10 rounded-3xl border border-slate-100">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-emerald-600" /> 7-Day Replacement Guarantee
-            </h2>
-            <p className="text-slate-600 mt-1">
-              We want you to love your purchase! If you receive a damaged, defective, or incorrect product, you can request a replacement or return within 7 days of delivery.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-indigo-600" /> Return Eligibility Criteria
-            </h2>
-            <ul className="list-disc pl-5 text-slate-600 mt-1 space-y-1">
-              <li>Item must be unused, unwashed, and in original brand packaging.</li>
-              <li>All tags, labels, and warranty cards must remain intact.</li>
-              <li>Unboxing video proof is recommended for transit damage claims.</li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-purple-600" /> Refund Processing
-            </h2>
-            <p className="text-slate-600 mt-1">
-              Once the returned item is inspected at our warehouse, refunds are initiated within 3-5 business days directly to your original payment method or UPI ID.
-            </p>
-          </div>
+        <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed space-y-8 bg-slate-50/70 p-6 sm:p-10 rounded-3xl border border-slate-100 shadow-sm">
+          {returnBlocks && returnBlocks.length > 0 ? (
+            returnBlocks.map((block) => (
+              <div key={block.id} className="space-y-2">
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2.5">
+                  {getPolicyIcon(block.icon)}
+                  <span>{block.heading}</span>
+                </h2>
+                {block.subheading && (
+                  <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                    {block.subheading}
+                  </p>
+                )}
+                {block.description && (
+                  <p className="text-slate-600 leading-relaxed whitespace-pre-wrap mt-1">
+                    {block.description}
+                  </p>
+                )}
+                {block.points && block.points.length > 0 && (
+                  <ul className="list-disc pl-5 text-slate-600 space-y-1.5 pt-1">
+                    {block.points.map((pt, idx) => (
+                      <li key={idx} className="font-medium">{pt}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))
+          ) : theme?.returnPolicyText ? (
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-3">
+                <RotateCcw className="w-5 h-5 text-emerald-600" /> Merchant Return & Refund Guidelines
+              </h2>
+              <div className="text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">
+                {theme.returnPolicyText}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500 font-medium">
+              No return policy information provided yet.
+            </div>
+          )}
         </div>
       </main>
 

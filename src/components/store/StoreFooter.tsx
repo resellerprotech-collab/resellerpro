@@ -7,11 +7,52 @@ interface StoreFooterProps {
   theme: ShopTheme | null
 }
 
+function formatSocialUrl(platform: 'instagram' | 'facebook' | 'twitter' | 'whatsapp' | 'youtube', rawVal?: string | null): string | null {
+  if (!rawVal || !rawVal.trim()) return null
+  const val = rawVal.trim()
+
+  if (platform === 'instagram') {
+    if (val.startsWith('http')) return val
+    const username = val.replace(/^@/, '').replace(/^instagram\.com\//, '')
+    return `https://instagram.com/${username}`
+  }
+
+  if (platform === 'facebook') {
+    if (val.startsWith('http')) return val
+    const path = val.replace(/^facebook\.com\//, '')
+    return `https://facebook.com/${path}`
+  }
+
+  if (platform === 'twitter') {
+    if (val.startsWith('http')) return val
+    const username = val.replace(/^@/, '').replace(/^(twitter|x)\.com\//, '')
+    return `https://x.com/${username}`
+  }
+
+  if (platform === 'youtube') {
+    if (val.startsWith('http')) return val
+    const path = val.replace(/^youtube\.com\//, '')
+    return `https://youtube.com/${path}`
+  }
+
+  if (platform === 'whatsapp') {
+    const cleanNum = val.replace(/\D/g, '')
+    if (!cleanNum) return null
+    const formatted = cleanNum.length === 10 ? `91${cleanNum}` : cleanNum
+    return `https://wa.me/${formatted}?text=${encodeURIComponent('Hi! I found your store online.')}`
+  }
+
+  return null
+}
+
 export function StoreFooter({ profile, theme }: StoreFooterProps) {
   const storeName = profile.shop_name || profile.business_name || 'Store'
   const waNum = theme?.socialWhatsApp || profile.whatsapp_number || profile.business_phone
-  const waClean = waNum?.replace(/\D/g, '')
-  const waLink = waClean ? `https://wa.me/91${waClean}?text=${encodeURIComponent('Hi! I wanted to inquire about a product.')}` : null
+  const waLink = formatSocialUrl('whatsapp', waNum)
+  const instaLink = formatSocialUrl('instagram', theme?.socialInstagram)
+  const fbLink = formatSocialUrl('facebook', theme?.socialFacebook)
+  const twLink = formatSocialUrl('twitter', theme?.socialTwitter)
+  const ytLink = formatSocialUrl('youtube', theme?.socialYoutube)
 
   const address = theme?.footerAddress || profile.business_address
   const email = theme?.footerEmail || profile.business_email
@@ -54,6 +95,59 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
                 <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>Support Hours: Mon - Sat (9:00 AM - 8:00 PM)</span>
               </div>
+            </div>
+
+            {/* Social Media Icon Buttons */}
+            <div className="flex items-center gap-2.5 pt-3">
+              <a
+                href={instaLink || '#'}
+                target={instaLink ? '_blank' : '_self'}
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-pink-600 hover:text-white hover:border-pink-600 flex items-center justify-center transition-all duration-300"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href={fbLink || '#'}
+                target={fbLink ? '_blank' : '_self'}
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 flex items-center justify-center transition-all duration-300"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+              {twLink && (
+                <a
+                  href={twLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-sky-500 hover:text-white hover:border-sky-500 flex items-center justify-center transition-all duration-300"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="w-4 h-4" />
+                </a>
+              )}
+              <a
+                href={ytLink || '#'}
+                target={ytLink ? '_blank' : '_self'}
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600 flex items-center justify-center transition-all duration-300"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-4 h-4" />
+              </a>
+              {waLink && (
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 flex items-center justify-center transition-all duration-300"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -147,54 +241,6 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
             <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">COD</span>
             <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">VISA</span>
             <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">MASTERCARD</span>
-          </div>
-
-          {/* Social Media Link Buttons */}
-          <div className="flex items-center gap-3">
-            {theme?.socialInstagram && (
-              <a
-                href={`https://instagram.com/${theme.socialInstagram.replace('@', '')}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-            )}
-            {theme?.socialFacebook && (
-              <a
-                href={theme.socialFacebook}
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-            )}
-            {theme?.socialTwitter && (
-              <a
-                href={theme.socialTwitter}
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-            )}
-            {waLink && (
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white flex items-center justify-center transition-all duration-300"
-                aria-label="WhatsApp"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </a>
-            )}
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,10 +12,11 @@ import {
   Loader2, Palette, Globe, Info, ExternalLink, Sparkles,
   Crown, Lock, ShoppingBag, Layout, Type, Image as ImageIcon,
   Share2, Search, Bell, Eye, Rocket, ArrowRight, Check,
-  Instagram, Facebook, Twitter, MessageCircle,
+  Instagram, Facebook, Twitter, MessageCircle, Youtube,
   Star, MapPin, Mail, Phone, Clock, Zap,
-  Monitor, Smartphone, PanelTop, Quote, Shield,
+  Monitor, Smartphone, PanelTop, Quote, Shield, Sun, Moon,
   Truck, RotateCcw, HeartHandshake, ChevronRight, Upload,
+  Plus, Trash2, ListPlus, FileText,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { updateShopSettings } from '@/app/(dashboard)/settings/actions'
@@ -23,7 +24,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import HeadlessSettingsForm from '@/components/settings/HeadlessSettingsForm'
 
-import type { HeroBannerItem, PromoItem } from '@/types'
+import type { HeroBannerItem, PromoItem, PolicyBlock } from '@/types'
 
 interface ShopSettingsFormProps {
   profile: {
@@ -45,7 +46,7 @@ interface ShopSettingsFormProps {
 
 export default function ShopSettingsForm({
   profile,
-  isEligible = false,
+  isEligible = true,
   planName = 'free',
   planDisplay = 'Free Plan',
   productCount = 0,
@@ -58,6 +59,12 @@ export default function ShopSettingsForm({
   const [activeTab, setActiveTab] = useState('general')
   const [uploadingField, setUploadingField] = useState<string | null>(null)
   const [previewBannerIndex, setPreviewBannerIndex] = useState(0)
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('resellerpro_shop_tab')
+    if (saved) setActiveTab(saved)
+  }, [])
+
   const supabase = createClient()
 
   const theme = profile.shop_theme || {}
@@ -79,6 +86,8 @@ export default function ShopSettingsForm({
     // Appearance
     primaryColor: theme.primaryColor || '#4f46e5',
     secondaryColor: theme.secondaryColor || '#f97316',
+    accentColor: theme.accentColor || '#10b981',
+    neutralDarkColor: theme.neutralDarkColor || '#0f172a',
     layout: theme.layout || 'grid',
     showPrices: theme.showPrices !== false,
     showWhatsApp: theme.showWhatsApp !== false,
@@ -108,11 +117,25 @@ export default function ShopSettingsForm({
     // Announcement Banner
     bannerText: theme.bannerText || '',
     bannerEnabled: theme.bannerEnabled || false,
+    // Special Offer Banner Strip
+    offerBannerEnabled: theme.offerBannerEnabled !== false,
+    offerBannerBadge: theme.offerBannerBadge || '⚡ Special Promotion',
+    offerBannerTitle: theme.offerBannerTitle || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499',
+    offerBannerCode: theme.offerBannerCode || 'SAVE10',
+    offerBannerSubtext: theme.offerBannerSubtext || 'Use code SAVE10 at checkout.',
+    offerBannerBtnText: theme.offerBannerBtnText || 'Claim Offer Now',
+    // Newsletter / VIP Circle Banner
+    newsletterEnabled: theme.newsletterEnabled !== false,
+    newsletterTitle: theme.newsletterTitle || 'JOIN OUR VIP CIRCLE',
+    newsletterSubtitle: theme.newsletterSubtitle || 'Subscribe to get exclusive discount codes, new arrival alerts, and special event invites.',
+    newsletterBtnText: theme.newsletterBtnText || 'SUBSCRIBE',
+    newsletterPlaceholder: theme.newsletterPlaceholder || 'Enter your email address',
     // Social Links
     socialInstagram: theme.socialInstagram || '',
     socialFacebook: theme.socialFacebook || '',
     socialTwitter: theme.socialTwitter || '',
     socialWhatsApp: theme.socialWhatsApp || '',
+    socialYoutube: theme.socialYoutube || '',
     // SEO
     seoTitle: theme.seoTitle || '',
     seoDescription: theme.seoDescription || '',
@@ -162,14 +185,301 @@ export default function ShopSettingsForm({
     // Policies
     returnPolicy: theme.returnPolicy || '',
     shippingInfo: theme.shippingInfo || '',
+    shippingPolicyText: theme.shippingPolicyText || '',
+    returnPolicyText: theme.returnPolicyText || '',
+    privacyPolicyText: theme.privacyPolicyText || '',
+    termsPolicyText: theme.termsPolicyText || '',
+    policyBlocks: theme.policyBlocks || { shipping: [], returns: [], privacy: [], terms: [] },
     // Category Showcase
     categoryShowcase: theme.categoryShowcase !== false,
     // Trust Badges
-    trustBadgesEnabled: theme.trustBadgesEnabled || false,
-    trustBadges: theme.trustBadges || ['secure_payment', 'fast_delivery', 'easy_returns'],
+    trustBadgesEnabled: theme.trustBadgesEnabled !== false,
+    trustBadges: theme.trustBadges || ['secure_payment', 'fast_delivery', 'easy_returns', 'quality', 'support', 'authentic'],
+    trustBadgeItems: theme.trustBadgeItems || {},
     // Custom CSS
     customCss: theme.customCss || '',
   })
+
+  const [selectedBadgeId, setSelectedBadgeId] = useState<string>('secure_payment')
+  const [selectedPolicyKey, setSelectedPolicyKey] = useState<'shipping' | 'returns' | 'privacy' | 'terms'>('shipping')
+
+  const handleAddPolicyBlock = (pkey: string) => {
+    const newBlock = {
+      id: `pblk_${Date.now()}`,
+      heading: 'New Policy Section',
+      icon: 'shield',
+      description: 'Enter your section description here...',
+      points: [],
+    }
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: [...(prev.policyBlocks?.[pkey] || []), newBlock],
+      }
+    }))
+  }
+
+  const handleUpdatePolicyBlock = (pkey: string, blockId: string, updates: Partial<PolicyBlock>) => {
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: (prev.policyBlocks?.[pkey] || []).map((b: PolicyBlock) => b.id === blockId ? { ...b, ...updates } : b),
+      }
+    }))
+  }
+
+  const handleDeletePolicyBlock = (pkey: string, blockId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: (prev.policyBlocks?.[pkey] || []).filter((b: PolicyBlock) => b.id !== blockId),
+      }
+    }))
+  }
+
+  const handleAddPolicyPoint = (pkey: string, blockId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: (prev.policyBlocks?.[pkey] || []).map((b: PolicyBlock) => {
+          if (b.id !== blockId) return b
+          return { ...b, points: [...(b.points || []), 'New policy point detail'] }
+        }),
+      }
+    }))
+  }
+
+  const handleUpdatePolicyPoint = (pkey: string, blockId: string, idx: number, val: string) => {
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: (prev.policyBlocks?.[pkey] || []).map((b: PolicyBlock) => {
+          if (b.id !== blockId) return b
+          const updatedPoints = [...(b.points || [])]
+          updatedPoints[idx] = val
+          return { ...b, points: updatedPoints }
+        }),
+      }
+    }))
+  }
+
+  const handleDeletePolicyPoint = (pkey: string, blockId: string, idx: number) => {
+    setFormData(prev => ({
+      ...prev,
+      policyBlocks: {
+        ...(prev.policyBlocks || {}),
+        [pkey]: (prev.policyBlocks?.[pkey] || []).map((b: PolicyBlock) => {
+          if (b.id !== blockId) return b
+          return { ...b, points: (b.points || []).filter((_, i) => i !== idx) }
+        }),
+      }
+    }))
+  }
+
+  const renderPolicySectionManager = (pkey: 'shipping' | 'returns' | 'privacy' | 'terms') => {
+    const blocks: PolicyBlock[] = formData.policyBlocks?.[pkey] || []
+    const routesMap = {
+      shipping: '/shipping-policy',
+      returns: '/return-policy',
+      privacy: '/privacy-policy',
+      terms: '/terms',
+    }
+    const titlesMap = {
+      shipping: 'Shipping & Delivery Policy Page',
+      returns: 'Return & Refund Policy Page',
+      privacy: 'Privacy Policy Page',
+      terms: 'Terms & Conditions Page',
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div>
+            <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100 block">
+              {titlesMap[pkey]}
+            </span>
+            <p className="text-[11px] text-slate-500">
+              Add headings, subheadings, descriptions, and bullet points. Edit or delete any section.
+            </p>
+          </div>
+          <a
+            href={`/store/${formData.shop_slug}${routesMap[pkey]}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+          >
+            View Live Page <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Section Blocks List */}
+        <div className="space-y-4">
+          {blocks.map((block: PolicyBlock, idx: number) => (
+            <div
+              key={block.id}
+              className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center">
+                    {idx + 1}
+                  </span>
+                  <select
+                    value={block.icon || 'shield'}
+                    onChange={(e) => handleUpdatePolicyBlock(pkey, block.id, { icon: e.target.value })}
+                    className="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300"
+                  >
+                    <option value="truck">🚚 Truck</option>
+                    <option value="rotate">🔄 Return</option>
+                    <option value="shield">🛡️ Shield</option>
+                    <option value="clock">⏰ Clock</option>
+                    <option value="check">✅ Check</option>
+                    <option value="lock">🔒 Lock</option>
+                    <option value="file">📄 Document</option>
+                  </select>
+                  <Input
+                    value={block.heading}
+                    onChange={(e) => handleUpdatePolicyBlock(pkey, block.id, { heading: e.target.value })}
+                    placeholder="Section Heading Title..."
+                    className="text-xs font-bold h-9"
+                    disabled={isPending || !isEligible}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeletePolicyBlock(pkey, block.id)}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 h-8 px-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Subheading (Optional) */}
+              <div>
+                <Label className="text-[11px] font-semibold text-slate-500 mb-1 block">Subheading (Optional)</Label>
+                <Input
+                  value={block.subheading || ''}
+                  onChange={(e) => handleUpdatePolicyBlock(pkey, block.id, { subheading: e.target.value })}
+                  placeholder="e.g. 100% Verified & Hassle-Free"
+                  className="text-xs h-8"
+                  disabled={isPending || !isEligible}
+                />
+              </div>
+
+              {/* Description Paragraph */}
+              <div>
+                <Label className="text-[11px] font-semibold text-slate-500 mb-1 block">Description Paragraph</Label>
+                <Textarea
+                  value={block.description || ''}
+                  onChange={(e) => handleUpdatePolicyBlock(pkey, block.id, { description: e.target.value })}
+                  placeholder="Write section explanation text..."
+                  rows={2}
+                  className="text-xs"
+                  disabled={isPending || !isEligible}
+                />
+              </div>
+
+              {/* Bullet Points */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Bullet Points / List Items</Label>
+                  <button
+                    type="button"
+                    onClick={() => handleAddPolicyPoint(pkey, block.id)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    <ListPlus className="w-3.5 h-3.5" /> Add Point
+                  </button>
+                </div>
+                {(block.points || []).map((pt, pIdx) => (
+                  <div key={pIdx} className="flex items-center gap-2">
+                    <span className="text-slate-400 text-xs">•</span>
+                    <Input
+                      value={pt}
+                      onChange={(e) => handleUpdatePolicyPoint(pkey, block.id, pIdx, e.target.value)}
+                      placeholder={`Point #${pIdx + 1}...`}
+                      className="text-xs h-8 flex-1"
+                      disabled={isPending || !isEligible}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePolicyPoint(pkey, block.id, pIdx)}
+                      className="text-slate-400 hover:text-red-500 p-1 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Add New Section Button */}
+        <Button
+          type="button"
+          onClick={() => handleAddPolicyBlock(pkey)}
+          variant="outline"
+          className="w-full py-2.5 border-dashed border-2 border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20"
+        >
+          <Plus className="w-4 h-4 mr-1.5" /> Add New Policy Section
+        </Button>
+      </div>
+    )
+  }
+
+  const handleBadgeIconUpload = async (e: React.ChangeEvent<HTMLInputElement>, badgeId: string) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Image must be less than 5MB', variant: 'destructive' })
+      return
+    }
+
+    setUploadingField(`badge_${badgeId}`)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `badge-${badgeId}-${Date.now()}.${fileExt}`
+      const filePath = `${profile.id}/${fileName}`
+
+      const { error } = await supabase.storage.from('product-images').upload(filePath, file, { upsert: false })
+      if (error) throw error
+
+      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath)
+      const uploadedUrl = urlData.publicUrl
+
+      setFormData(prev => ({
+        ...prev,
+        trustBadgeItems: {
+          ...(prev.trustBadgeItems || {}),
+          [badgeId]: { ...(prev.trustBadgeItems?.[badgeId] || {}), iconUrl: uploadedUrl }
+        }
+      }))
+      toast({ title: 'Icon Uploaded 🎉', description: 'Custom badge icon saved!' })
+    } catch (err: any) {
+      toast({ title: 'Upload Failed', description: err.message, variant: 'destructive' })
+    } finally {
+      setUploadingField(null)
+    }
+  }
+
+  const updateTrustBadgeItem = (badgeId: string, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      trustBadgeItems: {
+        ...(prev.trustBadgeItems || {}),
+        [badgeId]: { ...(prev.trustBadgeItems?.[badgeId] || {}), [field]: value }
+      }
+    }))
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0]
@@ -597,6 +907,7 @@ export default function ShopSettingsForm({
     { id: 'hero', label: 'Hero Banner', icon: PanelTop },
     { id: 'promo', label: 'Promotional Section', icon: Sparkles },
     { id: 'sections', label: 'Sections', icon: Layout },
+    { id: 'policies', label: 'Customer Policies', icon: Shield },
     { id: 'social', label: 'Social & Chat', icon: Share2 },
     { id: 'seo', label: 'SEO', icon: Search },
     { id: 'footer', label: 'Footer', icon: MapPin },
@@ -688,7 +999,7 @@ export default function ShopSettingsForm({
           <div className="flex-1">
             <p className={cn("text-sm font-bold",
               formData.storeStatus === 'open' ? 'text-emerald-800 dark:text-emerald-300' : formData.storeStatus === 'vacation' ? 'text-amber-800 dark:text-amber-300' : 'text-red-800 dark:text-red-300')}>
-              {formData.storeStatus === 'open' ? '🟢 Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
+              {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
             </p>
             <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
               resellerpro.in/{formData.shop_slug} · {productCount} products
@@ -707,7 +1018,7 @@ export default function ShopSettingsForm({
           {tabs.map(tab => {
             const Icon = tab.icon
             return (
-              <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); sessionStorage.setItem('resellerpro_shop_tab', tab.id); }}
                 className={cn("inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap",
                   activeTab === tab.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300')}>
                 <Icon className="w-3.5 h-3.5" />{tab.label}
@@ -723,7 +1034,6 @@ export default function ShopSettingsForm({
           <div className="space-y-6">
             <Section icon={Globe} title="Store URL">
               <div className="space-y-2">
-                <Label htmlFor="shop_slug">Custom Slug</Label>
                 <div className="flex items-center">
                   <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-800 rounded-l-lg text-slate-500 dark:text-slate-400 text-sm shrink-0">resellerpro.in/</div>
                   <Input id="shop_slug" name="shop_slug" value={formData.shop_slug} onChange={handleChange} placeholder="your-shop-name" className="rounded-l-none" disabled={isPending} />
@@ -781,9 +1091,9 @@ export default function ShopSettingsForm({
             <Section icon={Clock} title="Store Status" pro={!isEligible}>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: 'open', label: '🟢 Open', desc: 'Store visible & active' },
-                  { value: 'vacation', label: '🟡 Vacation', desc: 'Show vacation notice' },
-                  { value: 'closed', label: '🔴 Closed', desc: 'Hide store temporarily' },
+                  { value: 'open', label: 'Open', desc: 'Store visible & active' },
+                  { value: 'vacation', label: 'Vacation', desc: 'Show vacation notice' },
+                  { value: 'closed', label: 'Closed', desc: 'Hide store temporarily' },
                 ].map(opt => (
                   <button key={opt.value} type="button" onClick={() => handleToggle('storeStatus', opt.value as any)}
                     className={cn("p-3 rounded-xl border-2 text-left transition-all",
@@ -810,113 +1120,107 @@ export default function ShopSettingsForm({
         {/* ═══════════════ TAB: DESIGN ═══════════════ */}
         {activeTab === 'appearance' && (
           <div className="space-y-6">
-            <Section icon={Palette} title="Colors">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <ColorPicker label="Primary Color" name="primaryColor" value={formData.primaryColor}
-                  onChange={handleChange} onSet={(v) => setFormData(p => ({...p, primaryColor: v}))}
-                  presets={['#4f46e5','#059669','#dc2626','#ea580c','#7c3aed','#0891b2']} />
-                <ColorPicker label="Accent Color" name="secondaryColor" value={formData.secondaryColor}
-                  onChange={handleChange} onSet={(v) => setFormData(p => ({...p, secondaryColor: v}))}
-                  presets={['#f97316','#eab308','#ec4899','#14b8a6','#8b5cf6','#f43f5e']} />
+            {/* Branding & Theme Colors */}
+            <Section icon={Palette} title="Store Colors & Theme">
+              <div className="space-y-6">
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <ColorPicker
+                    label="Primary (Buttons, links, active states)"
+                    name="primaryColor"
+                    value={formData.primaryColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, primaryColor: v }))}
+                    presets={['#4f46e5', '#059669', '#dc2626', '#ea580c', '#7c3aed', '#0891b2']}
+                  />
+                  <ColorPicker
+                    label="Secondary (Hover states, headers, navigation)"
+                    name="secondaryColor"
+                    value={formData.secondaryColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, secondaryColor: v }))}
+                    presets={['#4338ca', '#047857', '#b91c1c', '#c2410c', '#6d28d9', '#0369a1']}
+                  />
+                  <ColorPicker
+                    label="Third/Accent (Highlights, badges, info)"
+                    name="accentColor"
+                    value={formData.accentColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, accentColor: v }))}
+                    presets={['#f97316', '#eab308', '#ec4899', '#14b8a6', '#8b5cf6', '#f43f5e']}
+                  />
+                  <ColorPicker
+                    label="Fourth/Neutral Dark (Text, sidebar, titles)"
+                    name="neutralDarkColor"
+                    value={formData.neutralDarkColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, neutralDarkColor: v }))}
+                    presets={['#0f172a', '#1e293b', '#334155', '#18181b', '#27272a', '#171717']}
+                  />
+                </div>
+
+
               </div>
             </Section>
 
-            <Section icon={Monitor} title="Color Scheme">
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: 'light', label: 'Light', bg: 'bg-white border-slate-200', text: 'text-slate-900' },
-                  { value: 'dark', label: 'Dark', bg: 'bg-slate-900 border-slate-700', text: 'text-white' },
-                  { value: 'auto', label: 'Auto', bg: 'bg-gradient-to-r from-white to-slate-900 border-slate-300', text: 'text-slate-600' },
-                ].map(opt => (
-                  <button key={opt.value} type="button" onClick={() => setFormData(p => ({...p, colorScheme: opt.value}))}
-                    className={cn("p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2",
-                      formData.colorScheme === opt.value ? 'ring-2 ring-indigo-500 ring-offset-2' : 'hover:border-slate-300',
-                      opt.bg)}>
-                    <Monitor className={cn("w-5 h-5", opt.text)} />
-                    <span className={cn("text-xs font-bold", opt.text)}>{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            </Section>
+            {/* Layout & Typography */}
+            <Section icon={Layout} title="Layout & Typography">
+              <div className="space-y-6">
 
-            <Section icon={Layout} title="Product Layout">
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: 'grid', label: 'Grid', desc: '3-col card view' },
-                  { value: 'list', label: 'List', desc: 'Horizontal rows' },
-                  { value: 'compact', label: 'Compact', desc: 'Small tile view' },
-                ].map(opt => (
-                  <button key={opt.value} type="button" onClick={() => setFormData(p => ({...p, layout: opt.value}))}
-                    className={cn("p-3 rounded-xl border-2 text-left transition-all",
-                      formData.layout === opt.value 
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20' 
-                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700')}>
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{opt.label}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">{opt.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </Section>
 
-            <Section icon={Type} title="Button & Font">
-              <div className="space-y-4">
-                <div>
-                  <Label className="mb-2 block">Button Style</Label>
-                  <div className="flex gap-3">
-                    {[
-                      { value: 'rounded', label: 'Rounded' },
-                      { value: 'pill', label: 'Pill' },
-                      { value: 'sharp', label: 'Sharp' },
-                    ].map(opt => (
-                      <button key={opt.value} type="button" onClick={() => setFormData(p => ({...p, buttonStyle: opt.value}))}
-                        className={cn("flex-1 py-2.5 text-sm font-bold transition-all text-white",
-                          opt.value === 'rounded' ? 'rounded-lg' : opt.value === 'pill' ? 'rounded-full' : 'rounded-none',
-                          formData.buttonStyle === opt.value ? 'ring-2 ring-offset-2 ring-indigo-500' : ''
-                        )} style={{ backgroundColor: formData.primaryColor }}>
-                        {opt.label}
-                      </button>
-                    ))}
+                <div className="grid sm:grid-cols-2 gap-6 pt-2">
+                  <div>
+                    <Label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">Button Shape</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'rounded', label: 'Rounded', radius: 'rounded-lg' },
+                        { value: 'pill', label: 'Pill', radius: 'rounded-full' },
+                        { value: 'sharp', label: 'Square', radius: 'rounded-none' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, buttonStyle: opt.value }))}
+                          className={cn(
+                            "py-2 px-2 text-xs font-bold border transition-all text-center",
+                            opt.radius,
+                            formData.buttonStyle === opt.value
+                              ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                              : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="fontFamily">Font Style</Label>
-                  <select id="fontFamily" name="fontFamily" value={formData.fontFamily} onChange={handleChange}
-                    className="w-full h-10 rounded-lg border border-slate-200 dark:border-slate-800 px-3 text-sm bg-white dark:bg-slate-900 dark:text-slate-100 mt-1.5">
-                    <option value="default">System Default</option>
-                    <option value="inter">Inter (Clean)</option>
-                    <option value="poppins">Poppins (Friendly)</option>
-                    <option value="playfair">Playfair (Elegant)</option>
-                    <option value="roboto">Roboto (Professional)</option>
-                    <option value="outfit">Outfit (Modern)</option>
-                  </select>
-                </div>
-                <div>
-                  <Label>Header Style</Label>
-                  <div className="grid grid-cols-3 gap-3 mt-1.5">
-                    {[
-                      { value: 'default', label: 'Standard', desc: 'Logo left, search center' },
-                      { value: 'centered', label: 'Centered', desc: 'Logo & search centered' },
-                      { value: 'minimal', label: 'Minimal', desc: 'Clean, less padding' },
-                    ].map(opt => (
-                      <button key={opt.value} type="button" onClick={() => setFormData(p => ({...p, headerStyle: opt.value}))}
-                        className={cn("p-3 rounded-xl border-2 text-left transition-all",
-                          formData.headerStyle === opt.value 
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20' 
-                            : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700')}>
-                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{opt.label}</p>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{opt.desc}</p>
-                      </button>
-                    ))}
+
+                  <div>
+                    <Label htmlFor="fontFamily" className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">Font Family</Label>
+                    <select
+                      id="fontFamily"
+                      name="fontFamily"
+                      value={formData.fontFamily}
+                      onChange={handleChange}
+                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-800 px-3 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium"
+                    >
+                      <option value="default">System Default</option>
+                      <option value="inter">Inter (Clean & Modern)</option>
+                      <option value="poppins">Poppins (Friendly)</option>
+                      <option value="playfair">Playfair (Elegant Luxury)</option>
+                      <option value="roboto">Roboto (Professional)</option>
+                      <option value="outfit">Outfit (Bold & Contemporary)</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </Section>
 
+            {/* Display Options */}
             <Section icon={Eye} title="Display Options">
               <div className="space-y-3">
-                <ToggleRow label="Show Prices" description="Display product prices publicly" checked={formData.showPrices} onChange={v => handleToggle('showPrices', v)} />
-                <ToggleRow label="WhatsApp Buy Button" description="'Buy Now' button on each product" checked={formData.showWhatsApp} onChange={v => handleToggle('showWhatsApp', v)} />
-                <ToggleRow label="Category Showcase" description="Show categories as visual cards" checked={formData.categoryShowcase} onChange={v => handleToggle('categoryShowcase', v)} />
+                <ToggleRow label="Show Prices" description="Display product prices publicly on storefront" checked={formData.showPrices} onChange={v => handleToggle('showPrices', v)} />
+                <ToggleRow label="WhatsApp Buy Button" description="Show 'Buy on WhatsApp' button on product pages" checked={formData.showWhatsApp} onChange={v => handleToggle('showWhatsApp', v)} />
+                <ToggleRow label="Category Showcase" description="Show visual category cards on store homepage" checked={formData.categoryShowcase} onChange={v => handleToggle('categoryShowcase', v)} />
               </div>
             </Section>
           </div>
@@ -1045,6 +1349,16 @@ export default function ShopSettingsForm({
                         <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                       </div>
 
+                      {/* Background Color */}
+                      <ColorPicker
+                        label="Hero Background Color"
+                        name="heroBgColor"
+                        value={formData.heroBgColor}
+                        onChange={handleChange}
+                        onSet={(v) => setFormData(p => ({ ...p, heroBgColor: v }))}
+                        presets={['#0f172a', '#1e1b4b', '#0c0a09', '#052e16', '#450a0a', '#1e3a5f', '#18181b', '#0d1117']}
+                      />
+
                       {/* Headline & Subtitle */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -1065,11 +1379,6 @@ export default function ShopSettingsForm({
                           <Label>Primary Button Text</Label>
                           <Input name="heroCtaText" value={formData.heroCtaText} onChange={handleChange}
                             placeholder="Shop Now" disabled={isPending || !isEligible} className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label>Primary Button Link</Label>
-                          <Input name="heroCtaLink" value={formData.heroCtaLink} onChange={handleChange}
-                            placeholder="#products" disabled={isPending || !isEligible} className="mt-1.5" />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1808,6 +2117,194 @@ export default function ShopSettingsForm({
         {/* ═══════════════ TAB: SECTIONS ═══════════════ */}
         {activeTab === 'sections' && (
           <div className="space-y-6">
+            <Section icon={Sparkles} title="Special Promotion Banner" pro={!isEligible}>
+              <ToggleRow
+                label="Enable Special Promotion Banner"
+                description="Show high-conversion offer banner strip on your store homepage"
+                checked={formData.offerBannerEnabled}
+                onChange={v => handleToggle('offerBannerEnabled', v)}
+                disabled={!isEligible}
+              />
+              {formData.offerBannerEnabled && (
+                <div className="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Badge Label</Label>
+                      <Input
+                        name="offerBannerBadge"
+                        value={formData.offerBannerBadge}
+                        onChange={handleChange}
+                        placeholder="⚡ Special Promotion"
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label>Coupon Code</Label>
+                      <Input
+                        name="offerBannerCode"
+                        value={formData.offerBannerCode}
+                        onChange={handleChange}
+                        placeholder="SAVE10"
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Offer Headline</Label>
+                    <Input
+                      name="offerBannerTitle"
+                      value={formData.offerBannerTitle}
+                      onChange={handleChange}
+                      placeholder="Limited Time Offer: Get 10% OFF on Orders Above ₹1,499"
+                      disabled={isPending || !isEligible}
+                      className="mt-1.5"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Subtext / Instructions</Label>
+                      <Input
+                        name="offerBannerSubtext"
+                        value={formData.offerBannerSubtext}
+                        onChange={handleChange}
+                        placeholder="Use code SAVE10 at checkout."
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label>Button Text</Label>
+                      <Input
+                        name="offerBannerBtnText"
+                        value={formData.offerBannerBtnText}
+                        onChange={handleChange}
+                        placeholder="Claim Offer Now"
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Banner Live Preview Box */}
+                  <div className="mt-3 p-4 rounded-2xl bg-slate-900 border border-slate-800 text-white space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Preview</p>
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-slate-950 border border-slate-800">
+                      <div className="space-y-1 text-center sm:text-left">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                          {formData.offerBannerBadge || '⚡ Special Promotion'}
+                        </span>
+                        <p className="text-sm font-black text-white leading-tight">
+                          {formData.offerBannerTitle || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          {formData.offerBannerSubtext || `Use code ${formData.offerBannerCode || 'SAVE10'} at checkout.`}
+                        </p>
+                      </div>
+                      <span className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl whitespace-nowrap shadow-sm">
+                        {formData.offerBannerBtnText || 'Claim Offer Now'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Section>
+
+            <Section icon={Mail} title="VIP Circle / Newsletter Banner" pro={!isEligible}>
+              <ToggleRow
+                label="Enable VIP Circle Banner"
+                description="Show subscription banner strip on your store homepage footer"
+                checked={formData.newsletterEnabled}
+                onChange={v => handleToggle('newsletterEnabled', v)}
+                disabled={!isEligible}
+              />
+              {formData.newsletterEnabled && (
+                <div className="space-y-4 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <div>
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Banner Heading Title</Label>
+                    <Input
+                      name="newsletterTitle"
+                      value={formData.newsletterTitle}
+                      onChange={handleChange}
+                      placeholder="JOIN OUR VIP CIRCLE"
+                      disabled={isPending || !isEligible}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Banner Description Subtext</Label>
+                    <Input
+                      name="newsletterSubtitle"
+                      value={formData.newsletterSubtitle}
+                      onChange={handleChange}
+                      placeholder="Subscribe to get exclusive discount codes, new arrival alerts, and special event invites."
+                      disabled={isPending || !isEligible}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Input Placeholder Text</Label>
+                      <Input
+                        name="newsletterPlaceholder"
+                        value={formData.newsletterPlaceholder}
+                        onChange={handleChange}
+                        placeholder="Enter your email address"
+                        disabled={isPending || !isEligible}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Button Label</Label>
+                      <Input
+                        name="newsletterBtnText"
+                        value={formData.newsletterBtnText}
+                        onChange={handleChange}
+                        placeholder="SUBSCRIBE"
+                        disabled={isPending || !isEligible}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Banner Live Preview Box */}
+                  <div className="mt-6">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Live Preview</p>
+                    <div className="p-6 md:p-8 rounded-2xl bg-[#1a1a1c] border border-slate-800 text-white">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="space-y-1.5 max-w-lg">
+                          <h3 className="text-xl md:text-2xl font-black tracking-tight text-white">
+                            {formData.newsletterTitle || 'JOIN OUR VIP CIRCLE'}
+                          </h3>
+                          <p className="text-[13px] text-slate-400 leading-relaxed">
+                            {formData.newsletterSubtitle || 'Subscribe to get exclusive discount codes, new arrival alerts, and special event invites.'}
+                          </p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                          <input
+                            type="text"
+                            placeholder={formData.newsletterPlaceholder || 'Enter your email address'}
+                            className="w-full sm:w-64 px-4 py-2.5 rounded-xl bg-[#0f0f11] border border-slate-800 text-white text-sm focus:outline-none placeholder:text-slate-600"
+                            disabled
+                          />
+                          <button
+                            type="button"
+                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wide whitespace-nowrap transition-colors shadow-lg shadow-indigo-900/20"
+                            disabled
+                          >
+                            {formData.newsletterBtnText || 'SUBSCRIBE'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Section>
+
             <Section icon={Quote} title="Customer Testimonials" pro={!isEligible}>
               <ToggleRow label="Enable Testimonials" description="Show customer reviews on your store" checked={formData.testimonialsEnabled} onChange={v => handleToggle('testimonialsEnabled', v)} disabled={!isEligible} />
               {formData.testimonialsEnabled && (
@@ -1830,159 +2327,233 @@ export default function ShopSettingsForm({
                 </div>
               )}
             </Section>
- 
-            <Section icon={ImageIcon} title="Custom Promo / CTA Banner" pro={!isEligible}>
-              <ToggleRow 
-                label="Enable Promo Banner Section" 
-                description="Show a custom call-to-action banner section on your homepage" 
-                checked={formData.ctaSectionEnabled} 
-                onChange={v => handleToggle('ctaSectionEnabled', v)} 
-                disabled={!isEligible} 
-              />
-              {formData.ctaSectionEnabled && (
-                <div className="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <div>
-                    <Label>Promo Banner Image</Label>
-                    <div className="flex items-center gap-4 mt-1.5">
-                      <div className="relative w-28 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-                        {formData.ctaImageUrl ? (
-                          <img src={formData.ctaImageUrl} alt="CTA Promo" className="w-full h-full object-cover" />
-                        ) : (
-                          <ImageIcon className="w-6 h-6 text-slate-300 dark:text-slate-700" />
-                        )}
-                        {uploadingField === 'ctaImageUrl' && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <Loader2 className="w-5 h-5 text-white animate-spin" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-1.5">
-                        <label htmlFor="cta_image_file" className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-250 transition-colors">
-                          <Upload className="w-3.5 h-3.5" />
-                          Upload Banner Image
-                        </label>
-                        <input
-                          id="cta_image_file"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload(e, 'ctaImageUrl')}
-                          className="hidden"
-                          disabled={!isEligible || uploadingField !== null}
-                        />
-                        {formData.ctaImageUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setFormData(p => ({ ...p, ctaImageUrl: '' }))}
-                            className="text-xs text-red-500 font-bold block hover:underline"
-                          >
-                            Remove Image
-                          </button>
-                        )}
-                        <p className="text-[9px] text-slate-400 dark:text-slate-500">Wide banner (e.g. 1200x400 px) recommended. Max 5MB.</p>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Section Title</Label>
-                      <Input 
-                        name="ctaTitle" 
-                        value={formData.ctaTitle} 
-                        onChange={handleChange}
-                        placeholder="Special Festive Collection!" 
-                        disabled={isPending || !isEligible} 
-                        className="mt-1.5" 
-                      />
-                    </div>
-                    <div>
-                      <Label>Section Subtitle / Description</Label>
-                      <Input 
-                        name="ctaSubtitle" 
-                        value={formData.ctaSubtitle} 
-                        onChange={handleChange}
-                        placeholder="Get flat 20% off on all items. Limited time offer." 
-                        disabled={isPending || !isEligible} 
-                        className="mt-1.5" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Button Text</Label>
-                      <Input 
-                        name="ctaBtnText" 
-                        value={formData.ctaBtnText} 
-                        onChange={handleChange}
-                        placeholder="Explore More" 
-                        disabled={isPending || !isEligible} 
-                        className="mt-1.5" 
-                      />
-                    </div>
-                    <div>
-                      <Label>Button Link / URL</Label>
-                      <Input 
-                        name="ctaLink" 
-                        value={formData.ctaLink} 
-                        onChange={handleChange}
-                        placeholder="#products" 
-                        disabled={isPending || !isEligible} 
-                        className="mt-1.5" 
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </Section>
 
             <Section icon={Shield} title="Trust Badges" pro={!isEligible}>
               <ToggleRow label="Show Trust Badges" description="Display trust indicators below products" checked={formData.trustBadgesEnabled} onChange={v => handleToggle('trustBadgesEnabled', v)} disabled={!isEligible} />
               {formData.trustBadgesEnabled && (
-                <div className="grid grid-cols-3 gap-3 mt-3">
-                  {[
-                    { id: 'secure_payment', icon: Shield, label: 'Secure Payment' },
-                    { id: 'fast_delivery', icon: Truck, label: 'Fast Delivery' },
-                    { id: 'easy_returns', icon: RotateCcw, label: 'Easy Returns' },
-                    { id: 'quality', icon: Star, label: 'Quality Assured' },
-                    { id: 'support', icon: HeartHandshake, label: '24/7 Support' },
-                    { id: 'authentic', icon: Check, label: '100% Authentic' },
-                  ].map(badge => {
-                    const isSelected = formData.trustBadges.includes(badge.id)
+                <div className="space-y-5 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {/* Badge Selection Grid */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'secure_payment', icon: Shield, label: 'Secure Payment' },
+                      { id: 'fast_delivery', icon: Truck, label: 'Fast Delivery' },
+                      { id: 'easy_returns', icon: RotateCcw, label: 'Easy Returns' },
+                      { id: 'quality', icon: Star, label: 'Quality Assured' },
+                      { id: 'support', icon: HeartHandshake, label: '24/7 Support' },
+                      { id: 'authentic', icon: Check, label: '100% Authentic' },
+                    ].map(badge => {
+                      const isEnabledOnStore = formData.trustBadges.includes(badge.id)
+                      const isActiveEditing = selectedBadgeId === badge.id
+                      const customItem = formData.trustBadgeItems?.[badge.id]
+                      const badgeTitle = customItem?.title || badge.label
+                      const hasCustomIcon = !!customItem?.iconUrl
+
+                      return (
+                        <div
+                          key={badge.id}
+                          onClick={() => setSelectedBadgeId(badge.id)}
+                          className={cn(
+                            "p-3 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all cursor-pointer relative group",
+                            isActiveEditing
+                              ? 'ring-2 ring-indigo-500 border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30'
+                              : isEnabledOnStore
+                                ? 'border-indigo-500/50 bg-slate-50 dark:bg-slate-900/40'
+                                : 'border-slate-200 dark:border-slate-800 dark:hover:border-slate-700 opacity-60'
+                          )}
+                        >
+                          {/* Toggle active state checkmark */}
+                          <button
+                            type="button"
+                            title={isEnabledOnStore ? "Remove from storefront" : "Enable on storefront"}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const updated = isEnabledOnStore
+                                ? formData.trustBadges.filter((b: string) => b !== badge.id)
+                                : [...formData.trustBadges, badge.id]
+                              setFormData(p => ({ ...p, trustBadges: updated }))
+                            }}
+                            className={cn(
+                              "absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[10px] transition-all font-bold",
+                              isEnabledOnStore
+                                ? "bg-indigo-600 text-white"
+                                : "bg-slate-200 dark:bg-slate-800 text-slate-400 hover:bg-slate-300"
+                            )}
+                          >
+                            ✓
+                          </button>
+
+                          {hasCustomIcon ? (
+                            <img src={customItem.iconUrl} alt={badgeTitle} className="w-5 h-5 object-cover rounded" />
+                          ) : (
+                            <badge.icon className={cn("w-5 h-5", isEnabledOnStore ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500')} />
+                          )}
+                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center truncate max-w-full">
+                            {badgeTitle}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Single Selected Badge Editor */}
+                  {selectedBadgeId && (() => {
+                    const badgePresets: Record<string, { label: string; icon: any }> = {
+                      secure_payment: { label: 'Secure Payment', icon: Shield },
+                      fast_delivery: { label: 'Fast Delivery', icon: Truck },
+                      easy_returns: { label: 'Easy Returns', icon: RotateCcw },
+                      quality: { label: 'Quality Assured', icon: Star },
+                      support: { label: '24/7 Support', icon: HeartHandshake },
+                      authentic: { label: '100% Authentic', icon: Check },
+                    }
+                    const activePreset = badgePresets[selectedBadgeId] || { label: selectedBadgeId, icon: Shield }
+                    const activeCustom = formData.trustBadgeItems?.[selectedBadgeId] || {}
+                    const isEnabledOnStore = formData.trustBadges.includes(selectedBadgeId)
+
                     return (
-                      <button key={badge.id} type="button" disabled={!isEligible}
-                        onClick={() => {
-                          const updated = isSelected
-                            ? formData.trustBadges.filter((b: string) => b !== badge.id)
-                            : [...formData.trustBadges, badge.id]
-                          setFormData(p => ({...p, trustBadges: updated}))
-                        }}
-                        className={cn("p-3 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all",
-                          isSelected 
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20' 
-                            : 'border-slate-200 dark:border-slate-800 dark:hover:border-slate-700')}>
-                        <badge.icon className={cn("w-5 h-5", isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500')} />
-                        <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{badge.label}</span>
-                      </button>
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                              Editing: {activeCustom.title || activePreset.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = isEnabledOnStore
+                                  ? formData.trustBadges.filter((b: string) => b !== selectedBadgeId)
+                                  : [...formData.trustBadges, selectedBadgeId]
+                                setFormData(p => ({ ...p, trustBadges: updated }))
+                              }}
+                              className={cn(
+                                "px-3 py-1 text-xs font-bold rounded-lg border transition-all",
+                                isEnabledOnStore
+                                  ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-950/50 dark:hover:bg-red-950/20"
+                                  : "border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-950/50 dark:hover:bg-indigo-950/20"
+                              )}
+                            >
+                              {isEnabledOnStore ? "Remove from Storefront" : "Add to Storefront"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title & Description Fields */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs font-semibold mb-1 block">Badge Title</Label>
+                            <Input
+                              value={activeCustom.title !== undefined ? activeCustom.title : activePreset.label}
+                              onChange={(e) => updateTrustBadgeItem(selectedBadgeId, 'title', e.target.value)}
+                              placeholder={activePreset.label}
+                              disabled={isPending || !isEligible}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold mb-1 block">Description (Optional)</Label>
+                            <Input
+                              value={activeCustom.description || ''}
+                              onChange={(e) => updateTrustBadgeItem(selectedBadgeId, 'description', e.target.value)}
+                              placeholder="e.g. 100% money back guarantee"
+                              disabled={isPending || !isEligible}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Custom Icon Image Upload */}
+                        <div>
+                          <Label className="text-xs font-semibold mb-1 block">Custom Icon Image</Label>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                              {activeCustom.iconUrl ? (
+                                <img src={activeCustom.iconUrl} alt="Badge Icon" className="w-full h-full object-cover" />
+                              ) : (
+                                <activePreset.icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                              )}
+                            </div>
+                            <label
+                              htmlFor={`badge_icon_file_${selectedBadgeId}`}
+                              className={cn(
+                                "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors",
+                                (!isEligible || uploadingField !== null) && "opacity-50 pointer-events-none"
+                              )}
+                            >
+                              {uploadingField === `badge_${selectedBadgeId}` ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Upload className="w-3.5 h-3.5" />
+                              )}
+                              Upload Icon Image
+                            </label>
+                            <input
+                              id={`badge_icon_file_${selectedBadgeId}`}
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleBadgeIconUpload(e, selectedBadgeId)}
+                              className="hidden"
+                              disabled={!isEligible || uploadingField !== null}
+                            />
+                            {activeCustom.iconUrl && (
+                              <button
+                                type="button"
+                                onClick={() => updateTrustBadgeItem(selectedBadgeId, 'iconUrl', '')}
+                                className="text-xs text-red-500 font-bold hover:underline"
+                              >
+                                Reset to Default Icon
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     )
-                  })}
+                  })()}
                 </div>
               )}
             </Section>
+          </div>
+        )}
 
-            <Section icon={Truck} title="Store Policies" pro={!isEligible}>
-              <div className="space-y-4">
-                <div>
-                  <Label>Return Policy</Label>
-                  <Textarea name="returnPolicy" value={formData.returnPolicy} onChange={handleChange}
-                    placeholder="7-day easy returns. No questions asked." rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
-                </div>
-                <div>
-                  <Label>Shipping Info</Label>
-                  <Textarea name="shippingInfo" value={formData.shippingInfo} onChange={handleChange}
-                    placeholder="Free delivery on orders above ₹499. 3-5 business days." rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
-                </div>
+        {/* ═══════════════ TAB: CUSTOMER POLICIES ═══════════════ */}
+        {activeTab === 'policies' && (
+          <div className="space-y-6">
+            <Section icon={Shield} title="Customer Store Policies" pro={!isEligible}>
+              <p className="text-xs text-slate-500 mb-4">
+                Customize policy sections for each legal page on your online store. Select a policy page below to add headings, subheadings, descriptions, and bullet points.
+              </p>
+
+              {/* Policy Page Selector Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                {[
+                  { key: 'shipping', label: 'Shipping & Delivery', icon: Truck },
+                  { key: 'returns', label: 'Return & Refund', icon: RotateCcw },
+                  { key: 'privacy', label: 'Privacy Policy', icon: Shield },
+                  { key: 'terms', label: 'Terms & Conditions', icon: Check },
+                ].map((item) => {
+                  const isSelected = selectedPolicyKey === item.key
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      disabled={!isEligible}
+                      onClick={() => setSelectedPolicyKey(item.key as any)}
+                      className={cn(
+                        "p-3.5 rounded-xl border-2 flex flex-col items-center gap-2 text-center transition-all cursor-pointer",
+                        isSelected
+                          ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700"
+                      )}
+                    >
+                      <Icon className={cn("w-5 h-5", isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400")} />
+                      <span className="text-xs font-bold leading-tight">{item.label}</span>
+                    </button>
+                  )
+                })}
               </div>
+
+              {/* Render Section Block Manager */}
+              {renderPolicySectionManager(selectedPolicyKey)}
             </Section>
           </div>
         )}
@@ -1993,10 +2564,17 @@ export default function ShopSettingsForm({
             <Section icon={MessageCircle} title="WhatsApp Chat Widget" pro={!isEligible}>
               <ToggleRow label="Floating Chat Button" description="Show WhatsApp chat button on all pages" checked={formData.chatWidgetEnabled} onChange={v => handleToggle('chatWidgetEnabled', v)} disabled={!isEligible} />
               {formData.chatWidgetEnabled && (
-                <div className="mt-3">
-                  <Label>Pre-filled Message</Label>
-                  <Input name="chatWidgetMessage" value={formData.chatWidgetMessage} onChange={handleChange}
-                    placeholder="Hi! I found your store online..." disabled={isPending || !isEligible} className="mt-1.5" />
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <Label>WhatsApp Phone Number</Label>
+                    <Input name="socialWhatsApp" value={formData.socialWhatsApp} onChange={handleChange}
+                      placeholder="e.g. 9876543210 or +91 98765 43210" disabled={isPending || !isEligible} className="mt-1.5" />
+                  </div>
+                  <div>
+                    <Label>Pre-filled Message</Label>
+                    <Input name="chatWidgetMessage" value={formData.chatWidgetMessage} onChange={handleChange}
+                      placeholder="Hi! I found your store online..." disabled={isPending || !isEligible} className="mt-1.5" />
+                  </div>
                   <div className="mt-3 flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-900/30">
                     <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
                       <MessageCircle className="w-6 h-6 text-white" />
@@ -2015,6 +2593,7 @@ export default function ShopSettingsForm({
                 <SocialInput icon={Instagram} label="Instagram" name="socialInstagram" value={formData.socialInstagram} onChange={handleChange} placeholder="@yourbusiness" disabled={isPending || !isEligible} />
                 <SocialInput icon={Facebook} label="Facebook" name="socialFacebook" value={formData.socialFacebook} onChange={handleChange} placeholder="facebook.com/yourbusiness" disabled={isPending || !isEligible} />
                 <SocialInput icon={Twitter} label="Twitter / X" name="socialTwitter" value={formData.socialTwitter} onChange={handleChange} placeholder="@yourbusiness" disabled={isPending || !isEligible} />
+                <SocialInput icon={Youtube} label="YouTube" name="socialYoutube" value={formData.socialYoutube} onChange={handleChange} placeholder="youtube.com/@yourchannel" disabled={isPending || !isEligible} />
                 <SocialInput icon={MessageCircle} label="WhatsApp" name="socialWhatsApp" value={formData.socialWhatsApp} onChange={handleChange} placeholder="+91 98765 43210" disabled={isPending || !isEligible} />
               </div>
             </Section>
@@ -2053,45 +2632,40 @@ export default function ShopSettingsForm({
 
         {/* ═══════════════ TAB: FOOTER ═══════════════ */}
         {activeTab === 'footer' && (
-          <Section icon={MapPin} title="Custom Footer" pro={!isEligible}>
-            <div className="space-y-4">
-              <div>
-                <Label>About Text</Label>
-                <Textarea name="footerAbout" value={formData.footerAbout} onChange={handleChange}
-                  placeholder="We are a trusted business delivering quality products since 2020."
-                  rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <Section icon={MapPin} title="Custom Footer" pro={!isEligible}>
+              <div className="space-y-4">
                 <div>
-                  <Label className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-500" /> Email</Label>
-                  <Input name="footerEmail" value={formData.footerEmail} onChange={handleChange}
-                    placeholder="contact@yourbusiness.com" disabled={isPending || !isEligible} className="mt-1.5" />
+                  <Label>About Text</Label>
+                  <Textarea name="footerAbout" value={formData.footerAbout} onChange={handleChange}
+                    placeholder="We are a trusted business delivering quality products since 2020."
+                    rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-500" /> Email</Label>
+                    <Input name="footerEmail" value={formData.footerEmail} onChange={handleChange}
+                      placeholder="contact@yourbusiness.com" disabled={isPending || !isEligible} className="mt-1.5" />
+                  </div>
+                  <div>
+                    <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-500" /> Phone</Label>
+                    <Input name="footerPhone" value={formData.footerPhone} onChange={handleChange}
+                      placeholder="+91 98765 43210" disabled={isPending || !isEligible} className="mt-1.5" />
+                  </div>
                 </div>
                 <div>
-                  <Label className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-500" /> Phone</Label>
-                  <Input name="footerPhone" value={formData.footerPhone} onChange={handleChange}
-                    placeholder="+91 98765 43210" disabled={isPending || !isEligible} className="mt-1.5" />
+                  <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-500" /> Address</Label>
+                  <Textarea name="footerAddress" value={formData.footerAddress} onChange={handleChange}
+                    placeholder="123, MG Road, Bangalore, Karnataka 560001"
+                    rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
                 </div>
               </div>
-              <div>
-                <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-500" /> Address</Label>
-                <Textarea name="footerAddress" value={formData.footerAddress} onChange={handleChange}
-                  placeholder="123, MG Road, Bangalore, Karnataka 560001"
-                  rows={2} disabled={isPending || !isEligible} className="mt-1.5" />
-              </div>
-            </div>
-          </Section>
+            </Section>
+
+
+          </div>
         )}
 
-        {/* ═══════════════ TAB: ADVANCED ═══════════════ */}
-        {activeTab === 'advanced' && (
-          <Section icon={Zap} title="Custom CSS" pro={!isEligible}>
-            <p className="text-xs text-slate-500 mb-3">Add custom CSS to further customize your store&apos;s appearance. For advanced users only.</p>
-            <Textarea name="customCss" value={formData.customCss} onChange={handleChange}
-              placeholder={`.shop-header { border-radius: 0; }\n.product-card { box-shadow: none; }`}
-              rows={6} className="font-mono text-xs" disabled={isPending || !isEligible} />
-          </Section>
-        )}
 
         {activeTab === 'headless' && (
           <HeadlessSettingsForm
@@ -2102,7 +2676,7 @@ export default function ShopSettingsForm({
         )}
 
         {/* ═══════════════ SAVE BAR ═══════════════ */}
-        <div className="sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 -mx-6 px-6 py-4 flex items-center justify-between z-20 rounded-b-2xl">
+        <div className="sticky bottom-[-32px] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 -mx-6 px-6 py-4 flex items-center justify-between z-20 rounded-b-2xl shadow-lg">
           <div className="text-xs text-slate-500 dark:text-slate-400">
             {formData.shop_slug && isEligible && (
               <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1">
@@ -2112,8 +2686,8 @@ export default function ShopSettingsForm({
           </div>
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>Cancel</Button>
-            <Button type="submit" disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 shadow-sm">
-              {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Check className="mr-2 h-4 w-4" /> Save Settings</>}
+            <Button type="submit" disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white dark:text-white shadow-sm">
+              {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <>Save Settings</>}
             </Button>
           </div>
         </div>

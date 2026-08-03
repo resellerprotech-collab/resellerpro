@@ -159,14 +159,14 @@ export default function Sidebar({ user }: { user: UserData }) {
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
-                  'hover:bg-accent ',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all',
+                  'hover:bg-accent',
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
-                    : 'text-muted-foreground'
+                    ? 'bg-primary text-white shadow-sm hover:bg-primary/90'
+                    : 'text-black dark:text-white'
                 )}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "text-black dark:text-white")} />
                 <span className="flex-1">{item.name}</span>
                 {badgeText && (
                   <span className={cn(
@@ -177,7 +177,7 @@ export default function Sidebar({ user }: { user: UserData }) {
                       ? 'bg-green-100 text-green-700 animate-pulse'
                       : isActive
                       ? 'bg-white/20 text-white'
-                      : 'bg-primary/10 text-primary'
+                      : 'bg-primary/10 text-primary dark:bg-white/20 dark:text-white'
                   )}>
                     {badgeText}
                   </span>
@@ -199,10 +199,10 @@ export default function Sidebar({ user }: { user: UserData }) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-1 flex-col items-start text-left">
-                  <span className="font-medium truncate max-w-[140px]">
+                  <span className="font-semibold truncate max-w-[140px] text-black dark:text-white">
                     {displayName}
                   </span>
-                  <span className="text-xs text-muted-foreground capitalize">{planName}</span>
+                  <span className="text-xs text-slate-500 dark:text-white/80 capitalize">{planName}</span>
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>

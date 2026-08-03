@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import type { ShopTheme } from '@/types'
-import { FileText, CheckCircle2 } from 'lucide-react'
+import { FileText, CheckCircle2, Truck, RotateCcw, ShieldCheck, Clock, Lock } from 'lucide-react'
 
 interface Props {
   params: { shopSlug: string }
@@ -17,6 +17,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `Terms & Conditions | ${storeName}` }
 }
 
+function getPolicyIcon(iconName?: string) {
+  switch (iconName) {
+    case 'truck': return <Truck className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'rotate': return <RotateCcw className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+    case 'shield': return <ShieldCheck className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'clock': return <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+    case 'check': return <CheckCircle2 className="w-5 h-5 text-purple-600 flex-shrink-0" />
+    case 'lock': return <Lock className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    case 'file': return <FileText className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+    default: return <FileText className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+  }
+}
+
 export default async function TermsPage({ params }: Props) {
   const { shopSlug } = params
   const supabase = await createAdminClient()
@@ -25,6 +38,7 @@ export default async function TermsPage({ params }: Props) {
 
   const storeName = profile.shop_name || profile.business_name || 'Store'
   const theme = profile.shop_theme as ShopTheme | null
+  const termsBlocks = theme?.policyBlocks?.terms
 
   return (
     <div className="min-h-screen bg-white pb-12">
@@ -37,24 +51,47 @@ export default async function TermsPage({ params }: Props) {
           <p className="text-xs text-slate-500 font-medium mt-1">Last updated: {new Date().toLocaleDateString('en-IN')}</p>
         </div>
 
-        <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed space-y-6 bg-slate-50/70 p-6 sm:p-10 rounded-3xl border border-slate-100">
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-600" /> Store Agreement & Terms of Service
-            </h2>
-            <p className="text-slate-600 mt-1">
-              By accessing or purchasing from {storeName}, you agree to comply with our store policies. Prices, product availability, and promotional offers are subject to change without prior notice.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Order Acceptance & Payments
-            </h2>
-            <p className="text-slate-600 mt-1">
-              All orders placed on our website are subject to availability and payment confirmation. We reserve the right to cancel any order in case of pricing errors or suspected fraud.
-            </p>
-          </div>
+        <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed space-y-8 bg-slate-50/70 p-6 sm:p-10 rounded-3xl border border-slate-100 shadow-sm">
+          {termsBlocks && termsBlocks.length > 0 ? (
+            termsBlocks.map((block) => (
+              <div key={block.id} className="space-y-2">
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2.5">
+                  {getPolicyIcon(block.icon)}
+                  <span>{block.heading}</span>
+                </h2>
+                {block.subheading && (
+                  <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                    {block.subheading}
+                  </p>
+                )}
+                {block.description && (
+                  <p className="text-slate-600 leading-relaxed whitespace-pre-wrap mt-1">
+                    {block.description}
+                  </p>
+                )}
+                {block.points && block.points.length > 0 && (
+                  <ul className="list-disc pl-5 text-slate-600 space-y-1.5 pt-1">
+                    {block.points.map((pt, idx) => (
+                      <li key={idx} className="font-medium">{pt}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))
+          ) : theme?.termsPolicyText ? (
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-3">
+                <FileText className="w-5 h-5 text-indigo-600" /> Merchant Terms & Conditions
+              </h2>
+              <div className="text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">
+                {theme.termsPolicyText}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500 font-medium">
+              No terms & conditions information provided yet.
+            </div>
+          )}
         </div>
       </main>
 

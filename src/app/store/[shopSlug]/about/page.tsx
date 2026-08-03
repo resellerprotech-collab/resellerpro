@@ -102,7 +102,7 @@ export default async function AboutPage({ params }: Props) {
         </div>
 
         {/* Why Choose Us Trust Section */}
-        <WhyChooseUs primaryColor={primaryColor} />
+        <WhyChooseUs primaryColor={primaryColor} theme={theme} />
 
         {/* Customer Reviews */}
         <Testimonials primaryColor={primaryColor} />

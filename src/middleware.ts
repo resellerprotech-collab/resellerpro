@@ -1,12 +1,18 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// System reserved subdomains & path prefixes that must bypass store rewrites
+const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'dashboard', 'ekodrix', 'ekodrix-panel', 'auth', 'onboarding']
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
+
+  const hostname = (request.headers.get('host') || '').toLowerCase().replace(/:\d+$/, '') // strip port
+  const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'resellerpro.in').toLowerCase()
 
   // Create Supabase client for middleware context
   const supabase = createServerClient(
@@ -31,6 +37,59 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // 🌐 DOMAIN ROUTING ENGINE (Subdomains & Custom Domains)
+  const isStaticFile = request.nextUrl.pathname.startsWith('/_next') ||
+                        request.nextUrl.pathname.includes('.') ||
+                        request.nextUrl.pathname.startsWith('/api/') ||
+                        request.nextUrl.pathname.startsWith('/auth/callback')
+
+  if (!isStaticFile) {
+    let shopSlugToRewrite: string | null = null
+
+    // CASE 1: Subdomain Routing (e.g. fashionhub.resellerpro.in OR fashionhub.localhost)
+    let currentSubdomain: string | null = null
+    if (hostname.endsWith(`.${rootDomain}`)) {
+      currentSubdomain = hostname.replace(`.${rootDomain}`, '')
+    } else if (hostname.endsWith('.localhost')) {
+      currentSubdomain = hostname.replace('.localhost', '')
+    }
+
+    if (currentSubdomain && !RESERVED_SUBDOMAINS.includes(currentSubdomain)) {
+      shopSlugToRewrite = currentSubdomain
+    }
+
+    // CASE 2: White-Label Custom Domain Routing (e.g. www.fashionhubstore.com or fashionhubstore.com)
+    const isRootAppDomain = hostname === rootDomain ||
+                             hostname === `www.${rootDomain}` ||
+                             hostname === 'localhost' ||
+                             hostname === '127.0.0.1' ||
+                             Boolean(currentSubdomain)
+
+    if (!isRootAppDomain && !shopSlugToRewrite) {
+      const cleanCustomDomain = hostname.replace(/^www\./, '')
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('shop_slug')
+          .or(`custom_domain.eq.${cleanCustomDomain},custom_domain.eq.${hostname}`)
+          .maybeSingle()
+
+        if (profile?.shop_slug) {
+          shopSlugToRewrite = profile.shop_slug
+        }
+      } catch (err) {
+        console.warn('[Middleware Custom Domain Error]:', err)
+      }
+    }
+
+    // Execute Seamless URL Rewrite if store slug detected
+    if (shopSlugToRewrite && !request.nextUrl.pathname.startsWith('/store/')) {
+      const storeUrl = request.nextUrl.clone()
+      storeUrl.pathname = `/store/${shopSlugToRewrite}${request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname}`
+      return NextResponse.rewrite(storeUrl)
+    }
+  }
+
   // ✋ Allow auth callback to proceed without interference
   if (request.nextUrl.pathname.startsWith('/auth/callback')) {
     return response
@@ -43,7 +102,6 @@ export async function middleware(request: NextRequest) {
   try {
     const { data, error } = await supabase.auth.getUser()
 
-    // Check if error is network-related
     if (error) {
       const isNetworkError =
         error.message?.includes('fetch failed') ||
@@ -57,56 +115,42 @@ export async function middleware(request: NextRequest) {
 
       if (isNetworkError) {
         isOffline = true
-        user = { id: 'offline-user' } as any // Dummy user object
+        user = { id: 'offline-user' } as any
       }
     } else {
       user = data.user
     }
   } catch (error) {
     isOffline = true
-    // Allow access when offline - assume user is authenticated from previous session
     user = { id: 'offline-user' } as any
   }
 
-  // 🔐 SESSION ENFORCEMENT: Verify if the session is still active in our database
-  // This ensures that "Logout Other Devices" works IMMEDIATELY (Senior Security Standard)
+  // 🔐 SESSION ENFORCEMENT: Verify if the session is still active in database
   if (user && !isOffline && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api')) {
     try {
-      // 🛡️ Proactive Security: Check DB on sensitive dashboard/settings requests to enforce revocation
       const isSensitivePath = request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.includes('/settings')
 
       if (isSensitivePath) {
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
-          // 🏁 SESSION RACE CONDITION PREVENTION (Grace Period)
-          // If the token was issued in the last 60 seconds, let it through without a strict DB check.
-          // This gives the client-side AuthProvider time to register the new token hash in the DB.
           let issuedAt = 0
 
-          // First Priority: Accurately extract 'iat' (Issued At) from the actual JWT payload
-          // This is critical because token refreshes change 'iat' but NOT 'last_sign_in_at'
           if (session.access_token) {
             try {
               const payload = JSON.parse(atob(session.access_token.split('.')[1]))
               if (payload.iat) issuedAt = payload.iat * 1000
-            } catch (e) {
-              // ignore decode errors
-            }
+            } catch (e) {}
           }
 
-          // Fallbacks if JWT decode fails
           if (!issuedAt) {
             issuedAt = session.user.last_sign_in_at ? new Date(session.user.last_sign_in_at).getTime() :
               (session.user.created_at ? new Date(session.user.created_at).getTime() : Date.now())
           }
 
           const now = Date.now()
-
-          // isBrandNewSession: True if issued in last 60s (including potential clock skew of ±15s)
           const isBrandNewSession = Math.abs(now - issuedAt) < 60000
 
           if (!isBrandNewSession) {
-            // Hash to match DB storage
             const encoder = new TextEncoder()
             const data = encoder.encode(session.access_token)
             const hashBuffer = await crypto.subtle.digest('SHA-256', data)
@@ -117,34 +161,21 @@ export async function middleware(request: NextRequest) {
               .from('user_sessions')
               .select('id')
               .eq('session_token', hashedToken)
-              .maybeSingle() // Use maybeSingle to avoid 406/single error if multiple exist (though unlikely due to UNIQUE)
+              .maybeSingle()
 
-            // ONLY force logout if session is DEFINITIVELY missing:
-            // - No DB error (we got a clean response)
-            // - AND the result is explicitly null (session was revoked/deleted)
-            // If there's a DB error (network blip, latency), fail-open to prevent random logouts
             if (dbError) {
               if (process.env.NODE_ENV !== 'production') {
                 console.warn(`[SECURITY] DB error during session check (fail-open): ${dbError.message}`)
               }
-              // Fail-open: allow access on transient DB errors
             } else if (!dbSession) {
-              // Session definitively revoked - force logout
-              if (process.env.NODE_ENV !== 'production') {
-                console.warn(`[SECURITY] REJECTED: Revoked session for user ${session.user.id}. Reason: No DB record found`)
-              }
               const url = request.nextUrl.clone()
               url.pathname = '/signin'
               url.searchParams.set('message', 'Security Alert: Your session was terminated from another device.')
 
               const redirectResponse = NextResponse.redirect(url)
-
-              // 🧹 AGGRESSIVE COOKIE CLEARING
-              // Supabase uses multiple cookies (chunking). We must try to clear them all.
               const project = process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1].split('.')[0]
               const baseName = `sb-${project}-auth-token`
 
-              // Delete common cookie patterns
               request.cookies.getAll().forEach(cookie => {
                 if (cookie.name.includes(baseName)) {
                   redirectResponse.cookies.delete(cookie.name)
@@ -172,7 +203,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 🔁 Redirect logged-in users away from login/signup/forgot-password/reset-password (only if online)
+  // 🔁 Redirect logged-in users away from auth pages
   const isAuthPage =
     request.nextUrl.pathname === '/signin' ||
     request.nextUrl.pathname === '/signup' ||
@@ -180,18 +211,15 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/reset-password'
 
   if (user && !isOffline && isAuthPage) {
-    // SPECIAL CASE: Allow /reset-password even if user exists (recovery session)
     if (request.nextUrl.pathname === '/reset-password') {
       return response
     }
 
-    // Redirect away from auth pages — let /onboarding page decide if wizard is needed
     const url = request.nextUrl.clone()
     url.pathname = '/onboarding'
     return NextResponse.redirect(url)
   }
 
-  // 🆕 Redirect logged-in users from / → /onboarding (onboarding auto-redirects to /dashboard if complete)
   if (user && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone()
     url.pathname = '/onboarding'
@@ -201,7 +229,6 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-// ✅ Limit middleware to relevant routes
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico).*)',

@@ -2,72 +2,58 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ShopSettingsForm from '@/components/settings/ShopSettingsForm'
 import CustomWebsiteRequestCard from '@/components/settings/CustomWebsiteRequestCard'
-
-export const metadata = {
-  title: 'Store Setup - ResellerPro',
-  description: 'Customize your public store page, layout, and branding.',
-}
+import { DomainSettingsForm } from '@/components/settings/DomainSettingsForm'
 
 export default async function MyStorePage() {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) {
-    redirect('/login')
+    redirect('/signin')
   }
 
+  // Get current user profile
   let { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
+    .select('*')
     .eq('id', user.id)
     .single()
 
-  if ((profileError || !profile) && user) {
-    console.log('Self-healing profile for user in MyStorePage:', user.id)
-    const { data: newProfile, error: pError } = await supabase
+  // Self-healing fallback if profile row doesn't exist
+  if (!profile) {
+    console.warn(`[MyStorePage] Profile missing for user ${user.id}, attempting self-healing creation...`)
+
+    const defaultSlug = user.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : `user${user.id.slice(0, 6)}`
+
+    const { data: newProfile, error: insertError } = await supabase
       .from('profiles')
-      .upsert({
+      .insert({
         id: user.id,
-        full_name: user.user_metadata?.full_name || 'User',
-        email_verified: false,
+        email: user.email || '',
+        business_name: user.user_metadata?.business_name || 'My Shop',
+        shop_slug: defaultSlug,
+        shop_theme: { primaryColor: '#4f46e5', layout: 'grid' },
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
-      .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
+      })
+      .select('*')
       .single()
 
-    if (!pError && newProfile) {
-      profile = newProfile as any
+    if (newProfile) {
+      profile = newProfile
       profileError = null
     } else {
-      console.warn('MyStorePage profile upsert via authenticated client failed, trying admin client:', pError)
-      const { createAdminClient } = await import('@/lib/supabase/admin')
-      const adminSupabase = await createAdminClient()
-      const { data: adminProfile, error: adminError } = await adminSupabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          full_name: user.user_metadata?.full_name || 'User',
-          email_verified: false,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'id' })
-        .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
-        .single()
-
-      if (!adminError && adminProfile) {
-        profile = adminProfile as any
-        profileError = null
-      } else {
-        console.error('MyStorePage profile creation via admin client also failed:', adminError)
-      }
+      console.error('[MyStorePage] Self-healing profile insert failed:', insertError)
     }
   }
 
   if (!profile) {
     return (
-      <div className="p-6 space-y-4">
-        <div className="text-red-500 font-bold">Profile not found</div>
-        <div className="text-xs text-slate-500 font-mono">
-          User ID: {user.id}<br />
+      <div className="p-8 max-w-xl mx-auto text-center space-y-4">
+        <h2 className="text-xl font-bold text-red-600">Account Setup Error</h2>
+        <p className="text-sm text-slate-600">
+          We could not load or initialize your seller profile. Please contact support or try logging out and logging back in.
+        </p>
+        <div className="text-xs font-mono bg-slate-100 p-3 rounded text-left overflow-auto">
           Error: {profileError ? JSON.stringify(profileError, null, 2) : 'No profile returned (self-healing failed)'}
         </div>
       </div>
@@ -81,9 +67,9 @@ export default async function MyStorePage() {
     .eq('user_id', user.id)
     .single()
 
-  const planName = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.name : subscription?.plan?.name)?.toLowerCase() || 'free'
-  const planDisplay = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.display_name : subscription?.plan?.display_name) || 'Free Plan'
-  const isEligible = ['professional', 'business'].includes(planName)
+  const planName = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.name : (subscription?.plan as any)?.name)?.toLowerCase() || 'free'
+  const planDisplay = (Array.isArray(subscription?.plan) ? subscription.plan[0]?.display_name : (subscription?.plan as any)?.display_name) || 'Free Plan'
+  const isEligible = true
 
   // Get product count for the preview
   const { count: productCount } = await supabase
@@ -99,11 +85,11 @@ export default async function MyStorePage() {
     .eq('is_active', true)
 
   const activeProducts = dbProducts || []
-  const distinctCategories = Array.from(
+  const distinctCategories: string[] = Array.from(
     new Set(
       activeProducts
-        .map(p => p.category)
-        .filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+        .map((p: { category: string | null }) => p.category)
+        .filter((c: string | null): c is string => typeof c === 'string' && c.trim().length > 0)
     )
   )
 
@@ -117,27 +103,34 @@ export default async function MyStorePage() {
     .maybeSingle()
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto py-6">
+    <div className="space-y-8 max-w-5xl mx-auto py-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Store Setup</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure your public storefront branding, color themes, catalog appearance, and social checkout preferences.
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Store Setup &amp; Domain Settings</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Configure your store web address, custom domains, branding appearance, color themes, and social checkout preferences.
         </p>
       </div>
 
+      {/* Custom Website / Headless Request Card */}
       <CustomWebsiteRequestCard
         existingRequest={existingRequest || null}
         storeMode={(profile.store_mode as 'standard' | 'headless') || 'standard'}
       />
 
-      <div className="border rounded-2xl p-6 bg-card">
+      {/* Domain Management Panel (Subdomain + Custom Domain) */}
+      <div className="border rounded-2xl pt-6 px-6 pb-6 bg-card">
+        <DomainSettingsForm shopSlug={profile.shop_slug || ''} isProUser={isEligible} />
+      </div>
+
+      {/* Main Store Customizer */}
+      <div className="border rounded-2xl p-6 bg-card shadow-sm">
         <ShopSettingsForm
           profile={profile}
           isEligible={isEligible}
           planName={planName}
           planDisplay={planDisplay}
           productCount={productCount || 0}
-          products={activeProducts.map(p => ({ id: p.id, name: p.name }))}
+          products={activeProducts.map((p: { id: string; name: string }) => ({ id: p.id, name: p.name }))}
           categories={distinctCategories}
         />
       </div>
