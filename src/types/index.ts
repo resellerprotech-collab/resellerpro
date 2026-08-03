@@ -13,9 +13,33 @@ export type PaymentMethod = 'cod' | 'upi' | 'online'
 export type StoreStatus = 'open' | 'closed' | 'paused'
 // ─── Shop Theme ──────────────────────────────────────────────────────────────
 
+export interface HeroBannerItem {
+  id?: string
+  imageUrl: string
+  link?: string
+  clickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
+}
+
+export interface PromoItem {
+  imageUrl?: string
+  clickAction?: 'shop' | 'category' | 'product' | 'collection' | 'custom_url'
+  clickTarget?: string
+}
+
+export interface PolicyBlock {
+  id: string
+  heading: string
+  subheading?: string
+  icon?: string
+  description?: string
+  points?: string[]
+}
+
 export interface ShopTheme {
   primaryColor: string
+  secondaryColor?: string
   accentColor: string
+  neutralDarkColor?: string
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
   // Advanced (existing)
@@ -31,13 +55,47 @@ export interface ShopTheme {
   heroPattern?: 'none' | 'dots' | 'waves' | 'gradient'
   heroImageUrl?: string
   heroBackgroundImage?: string
+  heroTemplate?: 'split' | 'banner'
+  heroBadge?: string
+  heroSecondaryCtaText?: string
+  heroSecondaryCtaLink?: string
+  heroBadge1?: string
+  heroBadge2?: string
+  heroBadge3?: string
+  heroImages?: string[]
+  heroBanners?: HeroBannerItem[]
+  heroBannerClickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
 
+  // Promotional Section
+  promoSectionEnabled?: boolean
+  promoLayout?: 'full_width' | 'two_cards'
+  promoFullBanner?: PromoItem
+  promoCard1?: PromoItem
+  promoCard2?: PromoItem
+
+  // Special Offer Banner Strip
+  offerBannerEnabled?: boolean
+  offerBannerBadge?: string
+  offerBannerTitle?: string
+  offerBannerCode?: string
+  offerBannerSubtext?: string
+  offerBannerBtnText?: string
+
+  newsletterEnabled?: boolean
+  newsletterTitle?: string
+  newsletterSubtitle?: string
+  newsletterBtnText?: string
+  newsletterPlaceholder?: string
+
+  bannerText?: string
+  bannerEnabled?: boolean
   announcementEnabled?: boolean
   announcementText?: string
   testimonialsEnabled?: boolean
   testimonials?: Array<{ name: string; text: string; rating: number }>
   trustBadgesEnabled?: boolean
   trustBadges?: string[]
+  trustBadgeItems?: Record<string, { id?: string; title?: string; description?: string; iconUrl?: string }>
   chatWidgetEnabled?: boolean
   chatWidgetMessage?: string
   categoryShowcase?: boolean
@@ -48,6 +106,12 @@ export interface ShopTheme {
   socialFacebook?: string
   socialTwitter?: string
   socialWhatsApp?: string
+  socialYoutube?: string
+  shippingPolicyText?: string
+  returnPolicyText?: string
+  privacyPolicyText?: string
+  termsPolicyText?: string
+  policyBlocks?: Record<string, PolicyBlock[]>
   seoTitle?: string
   seoDescription?: string
   ctaSectionEnabled?: boolean
@@ -94,6 +158,7 @@ export interface Profile {
   email_verified?: boolean
   business_email?: string | null
   business_phone?: string | null
+  business_address?: string | null
   created_at: string
   updated_at: string
 }

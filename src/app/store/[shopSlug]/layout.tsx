@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Profile, ShopTheme } from '@/types'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 interface Props {
   params: { shopSlug: string }
@@ -9,13 +12,46 @@ interface Props {
 
 function getThemeCSSVars(theme: ShopTheme | null): string {
   const primary = theme?.primaryColor || '#6366f1'
+  const secondary = theme?.secondaryColor || '#f97316'
   const accent = theme?.accentColor || '#8b5cf6'
+  const neutralDark = theme?.neutralDarkColor || '#0f172a'
+
+  const btnRadius =
+    theme?.buttonStyle === 'pill' ? '9999px' :
+    theme?.buttonStyle === 'sharp' ? '0px' :
+    '12px'
+
+  const fontFamilyMap: Record<string, string> = {
+    inter: "'Inter', system-ui, sans-serif",
+    poppins: "'Poppins', system-ui, sans-serif",
+    playfair: "'Playfair Display', Georgia, serif",
+    roboto: "'Roboto', system-ui, sans-serif",
+    outfit: "'Outfit', system-ui, sans-serif",
+    default: "system-ui, sans-serif",
+  }
+  const fontFamily = fontFamilyMap[theme?.fontFamily || 'default'] || fontFamilyMap.default
+
+  const googleFontUrls: Record<string, string> = {
+    inter: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap',
+    poppins: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap',
+    playfair: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap',
+    roboto: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap',
+    outfit: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap',
+  }
+  const fontUrl = googleFontUrls[theme?.fontFamily || ''] || null
+  const fontImport = fontUrl ? `@import url('${fontUrl}');` : ''
+
   return `
+    ${fontImport}
     :root {
       --store-primary: ${primary};
+      --store-secondary: ${secondary};
       --store-accent: ${accent};
+      --store-neutral-dark: ${neutralDark};
       --store-primary-10: ${primary}1a;
       --store-primary-20: ${primary}33;
+      --store-btn-radius: ${btnRadius};
+      --store-font-family: ${fontFamily};
     }
   `
 }
@@ -114,9 +150,9 @@ export default async function StoreLayout({ params, children }: Props) {
   const cssVars = getThemeCSSVars(theme)
 
   return (
-    <>
+    <div style={{ fontFamily: 'var(--store-font-family, system-ui, sans-serif)' }}>
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
       {children}
-    </>
+    </div>
   )
 }

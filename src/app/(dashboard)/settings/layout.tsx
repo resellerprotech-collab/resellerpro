@@ -1,4 +1,3 @@
-
 'use client'
 
 import { Separator } from "@/components/ui/separator"
@@ -10,6 +9,7 @@ import {
   Wallet,
   Gift,
   ShieldCheck,
+  Globe,
   Store,
   Sparkles,
 } from "lucide-react"
@@ -30,6 +30,11 @@ const settingsNavItems = [
     icon: Building,
   },
   {
+    title: "Domain",
+    href: "/settings/domain",
+    icon: Globe,
+  },
+  {
     title: "Wallet",
     href: "/settings/wallet",
     icon: Wallet,
@@ -43,6 +48,11 @@ const settingsNavItems = [
     title: "Referrals",
     href: "/settings/referrals",
     icon: Gift,
+  },
+  {
+    title: "Headless",
+    href: "/settings/headless",
+    icon: Sparkles,
   },
   {
     title: "Preferences",
@@ -101,83 +111,68 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       left: targetScroll,
       behavior: 'smooth'
     })
+    setActivePage(pageIndex)
   }
 
   return (
-    <div className="-mt-4 sm:-mt-6">
-      {/* Page Header */}
-      <div className="mb-4 pt-4 sm:pt-6">
-        <h1 className="sm:text-3xl text-[25px] font-bold">Settings</h1>
-        <p className="text-muted-foreground text-[15px]">
-          Manage your account and business settings.
+    <div className="space-y-6 p-10 pb-16 block">
+      <div className="space-y-0.5">
+        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">
+          Manage your account settings, domain web address, wallet payouts, and preferences.
         </p>
       </div>
+      <Separator className="my-6" />
 
-      {/* Horizontal Tab Navigation - Sticky on all devices */}
-      <div className="sticky top-[-16px] sm:top-[-24px] z-40 bg-background pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6">
-        <div
+      {/* Horizontal Nav Bar */}
+      <div className="relative border-b pb-4">
+        <div 
           ref={scrollContainerRef}
-          className="overflow-x-auto scrollbar-hide"
+          className="flex space-x-2 overflow-x-auto no-scrollbar scroll-smooth py-1"
         >
-          <nav
-            className="flex gap-2 border-b border-border"
-            role="tablist"
-            aria-label="Settings navigation"
-          >
-            {settingsNavItems.map((item) => {
-              const isActive = pathname === item.href
-              const Icon = item.icon
+          {settingsNavItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  role="tab"
-                  aria-selected={isActive}
-                  className={cn(
-                    "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium",
-                    "border-b-2 transition-all duration-200 whitespace-nowrap",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                    isActive
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                  {(item as any).badge && (
-                    <span className="text-[8px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full leading-none">
-                      {(item as any).badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
-          </nav>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all flex-shrink-0",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                {item.title}
+              </Link>
+            )
+          })}
         </div>
 
-        {/* Scroll Indicator Dots - Only visible on mobile */}
-        <div className="flex justify-center gap-1.5 mt-3 mb-4 sm:hidden">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollToPage(index)}
-              aria-label={`Go to tab group ${index + 1}`}
-              className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300",
-                activePage === index
-                  ? "bg-primary w-4"
-                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              )}
-            />
-          ))}
-        </div>
+        {/* Scroll Page Indicators */}
+        {totalPages > 1 && (
+          <div className="flex justify-center space-x-1 mt-3">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollToPage(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-200",
+                  activePage === index
+                    ? "bg-primary w-4"
+                    : "bg-slate-200 hover:bg-slate-300"
+                )}
+                aria-label={`Go to tab page ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl">
-        {children}
-      </div>
+      <div className="mt-6">{children}</div>
     </div>
   )
 }

@@ -18,6 +18,11 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-spline-sans)', 'var(--font-inter)', 'sans-serif'],
+        spline: ['var(--font-spline-sans)', 'sans-serif'],
+        inter: ['var(--font-inter)', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
