@@ -1,4 +1,3 @@
-
 import { createAdminClient } from '@/lib/supabase/admin'
 import { MailService } from '@/lib/mail'
 import { addMinutes } from 'date-fns'
@@ -6,68 +5,87 @@ import crypto from 'crypto'
 
 export class OtpService {
     /**
+     * Resets OTP attempts and unblocks an email.
+     */
+    static async resetOtpAttempts(email: string) {
+        try {
+            const supabase = await createAdminClient()
+            await supabase
+                .from('auth_otp_attempts')
+                .delete()
+                .eq('email', email)
+        } catch (err) {
+            console.error('Failed to reset OTP attempts:', err)
+        }
+    }
+
+    /**
      * Generates a 6-digit OTP, stores it, and sends via email.
      */
     static async sendOtp(email: string) {
         const supabase = await createAdminClient()
+        const now = new Date()
+        const nowIso = now.toISOString()
+        const normalizedEmail = email.trim().toLowerCase()
 
-        // 1. Check for blocks
+        // 1. Check for blocks & previous attempt counts
         const { data: attemptData } = await supabase
             .from('auth_otp_attempts')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .single()
 
+        let currentAttemptCount = attemptData?.attempt_count || 0
+        const lastAttemptAt = attemptData?.last_attempt_at ? new Date(attemptData.last_attempt_at) : null
+
+        // Check if currently blocked
         if (attemptData?.blocked_until) {
             const blockedUntil = new Date(attemptData.blocked_until)
-            if (blockedUntil > new Date()) {
-                const diff = Math.ceil((blockedUntil.getTime() - new Date().getTime()) / 1000 / 60)
-                throw new Error(`Too many attempts. Please try again in ${diff} minutes.`)
+            if (blockedUntil > now) {
+                const diff = Math.max(1, Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000 / 60))
+                throw new Error(`Too many attempts. Please try again in ${diff} minute(s).`)
+            } else {
+                // Block time has expired -> reset count
+                currentAttemptCount = 0
             }
+        } else if (lastAttemptAt && (now.getTime() - lastAttemptAt.getTime() > 15 * 60 * 1000)) {
+            // Last attempt was more than 15 minutes ago -> reset window count
+            currentAttemptCount = 0
         }
 
-        // 2. Rate Limit Check: 5 minutes cooldown
-        // Check if there is a recently created OTP that hasn't expired (or just check creation time)
-        // We'll check for any OTP created in the last 5 minutes
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        // 2. Cooldown Check: 60 seconds resend interval
+        const sixtySecondsAgo = new Date(now.getTime() - 60 * 1000).toISOString()
 
         const { data: recentOtp } = await supabase
             .from('auth_otps')
             .select('created_at')
-            .eq('email', email)
-            .gte('created_at', fiveMinutesAgo)
+            .eq('email', normalizedEmail)
+            .gte('created_at', sixtySecondsAgo)
             .order('created_at', { ascending: false })
             .limit(1)
             .single()
 
         if (recentOtp) {
-            throw new Error('Please wait 5 minutes before requesting a new OTP.')
+            const createdAt = new Date(recentOtp.created_at)
+            const elapsedSeconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000)
+            const remainingSeconds = Math.max(1, 60 - elapsedSeconds)
+            throw new Error(`Please wait ${remainingSeconds} seconds before requesting a new OTP.`)
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString()
-
-        // Hash OTP for security (simple SHA256)
-        // In production, use bcrypt or similar if high security needed, but for OTP SHA256 is fast and sufficient for short life.
-        // However, to display it we need the plain version. We store the hash.
-        // Wait, if we send it, we need the plain text. We send plain, store hash.
-        const hash = crypto.createHash('sha256').update(otp).digest('hex')
-
-        const expiresAt = addMinutes(new Date(), 5).toISOString()
-
-        // 2. Track attempt
-        const newCount = (attemptData?.attempt_count || 0) + 1
+        // 3. Track attempt (Max 5 attempts within 15 minutes)
+        const newCount = currentAttemptCount + 1
         let blockedUntil: string | null = null
 
-        if (newCount >= 3) {
-            blockedUntil = addMinutes(new Date(), 15).toISOString()
+        if (newCount >= 5) {
+            blockedUntil = addMinutes(now, 15).toISOString()
         }
 
         const { error: upsertError } = await supabase
             .from('auth_otp_attempts')
             .upsert({
-                email,
-                attempt_count: newCount,
-                last_attempt_at: new Date().toISOString(),
+                email: normalizedEmail,
+                attempt_count: blockedUntil ? 0 : newCount,
+                last_attempt_at: nowIso,
                 blocked_until: blockedUntil
             }, { onConflict: 'email' })
 
@@ -75,13 +93,18 @@ export class OtpService {
             console.error('OTP Attempt Upsert Error:', upsertError)
         }
 
-        if (blockedUntil && newCount >= 3) {
+        if (blockedUntil) {
             throw new Error('Too many attempts. Please try again in 15 minutes.')
         }
 
+        // 4. Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString()
+        const hash = crypto.createHash('sha256').update(otp).digest('hex')
+        const expiresAt = addMinutes(now, 5).toISOString()
+
         // Store in DB
         const { error } = await supabase.from('auth_otps').insert({
-            email,
+            email: normalizedEmail,
             otp_code: hash,
             expires_at: expiresAt,
             verified: false
@@ -95,10 +118,12 @@ export class OtpService {
             throw new Error(`Failed to store OTP: ${error.message}`)
         }
 
-        // Send Email
-        const result = await MailService.sendOtp(email, otp)
+        // 5. Send Email
+        const result = await MailService.sendOtp(normalizedEmail, otp)
         if (!result.success) {
+            console.error('MailService OTP Error:', result.error)
             if (process.env.NODE_ENV !== 'production') {
+                console.log(`[DEV MODE] OTP generated for ${normalizedEmail}: ${otp}`)
                 return true
             }
             throw new Error(`Failed to send OTP email: ${result.error}`)
@@ -112,13 +137,14 @@ export class OtpService {
      */
     static async getRecentOtp(email: string) {
         const supabase = await createAdminClient()
+        const normalizedEmail = email.trim().toLowerCase()
 
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
         const { data: recentOtp } = await supabase
             .from('auth_otps')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .eq('verified', false)
             .gte('created_at', fiveMinutesAgo)
             .gt('expires_at', new Date().toISOString())
@@ -134,32 +160,34 @@ export class OtpService {
      */
     static async verifyOtp(email: string, code: string) {
         const supabase = await createAdminClient()
+        const now = new Date()
+        const normalizedEmail = email.trim().toLowerCase()
 
         // 1. Check for blocks
         const { data: attemptData } = await supabase
             .from('auth_otp_attempts')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .single()
 
         if (attemptData?.blocked_until) {
             const blockedUntil = new Date(attemptData.blocked_until)
-            if (blockedUntil > new Date()) {
-                const diff = Math.ceil((blockedUntil.getTime() - new Date().getTime()) / 1000 / 60)
-                throw new Error(`Too many attempts. Please try again in ${diff} minutes.`)
+            if (blockedUntil > now) {
+                const diff = Math.max(1, Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000 / 60))
+                throw new Error(`Too many attempts. Please try again in ${diff} minute(s).`)
             }
         }
 
-        const hash = crypto.createHash('sha256').update(code).digest('hex')
+        const hash = crypto.createHash('sha256').update(code.trim()).digest('hex')
 
         // Find valid OTP
         const { data, error } = await supabase
             .from('auth_otps')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .eq('otp_code', hash)
             .eq('verified', false)
-            .gt('expires_at', new Date().toISOString())
+            .gt('expires_at', now.toISOString())
             .single()
 
         if (error || !data) {
@@ -167,20 +195,20 @@ export class OtpService {
             const newFailCount = (attemptData?.failed_verifications || 0) + 1
             let blockedUntil: string | null = null
 
-            if (newFailCount >= 3) {
-                blockedUntil = addMinutes(new Date(), 15).toISOString()
+            if (newFailCount >= 5) {
+                blockedUntil = addMinutes(now, 15).toISOString()
             }
 
             await supabase
                 .from('auth_otp_attempts')
                 .upsert({
-                    email,
-                    failed_verifications: newFailCount,
+                    email: normalizedEmail,
+                    failed_verifications: blockedUntil ? 0 : newFailCount,
                     blocked_until: blockedUntil
                 }, { onConflict: 'email' })
 
             if (blockedUntil) {
-                throw new Error('Too many failed attempts. Please try again in 15 minutes.')
+                throw new Error('Too many failed verification attempts. Please try again in 15 minutes.')
             }
 
             return false
@@ -196,7 +224,7 @@ export class OtpService {
         await supabase
             .from('auth_otp_attempts')
             .upsert({
-                email,
+                email: normalizedEmail,
                 attempt_count: 0,
                 failed_verifications: 0,
                 blocked_until: null
@@ -205,4 +233,3 @@ export class OtpService {
         return true
     }
 }
-
