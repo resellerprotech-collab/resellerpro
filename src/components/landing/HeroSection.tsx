@@ -54,7 +54,7 @@ export default function HeroSection() {
 
             {/* TOP: Text content */}
             <div className="relative z-10 p-6 space-y-4">
-              <h1 className="text-[1.6rem] font-bold leading-[1.15] text-foreground" style={{ fontFamily: "'Switzer', sans-serif" }}>
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-[1.15] text-foreground" style={{ fontFamily: "'Switzer', sans-serif" }}>
                 Supercharge your{' '}
                 <span className="relative inline-block">
                   <motion.span
@@ -629,7 +629,7 @@ export default function HeroSection() {
 
               {/* Bottom Left - Order Confirmed */}
               <motion.div 
-                className="absolute bottom-20 -left-2 z-20"
+                className="absolute bottom-20 -left-36 z-20"
                 animate={{ y: [0, -15, 0], rotate: [0, -1, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
               >
