@@ -34,9 +34,16 @@ export default async function EkodrixPanelLayout({
     redirect('/ekodrix-panel/signin')
   }
 
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const supabase = await createAdminClient()
+  const { count: pendingRequestsCount } = await supabase
+    .from('custom_website_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending')
+
   return (
     <div className={`${inter.className} font-inter`} style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}>
-      <EkodrixPanelShell>{children}</EkodrixPanelShell>
+      <EkodrixPanelShell pendingRequestsCount={pendingRequestsCount || 0}>{children}</EkodrixPanelShell>
     </div>
   )
 }

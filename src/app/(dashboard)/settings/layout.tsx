@@ -50,6 +50,11 @@ const settingsNavItems = [
     icon: Gift,
   },
   {
+    title: "Headless",
+    href: "/settings/headless",
+    icon: Sparkles,
+  },
+  {
     title: "Preferences",
     href: "/settings/preferences",
     icon: SettingsIcon,

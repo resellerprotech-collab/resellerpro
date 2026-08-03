@@ -9,8 +9,10 @@ import { Menu, Bell, Search } from 'lucide-react'
 
 export default function EkodrixPanelShell({
   children,
+  pendingRequestsCount = 0
 }: {
   children: React.ReactNode
+  pendingRequestsCount?: number
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
@@ -35,7 +37,7 @@ export default function EkodrixPanelShell({
   return (
     <div className="min-h-screen flex bg-[#0a0a0a] text-gray-100 font-sans selection:bg-emerald-500/30">
       {/* Desktop Sidebar (Fixed) */}
-      <EkodrixSidebar />
+      <EkodrixSidebar pendingRequestsCount={pendingRequestsCount} />
 
       {/* Main Framework */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
@@ -51,7 +53,7 @@ export default function EkodrixPanelShell({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 border-r border-white/10 bg-[#0a0f1a] w-72">
-                <SidebarContent pathname={pathname} handleLogout={handleLogout} />
+                <SidebarContent pathname={pathname} handleLogout={handleLogout} pendingRequestsCount={pendingRequestsCount} />
               </SheetContent>
             </Sheet>
 

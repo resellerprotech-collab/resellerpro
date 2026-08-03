@@ -75,12 +75,16 @@ import {
   LogOut,
 } from 'lucide-react'
 
+import { useState } from 'react'
+import { LogoutConfirmModal } from '@/components/layout/LogoutConfirmModal'
+
 export default function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
-  async function handleLogout() {
+  async function handleConfirmLogout() {
     await supabase.auth.signOut()
     router.push('/')
   }
@@ -136,13 +140,19 @@ export default function AdminSidebar() {
       {/* ===== Logout Button ===== */}
       <div className="border-t border-white/10 p-4">
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           className="flex items-center gap-3 w-full text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-white/[0.05] px-5 py-2.5 rounded-md transition-all"
         >
           <LogOut size={18} className="text-gray-400 group-hover:text-red-400" />
           Logout
         </button>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onOpenChange={setShowLogoutModal}
+        onConfirm={handleConfirmLogout}
+      />
     </aside>
   )
 }

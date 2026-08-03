@@ -17,7 +17,6 @@ import {
   Shield,
   Zap,
   Check,
-  Sparkles,
   TrendingUp,
   Target,
   Rocket
@@ -54,24 +53,11 @@ function SubmitButton({ isLoading }: { isLoading: boolean }) {
   )
 }
 
-// Motivational quotes for resellers
 const quotes = [
-  {
-    text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-    author: "Winston Churchill"
-  },
-  {
-    text: "The secret of getting ahead is getting started.",
-    author: "Mark Twain"
-  },
-  {
-    text: "Your most unhappy customers are your greatest source of learning.",
-    author: "Bill Gates"
-  },
-  {
-    text: "Every sale has five basic obstacles: no need, no money, no hurry, no desire, no trust.",
-    author: "Zig Ziglar"
-  }
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Your most unhappy customers are your greatest source of learning.", author: "Bill Gates" },
+  { text: "Every sale has five basic obstacles: no need, no money, no hurry, no desire, no trust.", author: "Zig Ziglar" }
 ]
 
 export default function LoginForm() {
@@ -83,15 +69,12 @@ export default function LoginForm() {
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
 
-  // Random quote - set on client side only to avoid hydration mismatch
-  const [quote, setQuote] = useState(quotes[0]) // Default to first quote for SSR
+  const [quote, setQuote] = useState(quotes[0])
 
-  // Set random quote after mount (client-side only)
   useEffect(() => {
     setQuote(quotes[Math.floor(Math.random() * quotes.length)])
   }, [])
 
-  // Prevent double redirect
   const isRedirecting = useRef(false)
 
   // OTP State
@@ -99,14 +82,22 @@ export default function LoginForm() {
   const [otpCode, setOtpCode] = useState('')
   const [otpStep, setOtpStep] = useState<'email' | 'verify'>('email')
   const [otpLoading, setOtpLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
 
-  // Global Enter key handler
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => {
+      setResendCooldown(prev => prev - 1)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown])
+
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         const isPending = document.querySelector('button[type="submit"]:disabled')
         if (!isPending && !isRedirecting.current) {
-          // Find the active form based on login method
           const form = document.querySelector('form')
           if (form) {
             form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
@@ -133,24 +124,17 @@ export default function LoginForm() {
     setTouchedFields(prev => new Set(prev).add(fieldId))
   }
 
-  // TEACHING NOTE: Login form validation
-  // Keep it SIMPLE - just check basic format
-  // Don't show specific error messages (security - prevent username enumeration)
   const isFieldValid = (fieldId: string): boolean => {
     if (!touchedFields.has(fieldId)) return true
 
     switch (fieldId) {
       case 'email':
       case 'otp-email':
-        // Same validation as signup for consistency
         const emailToCheck = fieldId === 'email' ? formData.email : otpEmail
         const email = emailToCheck.trim()
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return email.length >= 5 && email.length <= 254 && emailRegex.test(email)
+        return email.length >= 5 && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
       case 'password':
-        // Only check length bounds - format doesn't matter for login
-        // The backend will verify the actual password
         return formData.password.length >= 8 && formData.password.length <= 72
 
       default:
@@ -158,7 +142,6 @@ export default function LoginForm() {
     }
   }
 
-  // Simple redirect function
   const performRedirect = useCallback((url: string) => {
     if (isRedirecting.current) return
     isRedirecting.current = true
@@ -173,7 +156,6 @@ export default function LoginForm() {
     }, 100)
   }, [toast])
 
-  // Check for messages/alerts in URL
   useEffect(() => {
     const message = searchParams.get('message')
     if (message) {
@@ -184,7 +166,6 @@ export default function LoginForm() {
         variant: isSuccess ? 'default' : 'destructive',
       })
 
-      // Clean up URL to prevent "sticky" alerts on refresh
       const url = new URL(window.location.href)
       url.searchParams.delete('message')
       window.history.replaceState({}, '', url.pathname + url.search)
@@ -195,14 +176,12 @@ export default function LoginForm() {
         title: 'Email verified 🎉',
         description: 'Your account is verified. Please sign in.',
       })
-      // Clean up verified param too
       const url = new URL(window.location.href)
       url.searchParams.delete('verified')
       window.history.replaceState({}, '', url.pathname + url.search)
     }
   }, [searchParams, toast])
 
-  // Handle Login Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -249,27 +228,35 @@ export default function LoginForm() {
     }
   }
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!isOnline) {
       toast({ title: 'Offline', description: 'Please check your internet connection', variant: 'destructive' })
       return
     }
-    if (!otpEmail) {
-      toast({ title: 'Error', description: 'Please enter your email', variant: 'destructive' })
+    const cleanEmail = otpEmail.trim().toLowerCase()
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast({ title: 'Invalid Email', description: 'Please enter a valid email address', variant: 'destructive' })
       return
     }
     setOtpLoading(true)
     try {
-      const res = await sendLoginOtp(otpEmail)
+      const res = await sendLoginOtp(cleanEmail)
       if (res.success) {
-        toast({ title: 'Success', description: res.message })
+        toast({ title: '6-Digit Code Sent 🎉', description: res.message })
         setOtpStep('verify')
+        setResendCooldown(60)
+      } else if ((res as any).notFound) {
+        toast({
+          title: 'Account Not Found',
+          description: res.message,
+          variant: 'destructive',
+        })
       } else {
-        toast({ title: 'Error', description: res.message, variant: 'destructive' })
+        toast({ title: 'Could not send OTP', description: res.message, variant: 'destructive' })
       }
-    } catch {
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Something went wrong', variant: 'destructive' })
     } finally {
       setOtpLoading(false)
     }
@@ -281,24 +268,26 @@ export default function LoginForm() {
       toast({ title: 'Offline', description: 'Please check your internet connection', variant: 'destructive' })
       return
     }
-    if (!otpCode || isRedirecting.current) return
+    if (!otpCode || otpCode.trim().length !== 6 || isRedirecting.current) {
+      toast({ title: 'Invalid Code', description: 'Please enter the 6-digit verification code.', variant: 'destructive' })
+      return
+    }
 
     setOtpLoading(true)
     try {
-      const res = await verifyLoginOtp(otpEmail, otpCode)
+      const res = await verifyLoginOtp(otpEmail.trim().toLowerCase(), otpCode.trim())
       if (res.success && res.redirectUrl) {
         performRedirect(res.redirectUrl)
       } else {
-        toast({ title: 'Error', description: res.message || 'Verification failed', variant: 'destructive' })
+        toast({ title: 'Verification Failed', description: res.message || 'Invalid or expired 6-digit OTP', variant: 'destructive' })
         setOtpLoading(false)
       }
-    } catch {
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Verification failed', variant: 'destructive' })
       setOtpLoading(false)
     }
   }
 
-  // Get greeting based on time
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return "Good morning"
@@ -320,9 +309,8 @@ export default function LoginForm() {
         <div className="w-full max-w-5xl">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
-            {/* Left Side - Minimal Welcome */}
+            {/* Left Side */}
             <div className="hidden lg:flex flex-col justify-center items-center text-center px-4 space-y-8">
-              {/* Greeting */}
               <div className="space-y-4">
                 <h1 className="text-3xl font-medium text-slate-600 dark:text-slate-400">
                   {getGreeting()}!
@@ -332,7 +320,6 @@ export default function LoginForm() {
                 </h2>
               </div>
 
-              {/* Motivational Quote */}
               <div className="max-w-md space-y-3">
                 <blockquote className="text-lg text-slate-600 dark:text-slate-400 italic leading-relaxed">
                   "{quote.text}"
@@ -342,7 +329,6 @@ export default function LoginForm() {
                 </p>
               </div>
 
-              {/* Simple Animation or Icon */}
               <div className="flex items-center gap-4 pt-8">
                 <div className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                   <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -355,7 +341,6 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              {/* Small footer text */}
               <p className="text-sm text-slate-500">
                 Ready to grow your business today?
               </p>
@@ -372,7 +357,7 @@ export default function LoginForm() {
                   <p className="text-slate-600 dark:text-slate-400">
                     {loginMethod === 'password'
                       ? 'Enter your credentials to continue'
-                      : "We'll send a verification code to your email"}
+                      : "We'll send a 6-digit verification code to your email"}
                   </p>
                 </div>
 
@@ -488,8 +473,18 @@ export default function LoginForm() {
                   </div>
                 ) : (
                   <div className="space-y-5">
+                    {/* Step indicator */}
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                      <span>{otpStep === 'email' ? 'Step 1 of 2: Enter Email' : 'Step 2 of 2: Verification'}</span>
+                      {otpStep === 'verify' && (
+                        <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 text-emerald-500" /> Code Sent
+                        </span>
+                      )}
+                    </div>
+
                     {otpStep === 'email' ? (
-                      <form onSubmit={handleSendOtp} className="space-y-5">
+                      <form onSubmit={(e) => handleSendOtp(e)} className="space-y-5">
                         <div className="space-y-2">
                           <Label htmlFor="otp-email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                             Email Address
@@ -526,7 +521,7 @@ export default function LoginForm() {
                           {otpLoading ? (
                             <>
                               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                              Sending...
+                              Sending code...
                             </>
                           ) : !isOnline ? (
                             'Offline'
@@ -540,48 +535,75 @@ export default function LoginForm() {
                       </form>
                     ) : (
                       <form onSubmit={handleVerifyOtp} className="space-y-5">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label htmlFor="otp-code" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                              Enter OTP Code
-                            </Label>
+                        <div className="space-y-3">
+                          <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/50 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5 overflow-hidden">
+                              <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                              <span className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">{otpEmail}</span>
+                            </div>
                             <button
                               type="button"
-                              onClick={() => setOtpStep('email')}
-                              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                              onClick={() => {
+                                setOtpStep('email')
+                                setOtpCode('')
+                              }}
+                              className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0 font-medium ml-2"
                             >
-                              Change Email
+                              Change
                             </button>
                           </div>
-                          <div className="relative">
-                            <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'otp-code' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
-                              }`} />
-                            <Input
-                              id="otp-code"
-                              type="text"
-                              placeholder="123456"
-                              className={`pl-11 h-12 text-center tracking-widest text-lg font-mono bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'otp-code'
-                                ? 'border-blue-600 ring-4 ring-blue-600/10'
-                                : 'hover:border-slate-300 dark:hover:border-slate-600'
-                                }`}
-                              value={otpCode}
-                              onChange={(e) => setOtpCode(e.target.value)}
-                              onFocus={() => setFocusedField('otp-code')}
-                              onBlur={() => handleBlur('otp-code')}
-                              required
-                              maxLength={6}
-                              disabled={otpLoading}
-                            />
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <Label htmlFor="otp-code" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Enter 6-Digit OTP Code
+                              </Label>
+                              {resendCooldown > 0 ? (
+                                <span className="text-xs text-slate-400 font-mono">
+                                  Resend in {resendCooldown}s
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSendOtp()}
+                                  disabled={otpLoading}
+                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                                >
+                                  Resend Code
+                                </button>
+                              )}
+                            </div>
+                            <div className="relative">
+                              <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'otp-code' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
+                                }`} />
+                              <Input
+                                id="otp-code"
+                                type="text"
+                                placeholder="123456"
+                                className={`pl-11 h-12 text-center tracking-[0.3em] text-xl font-mono bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'otp-code'
+                                  ? 'border-blue-600 ring-4 ring-blue-600/10'
+                                  : 'hover:border-slate-300 dark:hover:border-slate-600'
+                                  }`}
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                onFocus={() => setFocusedField('otp-code')}
+                                onBlur={() => handleBlur('otp-code')}
+                                required
+                                maxLength={6}
+                                disabled={otpLoading}
+                                autoFocus
+                              />
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              Check your terminal log or email inbox for the 6-digit code.
+                            </p>
                           </div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            We sent a 6-digit code to <strong className="text-slate-700 dark:text-slate-200">{otpEmail}</strong>
-                          </p>
                         </div>
 
                         <Button
                           type="submit"
                           className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-                          disabled={otpLoading || !isOnline}
+                          disabled={otpLoading || otpCode.length !== 6 || !isOnline}
                         >
                           {otpLoading ? (
                             <>

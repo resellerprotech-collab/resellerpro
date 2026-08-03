@@ -17,9 +17,21 @@ import {
   Bell,
   Wallet,
   Store,
+  Sparkles,
 } from 'lucide-react'
+import { useState } from 'react'
+import { LogoutConfirmModal } from '@/components/layout/LogoutConfirmModal'
 
-export function SidebarContent({ pathname, handleLogout }: { pathname: string; handleLogout: () => void }) {
+export function SidebarContent({
+  pathname,
+  handleLogout,
+  pendingRequestsCount = 0
+}: {
+  pathname: string;
+  handleLogout: () => void;
+  pendingRequestsCount?: number;
+}) {
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const navGroups = [
     {
       title: 'Overview',
@@ -32,6 +44,12 @@ export function SidebarContent({ pathname, handleLogout }: { pathname: string; h
       title: 'User Management',
       items: [
         { href: '/ekodrix-panel/customers', label: 'Customers', icon: Users },
+        {
+          href: '/ekodrix-panel/website-requests',
+          label: 'Website Requests',
+          icon: Sparkles,
+          badge: pendingRequestsCount > 0 ? pendingRequestsCount : undefined
+        },
         { href: '/ekodrix-panel/subscriptions', label: 'Subscriptions', icon: CreditCard },
         { href: '/ekodrix-panel/shops', label: 'Shop Stores', icon: Store },
         { href: '/ekodrix-panel/wallets', label: 'Wallets', icon: Wallet },
@@ -83,30 +101,38 @@ export function SidebarContent({ pathname, handleLogout }: { pathname: string; h
               {group.title}
             </p>
             <div className="space-y-1">
-              {group.items.map(({ href, label, icon: Icon }) => {
+              {group.items.map(({ href, label, icon: Icon, badge }) => {
                 const isActive = pathname === href || (href !== '/ekodrix-panel' && pathname.startsWith(href))
                 return (
                   <Link
                     key={href}
                     href={href}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300 relative group',
+                      'flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-300 relative group justify-between',
                       isActive
                         ? 'bg-emerald-500/10 text-emerald-400'
                         : 'text-gray-500 hover:text-white hover:bg-white/[0.04]'
                     )}
                   >
-                    {isActive && (
-                      <div className="absolute left-0 w-1 h-5 bg-emerald-500 rounded-full" />
-                    )}
-                    <Icon
-                      size={18}
-                      className={cn(
-                        'transition-transform duration-300 group-hover:scale-110',
-                        isActive ? 'text-emerald-400' : 'text-gray-500'
+                    <div className="flex items-center gap-3">
+                      {isActive && (
+                        <div className="absolute left-0 w-1 h-5 bg-emerald-500 rounded-full" />
                       )}
-                    />
-                    <span>{label}</span>
+                      <Icon
+                        size={18}
+                        className={cn(
+                          'transition-transform duration-300 group-hover:scale-110',
+                          isActive ? 'text-emerald-400' : 'text-gray-500'
+                        )}
+                      />
+                      <span>{label}</span>
+                    </div>
+
+                    {badge !== undefined && (
+                      <span className="px-2 py-0.5 text-[11px] font-extrabold rounded-full bg-emerald-500 text-black animate-pulse">
+                        {badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}
@@ -118,7 +144,7 @@ export function SidebarContent({ pathname, handleLogout }: { pathname: string; h
       {/* Logout */}
       <div className="p-4 bg-white/[0.02] border-t border-white/5">
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           className="flex items-center gap-3 w-full text-sm font-bold text-gray-500 hover:text-red-400 
                      hover:bg-red-500/10 px-4 py-3 rounded-xl transition-all group"
         >
@@ -126,11 +152,22 @@ export function SidebarContent({ pathname, handleLogout }: { pathname: string; h
           <span>Terminate Session</span>
         </button>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onOpenChange={setShowLogoutModal}
+        onConfirm={async () => {
+          await handleLogout()
+        }}
+        title="Terminate Admin Session"
+        description="Are you sure you want to terminate your administrative session? You will be signed out of the Ekodrix panel."
+        confirmButtonText="Terminate Session"
+      />
     </div>
   )
 }
 
-export default function EkodrixSidebar() {
+export default function EkodrixSidebar({ pendingRequestsCount = 0 }: { pendingRequestsCount?: number }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -142,7 +179,7 @@ export default function EkodrixSidebar() {
 
   return (
     <aside className="hidden lg:flex w-72 h-screen border-r border-white/5 flex-col sticky top-0 shrink-0">
-      <SidebarContent pathname={pathname} handleLogout={handleLogout} />
+      <SidebarContent pathname={pathname} handleLogout={handleLogout} pendingRequestsCount={pendingRequestsCount} />
     </aside>
   )
 }
