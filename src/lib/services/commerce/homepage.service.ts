@@ -59,4 +59,25 @@ export class CommerceHomepageService {
       theme: parsedTheme
     }
   }
+
+  /**
+   * Get structured modular CMS sections for storefront & Headless APIs
+   */
+  static async getStructuredHomepage(storeId: string) {
+    const { CmsSectionsService } = await import('@/lib/services/cms/sections.service')
+    const sections = await CmsSectionsService.getSections(storeId)
+    const layout = await this.getHomepageLayout(storeId)
+
+    return {
+      store: layout,
+      sections: sections.map(s => ({
+        id: s.id,
+        type: s.section_type,
+        label: s.label,
+        enabled: s.is_enabled,
+        order: s.sort_order,
+        content: s.content
+      }))
+    }
+  }
 }

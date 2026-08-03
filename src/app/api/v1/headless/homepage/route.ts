@@ -13,13 +13,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const banners = await CommerceHomepageService.getHeroBanners(auth.store.id)
-    const layout = await CommerceHomepageService.getHomepageLayout(auth.store.id)
+    const homepage = await CommerceHomepageService.getStructuredHomepage(auth.store.id)
 
     return NextResponse.json({
       success: true,
       data: {
         banners,
-        layout
+        store: homepage.store,
+        sections: homepage.sections
       }
     })
   } catch (err: any) {
