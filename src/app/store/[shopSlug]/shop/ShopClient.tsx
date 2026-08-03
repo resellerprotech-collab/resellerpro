@@ -51,7 +51,7 @@ export function ShopClient({
       const matchCat = activeCategory ? p.category?.toLowerCase() === activeCategory.toLowerCase() : true
       const matchSearch = searchQuery
         ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+        (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
         : true
       return matchCat && matchSearch
     })
@@ -82,7 +82,7 @@ export function ShopClient({
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header Title & Controls Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100 mb-6">
           <div>
@@ -134,11 +134,10 @@ export function ShopClient({
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
             <button
               onClick={() => setActiveCategory(null)}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shrink-0 ${
-                activeCategory === null
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shrink-0 ${activeCategory === null
                   ? 'bg-slate-950 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
-              }`}
+                }`}
             >
               All Products
             </button>
@@ -148,11 +147,10 @@ export function ShopClient({
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(isActive ? null : cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                    isActive
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${isActive
                       ? 'bg-slate-950 text-white shadow-sm font-black'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>

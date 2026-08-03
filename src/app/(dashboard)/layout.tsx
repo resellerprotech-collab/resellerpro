@@ -12,6 +12,7 @@ type UserData = {
   avatarUrl?: string | null;
   businessName?: string | null;
   planName?: string | null;
+  storeMode?: 'standard' | 'headless';
 } | null
 
 export default async function DashboardLayout({
@@ -148,6 +149,7 @@ export default async function DashboardLayout({
     email: user.email,
     avatarUrl: profile?.avatar_url,
     businessName: profile?.business_name,
+    storeMode: (profile as any)?.store_mode || 'standard',
     planName: (Array.isArray(subscription?.plan)
       ? (subscription?.plan as any)[0]?.display_name
       : (subscription?.plan as any)?.display_name) || 'Free Plan',

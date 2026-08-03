@@ -21,11 +21,14 @@ import { useToast } from '@/hooks/use-toast'
 import type { Product, Profile, ShopTheme } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
+import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
+
 interface StorefrontClientProps {
   profile: Profile
   products: Product[]
   categories: string[]
   theme: ShopTheme | null
+  cmsSections?: CmsSectionItem[]
 }
 
 function getCategoryIcon(categoryName: string) {
@@ -39,7 +42,7 @@ function getCategoryIcon(categoryName: string) {
   return <Layers className="w-5 h-5 text-slate-700" />
 }
 
-export function StorefrontClient({ profile, products, categories, theme }: StorefrontClientProps) {
+export function StorefrontClient({ profile, products, categories, theme, cmsSections }: StorefrontClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const setShopSlug = useCartStore((s) => s.setShopSlug)
   const { toast } = useToast()

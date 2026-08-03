@@ -66,12 +66,17 @@ export default async function StorePage({ params }: Props) {
 
   const theme = profile.shop_theme as ShopTheme | null
 
+  // Fetch CMS sections (with auto-seed fallback)
+  const { CmsSectionsService } = await import('@/lib/services/cms/sections.service')
+  const cmsSections = await CmsSectionsService.getSections(profile.id)
+
   return (
     <StorefrontClient
       profile={profile}
       products={products}
       categories={categories}
       theme={theme}
+      cmsSections={cmsSections}
     />
   )
 }

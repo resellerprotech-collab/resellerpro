@@ -123,17 +123,15 @@ export default function SignupForm() {
   }
 
   const fieldClass = (field: string) =>
-    `pl-11 h-12 rounded-xl bg-slate-50 dark:bg-slate-800/60 border transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 ${
-      focusedField === field
-        ? 'border-blue-500 ring-4 ring-blue-500/10 bg-white dark:bg-slate-800'
-        : !isFieldValid(field)
+    `pl-11 h-12 rounded-xl bg-slate-50 dark:bg-slate-800/60 border transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 ${focusedField === field
+      ? 'border-blue-500 ring-4 ring-blue-500/10 bg-white dark:bg-slate-800'
+      : !isFieldValid(field)
         ? 'border-rose-400 dark:border-rose-500/60'
         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
     }`
 
   const iconClass = (field: string) =>
-    `absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 transition-colors ${
-      focusedField === field ? 'text-blue-500' : 'text-slate-400 dark:text-slate-500'
+    `absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 transition-colors ${focusedField === field ? 'text-blue-500' : 'text-slate-400 dark:text-slate-500'
     }`
 
   return (
@@ -203,7 +201,7 @@ export default function SignupForm() {
               {/* Testimonial */}
               <div className="bg-white/70 dark:bg-white/5 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-5">
                 <div className="flex items-center gap-1 mb-3">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
                 </div>
                 <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">
                   "Was tracking orders in Excel sheets. Now everything is in one place. Super easy to use and saves me hours every week!"
