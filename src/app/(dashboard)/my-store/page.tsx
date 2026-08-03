@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ShopSettingsForm from '@/components/settings/ShopSettingsForm'
+import CustomWebsiteRequestCard from '@/components/settings/CustomWebsiteRequestCard'
 
 export const metadata = {
   title: 'Store Setup - ResellerPro',
@@ -17,7 +18,7 @@ export default async function MyStorePage() {
 
   let { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
+    .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
     .eq('id', user.id)
     .single()
 
@@ -31,11 +32,11 @@ export default async function MyStorePage() {
         email_verified: false,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
-      .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
+      .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
       .single()
 
     if (!pError && newProfile) {
-      profile = newProfile
+      profile = newProfile as any
       profileError = null
     } else {
       console.warn('MyStorePage profile upsert via authenticated client failed, trying admin client:', pError)
@@ -49,11 +50,11 @@ export default async function MyStorePage() {
           email_verified: false,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' })
-        .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url')
+        .select('id, shop_slug, shop_description, shop_theme, business_name, avatar_url, shop_logo_url, store_mode, api_key_prefix, connected_domain')
         .single()
 
       if (!adminError && adminProfile) {
-        profile = adminProfile
+        profile = adminProfile as any
         profileError = null
       } else {
         console.error('MyStorePage profile creation via admin client also failed:', adminError)
@@ -106,6 +107,15 @@ export default async function MyStorePage() {
     )
   )
 
+  // Get custom website request status if existing
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const adminSupabase = await createAdminClient()
+  const { data: existingRequest } = await adminSupabase
+    .from('custom_website_requests')
+    .select('id, status, created_at')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-6">
       <div>
@@ -114,6 +124,12 @@ export default async function MyStorePage() {
           Configure your public storefront branding, color themes, catalog appearance, and social checkout preferences.
         </p>
       </div>
+
+      <CustomWebsiteRequestCard
+        existingRequest={existingRequest || null}
+        storeMode={(profile.store_mode as 'standard' | 'headless') || 'standard'}
+      />
+
       <div className="border rounded-2xl p-6 bg-card">
         <ShopSettingsForm
           profile={profile}

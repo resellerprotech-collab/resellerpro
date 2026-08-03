@@ -58,6 +58,7 @@ type UserData = {
   avatarUrl?: string | null
   businessName?: string | null
   planName?: string | null
+  storeMode?: 'standard' | 'headless'
 } | null
 
 export default function Sidebar({ user }: { user: UserData }) {
@@ -150,6 +151,8 @@ export default function Sidebar({ user }: { user: UserData }) {
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
             const isStore = item.name === 'My Store'
+            const badgeText = isStore && user?.storeMode === 'headless' ? 'HEADLESS' : item.badge
+
             return (
               <Link
                 key={item.name}
@@ -165,16 +168,18 @@ export default function Sidebar({ user }: { user: UserData }) {
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span className="flex-1">{item.name}</span>
-                {item.badge && (
+                {badgeText && (
                   <span className={cn(
                     'text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none',
-                    isStore && !isActive
+                    user?.storeMode === 'headless' && isStore
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                      : isStore && !isActive
                       ? 'bg-green-100 text-green-700 animate-pulse'
                       : isActive
                       ? 'bg-white/20 text-white'
                       : 'bg-primary/10 text-primary'
                   )}>
-                    {item.badge}
+                    {badgeText}
                   </span>
                 )}
               </Link>

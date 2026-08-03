@@ -22,7 +22,11 @@ export interface Profile {
   subscription_plan: SubscriptionPlan
   subscription_status: SubscriptionStatus
   subscription_ends_at?: string
-  onboarding_completed: boolean
+  store_mode?: 'standard' | 'headless'
+  api_key_hash?: string
+  api_key_prefix?: string
+  connected_domain?: string
+  headless_updated_at?: string
   created_at: string
   updated_at: string
 }

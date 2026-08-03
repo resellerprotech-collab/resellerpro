@@ -180,7 +180,7 @@ export function ShopClient({
 
   // Filter & Sort
   const processedProducts = useMemo(() => {
-    let list = displayProducts.filter((p) => {
+    const list = displayProducts.filter((p) => {
       const matchCat = activeCategory ? p.category?.toLowerCase() === activeCategory.toLowerCase() : true
       const matchSearch = searchQuery
         ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

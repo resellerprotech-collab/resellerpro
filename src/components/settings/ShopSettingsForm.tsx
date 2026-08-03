@@ -21,6 +21,7 @@ import { createClient } from '@/lib/supabase/client'
 import { updateShopSettings } from '@/app/(dashboard)/settings/actions'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import HeadlessSettingsForm from '@/components/settings/HeadlessSettingsForm'
 
 import type { HeroBannerItem, PromoItem } from '@/types'
 
@@ -588,7 +589,9 @@ export default function ShopSettingsForm({
     })
   }
 
-  const tabs = [
+  const isHeadlessMode = (profile as any).store_mode === 'headless'
+
+  const allTabs = [
     { id: 'general', label: 'General', icon: Globe },
     { id: 'appearance', label: 'Design', icon: Palette },
     { id: 'hero', label: 'Hero Banner', icon: PanelTop },
@@ -597,8 +600,13 @@ export default function ShopSettingsForm({
     { id: 'social', label: 'Social & Chat', icon: Share2 },
     { id: 'seo', label: 'SEO', icon: Search },
     { id: 'footer', label: 'Footer', icon: MapPin },
+    { id: 'headless', label: 'Headless Settings', icon: Zap },
     { id: 'advanced', label: 'Advanced', icon: Zap },
   ]
+
+  const tabs = isHeadlessMode
+    ? allTabs.filter(t => ['general', 'headless', 'seo', 'advanced'].includes(t.id))
+    : allTabs
 
   return (
     <div className="space-y-6">
@@ -2083,6 +2091,14 @@ export default function ShopSettingsForm({
               placeholder={`.shop-header { border-radius: 0; }\n.product-card { box-shadow: none; }`}
               rows={6} className="font-mono text-xs" disabled={isPending || !isEligible} />
           </Section>
+        )}
+
+        {activeTab === 'headless' && (
+          <HeadlessSettingsForm
+            initialStoreMode={(profile as any).store_mode || 'standard'}
+            initialConnectedDomain={(profile as any).connected_domain || null}
+            apiKeyPrefix={(profile as any).api_key_prefix || null}
+          />
         )}
 
         {/* ═══════════════ SAVE BAR ═══════════════ */}
