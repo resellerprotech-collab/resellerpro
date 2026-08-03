@@ -11,31 +11,14 @@ import EnquiryPopup from '@/components/EnquiryPopup'
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <Navbar />
-
-      {/* Hero Section */}
       <HeroSection />
-
-      {/* Features */}
       <FeaturesSection />
-
-      {/* Pricing */}
       <PricingSection />
-
-      {/* How It Works */}
       <HowItWorksSection />
-
-      {/* Faq Section */}
       <FAQSection />
-
-      {/* CTA */}
       <FinalCTASection />
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Enquiry Popup */}
+      <Footer />  
       <EnquiryPopup />
     </div>
   )
