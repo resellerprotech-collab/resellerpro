@@ -11,7 +11,7 @@ export default function HeroSection() {
   const [showDemo, setShowDemo] = useState(false)
 
   return (
-    <section className="relative pt-16 pb-0 lg:pt-12 lg:pb-12 overflow-hidden bg-background">
+    <section className="relative pt-16 pb-0 lg:pt-12 lg:pb-12 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div 
