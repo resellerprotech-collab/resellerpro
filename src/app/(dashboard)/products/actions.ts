@@ -7,6 +7,8 @@ const ProductSchema = z.object({
   name: z.string().min(3),
   cost_price: z.coerce.number().min(0),
   selling_price: z.coerce.number().min(0),
+  compare_at_price: z.coerce.number().optional().nullable(),
+  badge: z.string().optional().nullable(),
   category: z.string().optional(),
   description: z.string().optional(),
   sku: z.string().optional(),
@@ -23,7 +25,6 @@ export type FormState = {
   errors?: Record<string, string[]>;
 };
 
-// ⛳ CREATE PRODUCT
 // ⛳ CREATE PRODUCT
 export async function createProduct(prev: FormState, formData: FormData): Promise<FormState> {
   const supabase = await createClient();
@@ -84,8 +85,6 @@ export async function createProduct(prev: FormState, formData: FormData): Promis
     }
   }
 
-  // Fallback / Supplemental: upload images from formData if client didn't upload or sent additional
-  // (Though primarily we want client-side upload now)
   if (imageUrls.length === 0) {
     let uploadedCount = 0;
     for (let i = 0; i < 10; i++) {
@@ -133,6 +132,8 @@ export async function createProduct(prev: FormState, formData: FormData): Promis
   const { image_urls_json, audio_url: _unused_audio, ...dbInput } = input;
   const { error } = await supabase.from("products").insert({
     ...dbInput,
+    compare_at_price: dbInput.compare_at_price || null,
+    badge: dbInput.badge || null,
     video_url: dbInput.video_url || null,
     audio_url: audioUrl,
     user_id: user.id,
@@ -160,12 +161,6 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
   const subscription = await checkAndDowngradeSubscription(user.id);
 
   if (!subscription) return { success: false, message: "Subscription record missing" };
-
-  const { PLAN_LIMITS } = await import('@/config/pricing');
-  const planData = subscription.plan;
-  const planNameRaw = (Array.isArray(planData) ? planData[0]?.name : planData?.name)?.toLowerCase() || 'free';
-  const planKey = (Object.keys(PLAN_LIMITS).includes(planNameRaw) ? planNameRaw : 'free') as keyof typeof PLAN_LIMITS;
-  const limits = PLAN_LIMITS[planKey];
 
   const ProductUpdateSchema = ProductSchema.extend({
     id: z.string().uuid(),
@@ -201,7 +196,12 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
 
   const { error } = await supabase
     .from("products")
-    .update({ ...input, ...(image_url ? { image_url } : {}) })
+    .update({ 
+      ...input, 
+      compare_at_price: input.compare_at_price || null,
+      badge: input.badge || null,
+      ...(image_url ? { image_url } : {}) 
+    })
     .eq("id", id);
 
   if (error) {

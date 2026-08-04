@@ -20,6 +20,18 @@ interface StoreProductCardProps {
   }
 }
 
+const getBadgeLabel = (b?: string | null) => {
+  if (!b) return null
+  const cleanBadge = b.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
+  const badgeKey = cleanBadge.toLowerCase()
+  if (badgeKey === 'best_seller' || badgeKey === 'bestseller') return { label: 'BEST SELLER', color: 'bg-amber-500 text-slate-950 font-black' }
+  if (badgeKey === 'new_arrival' || badgeKey === 'new') return { label: 'NEW ARRIVAL', color: 'bg-blue-600 text-white font-black' }
+  if (badgeKey === 'trending' || badgeKey === 'hot') return { label: 'TRENDING', color: 'bg-red-600 text-white font-black' }
+  if (badgeKey === 'hot_deal') return { label: 'HOT DEAL', color: 'bg-rose-600 text-white font-black' }
+  if (badgeKey === 'special_offer') return { label: 'SPECIAL OFFER', color: 'bg-slate-900 text-white font-black' }
+  return { label: cleanBadge.toUpperCase(), color: 'bg-slate-900 text-white font-black' }
+}
+
 export function StoreProductCard({ product, storeUserId, layout = 'grid', theme }: StoreProductCardProps) {
   const addItem = useCartStore((s) => s.addItem)
   const toggleWishlist = useWishlistStore((s) => s.toggleItem)
@@ -141,12 +153,23 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme 
 
   return (
     <div className="group bg-white rounded-2xl border border-slate-100/90 overflow-hidden hover:shadow-lg hover:border-slate-200/70 transition-all duration-300 flex flex-col h-full relative">
-      {/* Discount Badge */}
-      {discountPct && discountPct > 0 && (
-        <span className="absolute top-2.5 left-2.5 z-10 bg-slate-950 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
-          -{discountPct}%
-        </span>
-      )}
+      {/* Product Badges & Discount */}
+      <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
+        {(() => {
+          const badgeObj = getBadgeLabel(product.badge)
+          if (!badgeObj) return null
+          return (
+            <span className={cn("text-[9px] font-black px-2 py-0.5 rounded shadow-sm tracking-wider uppercase", badgeObj.color)}>
+              {badgeObj.label}
+            </span>
+          )
+        })()}
+        {discountPct && discountPct > 0 && (
+          <span className="bg-slate-950/90 backdrop-blur-sm text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm">
+            -{discountPct}%
+          </span>
+        )}
+      </div>
 
       {/* Wishlist Toggle Button */}
       <button
