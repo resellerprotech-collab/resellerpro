@@ -7,6 +7,15 @@ export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock'
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 export type PaymentStatus = 'pending' | 'paid' | 'cod' | 'failed'
 
+export interface Category {
+  id: string
+  user_id: string
+  name: string
+  image_url?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: string
   full_name: string

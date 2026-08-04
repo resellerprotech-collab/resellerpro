@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -11,11 +11,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CreatableSelect } from '@/components/ui/creatable-select'
 import { useToast } from '@/hooks/use-toast'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
 import { Save, Upload, X, Loader2, Trash2, AlertTriangle, Lock, Video, Music, Trash } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { CreateCategoryModal } from '@/components/categories/CreateCategoryModal'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +57,29 @@ export default function EditProductForm({ product }: { product: any }) {
   const [name, setName] = useState(product.name)
   const [description, setDescription] = useState(product.description || '')
   const [category, setCategory] = useState(product.category || '')
+  const [categories, setCategories] = useState<{label: string, value: string}[]>([])
+
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+
+  // Fetch unique categories
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('user_id', user.id)
+        
+      if (data) {
+        const unique = Array.from(new Set(data.map(d => d.name).filter(c => c && c.trim() !== '')))
+        setCategories(unique.map(c => ({ label: c, value: c })))
+      }
+    }
+    fetchCategories()
+  }, [supabase.auth])
   const [sku, setSku] = useState(product.sku || '')
   const [costPrice, setCostPrice] = useState(product.cost_price.toString())
   const [sellingPrice, setSellingPrice] = useState(product.selling_price.toString())
@@ -604,11 +629,17 @@ export default function EditProductForm({ product }: { product: any }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
+              <CreatableSelect
+                options={categories}
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g., Electronics"
+                onValueChange={setCategory}
+                onCreateOption={(name) => {
+                  setNewCategoryName(name)
+                  setIsCategoryModalOpen(true)
+                }}
+                placeholder="Select or create..."
+                searchPlaceholder="Search categories..."
+                emptyMessage="No categories found."
                 disabled={isLoading}
               />
             </div>
@@ -860,7 +891,7 @@ export default function EditProductForm({ product }: { product: any }) {
             </AlertDialog>
 
             {/* Save/Cancel Buttons */}
-            <div className="flex gap-2">
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -873,7 +904,7 @@ export default function EditProductForm({ product }: { product: any }) {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving Changes...
+                    Saving...
                   </>
                 ) : (
                   <>
@@ -886,6 +917,15 @@ export default function EditProductForm({ product }: { product: any }) {
           </div>
         </CardContent>
       </Card>
+      <CreateCategoryModal 
+        open={isCategoryModalOpen} 
+        onOpenChange={setIsCategoryModalOpen}
+        initialName={newCategoryName}
+        onSuccess={(name) => {
+          setCategories(prev => [...prev, { label: name, value: name }])
+          setCategory(name)
+        }}
+      />
     </form>
   )
 }
