@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { revalidateStorefrontAction } from '@/app/(dashboard)/products/actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -292,6 +293,7 @@ export default function EditProductForm({ product }: { product: any }) {
         description: `"${name}" has been updated successfully`,
       })
 
+      revalidateStorefrontAction()
 
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['product', product.id] })
