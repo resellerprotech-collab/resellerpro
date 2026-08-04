@@ -35,11 +35,20 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'resellerpro.in'
-  
-  // Safe fallback to prevent invalid URLs
-  const activeSlug = shopSlug || domainInfo?.shopSlug || 'mystore'
-  const storefrontUrl = `https://${rootDomain}/${activeSlug}`
+  const [baseUrl, setBaseUrl] = useState<string>('')
+
+  useEffect(() => {
+    // Dynamic base URL check: use window.location.origin when in browser, or env fallback
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin)
+    } else {
+      setBaseUrl(process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in')
+    }
+  }, [])
+
+  const effectiveBase = baseUrl || (process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in')
+  const activeSlug = shopSlug || domainInfo?.shopSlug || 'my-store'
+  const storefrontUrl = `${effectiveBase}/store/${activeSlug}`
 
   useEffect(() => {
     fetchDomainStatus()

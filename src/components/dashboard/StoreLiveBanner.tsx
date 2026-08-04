@@ -46,7 +46,10 @@ export function StoreLiveBanner({ shopProfile }: StoreLiveBannerProps) {
     )
   }
 
-  const storeUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in'}/store/${shop_slug}`
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in')
+  const displayHost = typeof window !== 'undefined' ? window.location.host : 'resellerpro.in'
+  const storeUrl = `${baseUrl}/store/${shop_slug}`
+  const displayUrl = `${displayHost}/store/${shop_slug}`
 
   function handleCopy() {
     navigator.clipboard.writeText(storeUrl).then(() => {
@@ -80,7 +83,7 @@ export function StoreLiveBanner({ shopProfile }: StoreLiveBannerProps) {
           <div className="flex items-center gap-2 mb-0.5">
             <p className="font-bold text-green-900 text-sm">🟢 Your Store is LIVE</p>
           </div>
-          <p className="text-green-700 text-xs font-mono truncate">{storeUrl}</p>
+          <p className="text-green-700 text-xs font-mono truncate">{displayUrl}</p>
         </div>
 
         {/* Actions */}

@@ -20,7 +20,7 @@ export default async function MyStorePage() {
     .eq('id', user.id)
     .single()
 
-  // Self-healing fallback if profile row doesn't exist
+  // Self-healing fallback: Create profile if missing OR fill missing email/shop_slug if NULL
   if (!profile) {
     console.warn(`[MyStorePage] Profile missing for user ${user.id}, attempting self-healing creation...`)
 
@@ -44,6 +44,23 @@ export default async function MyStorePage() {
       profileError = null
     } else {
       console.error('[MyStorePage] Self-healing profile insert failed:', insertError)
+    }
+  } else if (!profile.email || !profile.shop_slug) {
+    // If profile exists but email or shop_slug is missing (NULL), sync them automatically
+    const defaultSlug = profile.shop_slug || (user.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : `user${user.id.slice(0, 6)}`)
+    const { data: updatedProfile } = await supabase
+      .from('profiles')
+      .update({
+        email: profile.email || user.email || '',
+        shop_slug: defaultSlug,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id)
+      .select('*')
+      .single()
+
+    if (updatedProfile) {
+      profile = updatedProfile
     }
   }
 
