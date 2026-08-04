@@ -11,7 +11,13 @@ import {
   PlayCircle,
   Sparkles,
   Rocket,
-  Check
+  Check,
+  UserPlus,
+  Clock,
+  Send,
+  TrendingUp,
+  Truck,
+  DollarSign
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import Link from 'next/link'
@@ -33,7 +39,162 @@ interface StepCardProps {
     badgeBorder: string
     checkBg: string
     checkBorder: string
+    borderAccent: string
+    cardBg: string
+    cardBorder: string
   }
+  index: number
+}
+
+function StepPreview({ number }: { number: number }) {
+  if (number === 1) {
+    return (
+      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold text-slate-300">WhatsApp Live Chat</span>
+          </div>
+          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium border border-emerald-500/30">New Lead</span>
+        </div>
+        
+        <div className="bg-slate-800/80 rounded-lg p-2.5 text-xs text-slate-200 space-y-1">
+          <div className="flex justify-between text-[10px] text-slate-400">
+            <span className="font-semibold text-emerald-400">Rohan Verma</span>
+            <span>10:42 AM</span>
+          </div>
+          <p className="text-[11px] leading-relaxed">"Hi, is the Handloom Silk Saree set available in M size? Need delivery by Friday."</p>
+        </div>
+
+        <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/30 rounded-lg p-2 text-xs">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-[11px] font-medium text-blue-300">Auto-saved to Lead Pipeline</span>
+          </div>
+          <span className="text-[10px] font-bold text-blue-400 bg-blue-500/20 px-2 py-0.5 rounded">#1042</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (number === 2) {
+    return (
+      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="text-xs font-semibold text-slate-300">Pipeline Stage Tracker</span>
+          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">3 Active Stages</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5 text-center">
+          <div className="bg-blue-500/15 border border-blue-500/30 rounded-lg p-2">
+            <div className="text-[10px] text-blue-400 font-bold uppercase">Enquiry</div>
+            <div className="text-sm font-extrabold text-white">12</div>
+          </div>
+          <div className="bg-amber-500/15 border border-amber-500/30 rounded-lg p-2">
+            <div className="text-[10px] text-amber-400 font-bold uppercase">Negotiating</div>
+            <div className="text-sm font-extrabold text-white">5</div>
+          </div>
+          <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-lg p-2">
+            <div className="text-[10px] text-emerald-400 font-bold uppercase">Converted</div>
+            <div className="text-sm font-extrabold text-white">28</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between bg-slate-800/80 rounded-lg p-2 text-xs">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[11px] text-slate-300">Follow-up alert sent for 2 leads</span>
+          </div>
+          <span className="text-[10px] font-semibold text-amber-400">Just now</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (number === 3) {
+    return (
+      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-2.5 font-sans">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="text-xs font-semibold text-slate-300 font-sans">1-Click Order Generation</span>
+          <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium">Smart Paste</span>
+        </div>
+
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between bg-slate-800/80 p-2 rounded-md">
+            <span className="text-slate-400 text-[11px]">Customer:</span>
+            <span className="text-slate-100 font-semibold text-[11px]">Priya Sharma (Mumbai)</span>
+          </div>
+          <div className="flex justify-between bg-slate-800/80 p-2 rounded-md">
+            <span className="text-slate-400 text-[11px]">Product:</span>
+            <span className="text-purple-300 font-semibold text-[11px]">Designer Silk Saree (M)</span>
+          </div>
+          <div className="flex justify-between bg-purple-500/20 border border-purple-500/40 p-2 rounded-md items-center">
+            <span className="text-purple-200 font-bold text-xs">Total Amount:</span>
+            <span className="text-white font-extrabold text-sm">₹1,499</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (number === 4) {
+    return (
+      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div className="flex items-center gap-2">
+            <Truck className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-semibold text-slate-300">Shipment Dispatch</span>
+          </div>
+          <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">In Transit</span>
+        </div>
+
+        <div className="bg-slate-800/80 rounded-lg p-2.5 text-xs space-y-2">
+          <div className="flex justify-between text-[11px]">
+            <span className="text-slate-400">AWB: <strong className="text-slate-200">BLUEDART-9042</strong></span>
+            <span className="text-emerald-400 font-semibold">Out for Delivery</span>
+          </div>
+          <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-amber-400 h-full w-4/5 rounded-full" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-emerald-400 text-xs font-semibold">
+          <Send className="w-3.5 h-3.5" />
+          <span>Auto WhatsApp Tracking Link Sent</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-xs font-semibold text-slate-300">Profit Analytics</span>
+        </div>
+        <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium">+24% This Month</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-slate-800/80 p-2.5 rounded-lg">
+          <div className="text-[10px] text-slate-400 flex items-center gap-1">
+            <DollarSign className="w-3 h-3 text-emerald-400" /> Net Profit
+          </div>
+          <div className="text-base font-extrabold text-emerald-400">₹42,850</div>
+        </div>
+        <div className="bg-slate-800/80 p-2.5 rounded-lg">
+          <div className="text-[10px] text-slate-400">Total Orders</div>
+          <div className="text-base font-extrabold text-blue-400">142</div>
+        </div>
+      </div>
+
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-2 text-[11px] text-blue-300 flex justify-between items-center">
+        <span>Top Selling Product:</span>
+        <strong className="text-white">Anarkali Suits (42 sold)</strong>
+      </div>
+    </div>
+  )
 }
 
 function StepCard({
@@ -43,43 +204,62 @@ function StepCard({
   description,
   details,
   theme,
+  index
 }: StepCardProps) {
   return (
-    <div className="bg-card/90 dark:bg-card/80 backdrop-blur-xl border border-border hover:border-primary/40 rounded-2xl p-3.5 sm:p-5 lg:p-6 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col justify-between group">
-      <div>
-        {/* Step Badge & Icon Header */}
-        <div className="flex justify-between items-start mb-3 sm:mb-4">
-          <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${theme.bg} ${theme.text} flex items-center justify-center p-2 sm:p-3 transition-transform duration-300 group-hover:scale-105`}>
-            <Icon className="w-4 h-4 sm:w-6 sm:h-6" />
-          </div>
-          <span className={`inline-flex items-center justify-center text-center px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-bold tracking-wider leading-none ${theme.badgeBg} ${theme.badgeText} border ${theme.badgeBorder}`}>
-            STEP 0{number}
-          </span>
-        </div>
-
-        {/* Content */}
-        <div className="mb-3 sm:mb-5">
-          <h3 className="text-xs sm:text-lg font-bold text-foreground mb-1 sm:mb-2">
-            {title}
-          </h3>
-          <p className="text-[8px] sm:text-xs text-muted-foreground leading-tight sm:leading-relaxed">
-            {description}
-          </p>
-        </div>
-      </div>
-
-      {/* Details List */}
-      <div className="space-y-1.5 sm:space-y-2 pt-3 sm:pt-4 border-t border-border/50 mt-auto">
-        {details.map((detail, idx) => (
-          <div key={idx} className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-foreground/80 font-medium">
-            <div className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border ${theme.checkBorder} ${theme.checkBg} ${theme.text} flex items-center justify-center flex-shrink-0`}>
-              <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />
+    <motion.div
+      initial={{ opacity: 0, y: 40, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: false, amount: 0.15 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`sticky transition-all duration-300 rounded-[10px] border ${theme.cardBorder} ${theme.borderAccent} ${theme.cardBg} backdrop-blur-xl p-5 sm:p-7 lg:p-8 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] mb-8 sm:mb-12 group`}
+      style={{
+        top: `calc(90px + ${index * 28}px)`,
+        zIndex: index + 1
+      }}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+        {/* Left Info Column */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Header & Step Badge */}
+          <div className="flex items-center justify-between">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${theme.bg} ${theme.text} flex items-center justify-center p-2.5 sm:p-3 transition-transform duration-300 group-hover:scale-105 shadow-xs`}>
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-[10px] sm:text-xs truncate">{detail}</span>
+            <span className={`inline-flex items-center justify-center text-center px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold tracking-wider leading-none ${theme.badgeBg} ${theme.badgeText} border ${theme.badgeBorder}`}>
+              STEP 0{number}
+            </span>
           </div>
-        ))}
+
+          {/* Title & Description */}
+          <div>
+            <h3 className="text-lg sm:text-2xl font-extrabold text-foreground mb-1.5 leading-snug">
+              {title}
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              {description}
+            </p>
+          </div>
+
+          {/* Key Details Checklist */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/40">
+            {details.map((detail, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-xs text-foreground/90 font-medium">
+                <div className={`w-4 h-4 rounded-full border ${theme.checkBorder} ${theme.checkBg} ${theme.text} flex items-center justify-center flex-shrink-0`}>
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </div>
+                <span className="text-[11px] sm:text-xs truncate">{detail}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Visual Preview Column */}
+        <div className="lg:col-span-5">
+          <StepPreview number={number} />
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -104,7 +284,10 @@ export default function HowItWorksSection() {
         badgeText: 'text-blue-600 dark:text-blue-400',
         badgeBorder: 'border-blue-500/20',
         checkBg: 'bg-blue-500/10',
-        checkBorder: 'border-blue-500/30'
+        checkBorder: 'border-blue-500/30',
+        borderAccent: 'hover:border-blue-500/40',
+        cardBg: 'bg-gradient-to-br from-blue-50/90 via-card to-blue-100/40 dark:from-slate-900 dark:via-card dark:to-blue-950/40',
+        cardBorder: 'border-blue-200/80 dark:border-blue-800/40'
       }
     },
     {
@@ -124,7 +307,10 @@ export default function HowItWorksSection() {
         badgeText: 'text-emerald-600 dark:text-emerald-400',
         badgeBorder: 'border-emerald-500/20',
         checkBg: 'bg-emerald-500/10',
-        checkBorder: 'border-emerald-500/30'
+        checkBorder: 'border-emerald-500/30',
+        borderAccent: 'hover:border-emerald-500/40',
+        cardBg: 'bg-gradient-to-br from-emerald-50/90 via-card to-emerald-100/40 dark:from-slate-900 dark:via-card dark:to-emerald-950/40',
+        cardBorder: 'border-emerald-200/80 dark:border-emerald-800/40'
       }
     },
     {
@@ -144,7 +330,10 @@ export default function HowItWorksSection() {
         badgeText: 'text-purple-600 dark:text-purple-400',
         badgeBorder: 'border-purple-500/20',
         checkBg: 'bg-purple-500/10',
-        checkBorder: 'border-purple-500/30'
+        checkBorder: 'border-purple-500/30',
+        borderAccent: 'hover:border-purple-500/40',
+        cardBg: 'bg-gradient-to-br from-purple-50/90 via-card to-purple-100/40 dark:from-slate-900 dark:via-card dark:to-purple-950/40',
+        cardBorder: 'border-purple-200/80 dark:border-purple-800/40'
       }
     },
     {
@@ -164,7 +353,10 @@ export default function HowItWorksSection() {
         badgeText: 'text-amber-600 dark:text-amber-400',
         badgeBorder: 'border-amber-500/20',
         checkBg: 'bg-amber-500/10',
-        checkBorder: 'border-amber-500/30'
+        checkBorder: 'border-amber-500/30',
+        borderAccent: 'hover:border-amber-500/40',
+        cardBg: 'bg-gradient-to-br from-amber-50/90 via-card to-amber-100/40 dark:from-slate-900 dark:via-card dark:to-amber-950/40',
+        cardBorder: 'border-amber-200/80 dark:border-amber-800/40'
       }
     },
     {
@@ -184,14 +376,17 @@ export default function HowItWorksSection() {
         badgeText: 'text-blue-600 dark:text-blue-400',
         badgeBorder: 'border-blue-500/20',
         checkBg: 'bg-blue-500/10',
-        checkBorder: 'border-blue-500/30'
+        checkBorder: 'border-blue-500/30',
+        borderAccent: 'hover:border-blue-500/40',
+        cardBg: 'bg-gradient-to-br from-indigo-50/90 via-card to-indigo-100/40 dark:from-slate-900 dark:via-card dark:to-indigo-950/40',
+        cardBorder: 'border-indigo-200/80 dark:border-indigo-800/40'
       }
     },
   ]
 
   return (
     <>
-      <section id="workflow" className="relative py-14 lg:py-20 overflow-hidden bg-gradient-to-b from-background via-secondary/20 to-background">
+      <section id="workflow" className="relative py-14 lg:py-20 [overflow-x:clip] bg-gradient-to-b from-background via-secondary/20 to-background">
         
         {/* Ambient Glows */}
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -210,13 +405,7 @@ export default function HowItWorksSection() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-            {/* Top Pill Badge */}
-            {/* <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold shadow-2xs">
-             
-              <span>5-Step Simple Workflow</span>
-            </div> */}
-
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-3">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.2]">
               From Chaos to{' '}
               <span className="bg-gradient-to-r from-primary via-blue-600 to-indigo-600 bg-clip-text text-transparent inline-block pb-[0.15em]">
@@ -230,47 +419,19 @@ export default function HowItWorksSection() {
             </p>
           </div>
 
-          {/* 6 Steps Grid (2 Columns on Mobile, 3 Columns on Desktop) */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-14">
-            {steps.map((step) => (
+          {/* Sticky Stacked Cards Container (5 Boxes coming bottom to top over each other) */}
+          <div className="max-w-4xl mx-auto relative mb-16 sm:mb-24">
+            {steps.map((step, idx) => (
               <StepCard
                 key={step.number}
                 {...step}
+                index={idx}
               />
             ))}
-
-            {/* Card 6: "Ready to start?" CTA Card */}
-            <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-lg shadow-blue-500/20 min-h-[180px] sm:min-h-[220px] group/cta">
-              {/* Background ambient lighting */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_60%)] pointer-events-none" />
-              
-              {/* Rocket Badge */}
-              <div className="relative mb-2 sm:mb-3">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/90 dark:bg-white text-blue-600 flex items-center justify-center shadow-md transform group-hover/cta:scale-110 transition-transform duration-300">
-                  <Rocket className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 transform -rotate-12" />
-                </div>
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
-                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-200 absolute -bottom-1 -left-1" />
-              </div>
-
-              <h3 className="text-sm sm:text-xl font-bold text-white mb-0.5 sm:mb-1">
-                Ready to start?
-              </h3>
-              <p className="text-[10px] sm:text-xs text-white/80 mb-3 sm:mb-4 font-medium">
-                Join 10,000+ resellers today.
-              </p>
-
-              <Link href="/signup">
-                <button className="bg-white text-blue-600 font-bold px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-[10px] sm:text-xs hover:bg-slate-100 transition-colors shadow-md flex items-center gap-1 sm:gap-1.5 group/btn">
-                  <span>Get Started Free</span>
-                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                </button>
-              </Link>
-            </div>
           </div>
 
           {/* Bottom Wide CTA Banner (Horizontal X-Axis Gradient with White Center Slope) */}
-          <div className="relative rounded-3xl sm:rounded-[2.5rem] overflow-hidden border border-blue-200/60 dark:border-blue-800/40 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70 dark:from-blue-950/50 dark:via-card dark:to-blue-950/50">
+          <div className="relative rounded-[10px]  overflow-hidden border border-blue-200/60 dark:border-blue-800/40 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70 dark:from-blue-950/50 dark:via-card dark:to-blue-950/50">
             {/* Center X-Axis White Glow with Soft Blue Edges */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,1)_0%,rgba(239,246,255,0.75)_50%,rgba(219,234,254,0.85)_100%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.95)_0%,rgba(30,58,138,0.35)_100%)] pointer-events-none -z-10" />
 
@@ -313,3 +474,4 @@ export default function HowItWorksSection() {
     </>
   )
 }
+
