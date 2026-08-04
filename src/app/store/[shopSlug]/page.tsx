@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { ShopTheme, Product } from '@/types'
 import { StorefrontClient } from './StorefrontClient'
 
+export const revalidate = 3600 // ISR: background revalidation every hour, instant on-demand via revalidatePath
+
 interface Props {
   params: { shopSlug: string }
 }
