@@ -11,7 +11,7 @@ export default function HeroSection() {
   const [showDemo, setShowDemo] = useState(false)
 
   return (
-    <section className="relative pt-20 pb-0 lg:pt-12 lg:pb-12 overflow-hidden bg-background">
+    <section className="relative pt-16 pb-0 lg:pt-12 lg:pb-12 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div 
@@ -43,126 +43,135 @@ export default function HeroSection() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Mobile Block — full width, outside container */}
+      <div className="block lg:hidden">
 
-        {/* Mobile Card Wrapper — stacked: phone top, content bottom */}
-        <div className="block lg:hidden mx-0 mb-0">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-sky-100 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950 flex flex-col">
-            {/* Decorative background shapes */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-200/40 dark:bg-blue-800/20 rounded-full -translate-y-12 translate-x-12 blur-2xl" />
-            <div className="absolute bottom-0 right-10 w-36 h-36 bg-sky-200/50 dark:bg-sky-800/20 rounded-full translate-y-8 blur-2xl" />
-
-            {/* TOP: Text content */}
-            <div className="relative z-10 p-6 space-y-4">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-[1.15] text-foreground" style={{ fontFamily: "'Switzer', sans-serif" }}>
-                Supercharge your{' '}
-                <span className="relative inline-block">
-                  <motion.span
-                    className="relative z-10 bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent inline-block pb-[0.15em]"
-                    style={{ backgroundSize: '200% 200%' }}
-                    animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                  >
-                    Reselling
-                  </motion.span>
-                </span>{' '}
-                Business
-              </h1>
-              <p className="text-[10px] md:text-sm max-w-xl leading-relaxed text-muted-foreground pr-4">
-                The all-in-one platform to manage orders, track customers, and grow your business.
-                Built for modern resellers who demand simplicity and power.
-              </p>
-
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { icon: Zap, text: 'Lightning Fast' },
-                  { icon: ShieldCheck, text: 'Secure' },
-                  { icon: Users, text: '24/7 Support' },
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/70 dark:bg-white/10 border border-blue-200/60 dark:border-blue-700/40 text-[9px] text-muted-foreground backdrop-blur-sm">
-                    <feature.icon className="w-2.5 h-2.5 text-primary" />
-                    <span>{feature.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1 w-full">
-                <Link href="/signup" className="inline-block group w-full">
-                  <button className="px-5 py-2.5 w-full justify-center bg-primary text-primary-foreground rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center gap-2 relative overflow-hidden group/btn">
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      Get Started Now
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                    <motion.div
-                      className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    />
-                  </button>
-                </Link>
-
-                <button
-                  onClick={() => setShowDemo(true)}
-                  className="px-4 py-2.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-foreground rounded-xl font-semibold border border-blue-200/60 dark:border-blue-700/40 hover:border-primary/50 text-sm transition-all duration-300 flex items-center justify-center gap-2 group shadow-sm hover:shadow-md w-full"
+          {/* TOP: Text content — padded */}
+          <div className="px-5 pt-10 pb-5 space-y-4">
+            <h1 className="text-3xl md:text-5xl font-bold leading-[1.15] text-foreground" style={{ fontFamily: "'Switzer', sans-serif" }}>
+              Supercharge your{' '}
+              <span className="relative inline-block">
+                <motion.span
+                  className="relative z-10 bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent inline-block pb-[0.15em]"
+                  style={{ backgroundSize: '200% 200%' }}
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
                 >
-                  <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Play className="w-2.5 h-2.5 text-primary fill-primary" />
-                  </div>
-                  Watch Demo
+                  Reselling
+                </motion.span>
+              </span>{' '}
+              Business
+            </h1>
+            <p className="text-[10px] md:text-sm max-w-xl leading-relaxed text-muted-foreground pr-4">
+              The all-in-one platform to manage orders, track customers, and grow your business.
+              Built for modern resellers who demand simplicity and power.
+            </p>
+
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { icon: Zap, text: 'Lightning Fast' },
+                { icon: ShieldCheck, text: 'Secure' },
+                { icon: Users, text: '24/7 Support' },
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/70 dark:bg-white/10 border border-blue-200/60 dark:border-blue-700/40 text-[9px] text-muted-foreground backdrop-blur-sm">
+                  <feature.icon className="w-2.5 h-2.5 text-primary" />
+                  <span>{feature.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-1 w-full">
+              <Link href="/signup" className="inline-block group w-full">
+                <button className="px-5 py-3 w-full justify-center bg-primary text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center gap-2 relative overflow-hidden group/btn">
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    Get Started Now
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                  <motion.div
+                    className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
+                    animate={{ x: ['-100%', '100%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  />
                 </button>
+              </Link>
+              <button
+                onClick={() => setShowDemo(true)}
+                className="px-4 py-3 bg-white dark:bg-slate-800 text-foreground rounded-xl font-semibold border border-border hover:border-primary/50 text-sm transition-all duration-300 flex items-center justify-center gap-2 group shadow-sm hover:shadow-md w-full"
+              >
+                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Play className="w-3 h-3 text-primary fill-primary" />
+                </div>
+                Watch Demo
+              </button>
+            </div>
+          </div>
+
+          {/* BOTTOM: Phone section — dark mode blue gradient background */}
+          <div className="relative overflow-hidden rounded-t-[36px] dark:bg-gradient-to-br dark:from-blue-900/80 dark:via-blue-950 dark:to-slate-900" style={{ height: '450px' }}>
+
+            {/* Blue radial glow — dark mode only */}
+            <div className="hidden dark:flex absolute inset-0 items-center justify-center pointer-events-none">
+              <div className="absolute w-[500px] h-[500px] rounded-full bg-blue-500/30 blur-[100px]" />
+              <div className="absolute w-[320px] h-[320px] rounded-full bg-blue-400/40 blur-[65px]" />
+              <div className="absolute w-[160px] h-[160px] rounded-full bg-blue-300/50 blur-[35px]" />
+            </div>
+
+            {/* White concentric rings — dark mode only */}
+            <div className="hidden dark:flex absolute inset-0 items-center justify-center pointer-events-none">
+              <div className="absolute w-[420px] h-[420px] rounded-full border border-white/20" />
+              <div className="absolute w-[340px] h-[340px] rounded-full border border-white/28" />
+              <div className="absolute w-[260px] h-[260px] rounded-full border border-white/35" />
+              <div className="absolute w-[185px] h-[185px] rounded-full border border-white/42" />
+              <div className="absolute w-[115px] h-[115px] rounded-full border border-white/50" />
+            </div>
+
+            {/* Floating: Sales Up */}
+            <motion.div
+              className="absolute top-6 right-5 z-30"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <div className="bg-white/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl border border-white/60">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                    <TrendingUp className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-900">Sales Up!</p>
+                    <p className="text-[9px] text-green-600 font-medium">+24% today</p>
+                  </div>
+                </div>
               </div>
-            </div>{/* end content top */}
+            </motion.div>
 
-            {/* BOTTOM: Phone mockup — aligned right */}
-            <div className="relative z-10 flex items-start justify-center pt-4 overflow-hidden" style={{ height: '340px' }}>
-
-              {/* Floating: Sales Up — top right of phone */}
-              <motion.div
-                className="absolute top-2 right-2 sm:right-[35%] sm:top-4 z-30"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl border border-border">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                      <TrendingUp className="w-3.5 h-3.5 text-white" />
+            {/* Floating: Order Confirmed */}
+            <motion.div
+              className="absolute bottom-8 left-5 z-30"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            >
+              <div className="bg-white/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl border border-white/60">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-white" />
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-foreground">Sales Up!</p>
-                      <p className="text-[9px] text-green-600 font-medium">+24% today</p>
-                    </div>
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border border-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-900">Order Confirmed!</p>
+                    <p className="text-[9px] text-gray-500">₹2,450 received</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
 
-              {/* Floating: Order Confirmed — bottom left of phone */}
-              <motion.div
-                className="absolute bottom-2 left-2 sm:left-[30%] sm:bottom-4 z-30"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              >
-                <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-2xl shadow-xl border border-border">
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border border-white flex items-center justify-center">
-                        <CheckCircle className="w-2 h-2 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-foreground">Order Confirmed!</p>
-                      <p className="text-[9px] text-muted-foreground">₹2,450 received</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <div className="relative" style={{ transform: 'scale(0.75)', transformOrigin: 'top center' }}>
+            {/* Phone mockup — larger & centred, cropped at bottom */}
+            <div className="absolute inset-x-0 top-0 flex justify-center pt-8">
+              <div className="relative" style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
                 {/* Phone Frame */}
                 <div
-                  className="relative bg-gradient-to-br from-[#8a8a8a] via-[#a0a0a0] to-[#7a7a7a] p-[2.5px] rounded-[54px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.1)_inset]"
+                  className="relative bg-gradient-to-br from-[#8a8a8a] via-[#a0a0a0] to-[#7a7a7a] p-[2.5px] rounded-[54px] shadow-[0_25px_60px_-10px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.15)_inset]"
                   style={{ width: '280px', height: '590px' }}
                 >
                   <div className="w-full h-full rounded-[51.5px] bg-[#1a1a1a] p-[2px]">
@@ -248,19 +257,19 @@ export default function HeroSection() {
                       </div>
                     </div>
                   </div>
-                  {/* Buttons */}
+                  {/* Physical Buttons */}
                   <div className="absolute left-[-2.5px] top-[95px] w-[4px] h-[28px] bg-gradient-to-b from-[#9a9a9a] to-[#7a7a7a] rounded-l-[2px]" />
                   <div className="absolute left-[-2.5px] top-[138px] w-[4px] h-[50px] bg-gradient-to-b from-[#9a9a9a] to-[#7a7a7a] rounded-l-[2px]" />
                   <div className="absolute left-[-2.5px] top-[198px] w-[4px] h-[50px] bg-gradient-to-b from-[#9a9a9a] to-[#7a7a7a] rounded-l-[2px]" />
                   <div className="absolute right-[-2.5px] top-[155px] w-[4px] h-[70px] bg-gradient-to-b from-[#9a9a9a] to-[#7a7a7a] rounded-r-[2px]" />
                 </div>
               </div>
-            </div>{/* end phone bottom */}
-          </div>{/* end mobile card */}
+            </div>
+          </div>
         </div>{/* end mobile-only block */}
 
-
-        {/* Desktop two-column grid — hidden on mobile */}
+      {/* Desktop container */}
+      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div className="relative z-10 hidden lg:grid lg:grid-cols-2 lg:gap-0 items-center">
 
           {/* LEFT: Text Content */}
@@ -300,7 +309,7 @@ export default function HeroSection() {
 
             <div className="flex items-center justify-start gap-4 pt-2">
               <Link href="/signup" className="group">
-                <button className="px-4 py-3 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground rounded-2xl font-semibold text-sm transition-all duration-300 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center justify-center gap-2 relative overflow-hidden group/btn">
+                <button className="px-4 py-3 bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl font-semibold text-sm transition-all duration-300 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center justify-center gap-2 relative overflow-hidden group/btn">
                   <span className="relative z-10 flex items-center gap-2">
                     Start Free Trial
                     <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
@@ -355,6 +364,23 @@ export default function HeroSection() {
           <div className="relative flex items-center justify-center">
 
             <div className="relative w-[320px] h-[680px] flex items-center justify-center">
+
+              {/* Blue radial glow — desktop */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
+                <div className="absolute w-[600px] h-[600px] rounded-full bg-blue-500/30 blur-[100px]" />
+                <div className="absolute w-[420px] h-[420px] rounded-full bg-blue-400/40 blur-[70px]" />
+                <div className="absolute w-[240px] h-[240px] rounded-full bg-blue-300/55 blur-[45px]" />
+                <div className="absolute w-[120px] h-[120px] rounded-full bg-blue-200/65 blur-[25px]" />
+              </div>
+
+              {/* Concentric circle rings — desktop */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute w-[580px] h-[580px] rounded-full border border-blue-300/25" />
+                <div className="absolute w-[480px] h-[480px] rounded-full border border-blue-300/30" />
+                <div className="absolute w-[380px] h-[380px] rounded-full border border-blue-400/35" />
+                <div className="absolute w-[280px] h-[280px] rounded-full border border-blue-400/40" />
+                <div className="absolute w-[180px] h-[180px] rounded-full border border-blue-500/45" />
+              </div>
 
               <motion.div 
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[550px] bg-gradient-to-br from-primary/25 via-secondary/20 to-primary/15 rounded-full blur-3xl -z-10"

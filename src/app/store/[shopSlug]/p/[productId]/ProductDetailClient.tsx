@@ -132,6 +132,40 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
               </div>
             )}
 
+            {product.badge && (
+              <div className="mb-2">
+                {(() => {
+                  const clean = product.badge.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
+                  const k = clean.toLowerCase()
+                  let badgeStyle = 'bg-slate-900 text-white'
+                  let label = clean.toUpperCase()
+
+                  if (k === 'best_seller' || k === 'bestseller') {
+                    badgeStyle = 'bg-amber-500 text-slate-950 font-black'
+                    label = 'BEST SELLER'
+                  } else if (k === 'new_arrival' || k === 'new') {
+                    badgeStyle = 'bg-blue-600 text-white font-black'
+                    label = 'NEW ARRIVAL'
+                  } else if (k === 'trending' || k === 'hot') {
+                    badgeStyle = 'bg-red-600 text-white font-black'
+                    label = 'TRENDING'
+                  } else if (k === 'hot_deal') {
+                    badgeStyle = 'bg-rose-600 text-white font-black'
+                    label = 'HOT DEAL'
+                  } else if (k === 'special_offer') {
+                    badgeStyle = 'bg-slate-900 text-white font-black'
+                    label = 'SPECIAL OFFER'
+                  }
+
+                  return (
+                    <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider shadow-sm ${badgeStyle}`}>
+                      {label}
+                    </span>
+                  )
+                })()}
+              </div>
+            )}
+
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight mb-4">
               {product.name}
             </h1>

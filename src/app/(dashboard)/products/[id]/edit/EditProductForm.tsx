@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { revalidateStorefrontAction } from '@/app/(dashboard)/products/actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -57,6 +58,8 @@ export default function EditProductForm({ product }: { product: any }) {
   const [sku, setSku] = useState(product.sku || '')
   const [costPrice, setCostPrice] = useState(product.cost_price.toString())
   const [sellingPrice, setSellingPrice] = useState(product.selling_price.toString())
+  const [compareAtPrice, setCompareAtPrice] = useState(product.compare_at_price?.toString() || '')
+  const [badge, setBadge] = useState(product.badge || '')
   const [stockQuantity, setStockQuantity] = useState(product.stock_quantity?.toString() || '0')
   const [stockStatus, setStockStatus] = useState(product.stock_status)
   const [videoUrl, setVideoUrl] = useState(product.video_url || '')
@@ -245,6 +248,8 @@ export default function EditProductForm({ product }: { product: any }) {
           sku: sku.trim() || null,
           cost_price: cost,
           selling_price: selling,
+          compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
+          badge: badge && badge !== 'none' ? badge : null,
           stock_quantity: parseInt(stockQuantity),
           stock_status: stockStatus,
           video_url: videoUrl.trim() || null,
@@ -288,6 +293,7 @@ export default function EditProductForm({ product }: { product: any }) {
         description: `"${name}" has been updated successfully`,
       })
 
+      revalidateStorefrontAction()
 
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['product', product.id] })
@@ -527,7 +533,7 @@ export default function EditProductForm({ product }: { product: any }) {
 
           {/* Pricing with Preview */}
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cost_price">
                   Cost Price (₹) <span className="text-destructive">*</span>
@@ -560,6 +566,19 @@ export default function EditProductForm({ product }: { product: any }) {
                   disabled={isLoading}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="compare_at_price">Original Price / MRP (₹)</Label>
+                <Input
+                  id="compare_at_price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={compareAtPrice}
+                  onChange={(e) => setCompareAtPrice(e.target.value)}
+                  placeholder="e.g., 7000 (shows ~~₹7000~~)"
+                  disabled={isLoading}
+                />
+              </div>
             </div>
 
             {/* Profit Preview */}
@@ -581,8 +600,8 @@ export default function EditProductForm({ product }: { product: any }) {
             )}
           </div>
 
-          {/* Category, Stock, and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Category, Badge, Stock, and Status */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Input
@@ -592,6 +611,27 @@ export default function EditProductForm({ product }: { product: any }) {
                 placeholder="e.g., Electronics"
                 disabled={isLoading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Product Badge / Highlight</Label>
+              <Select
+                value={badge}
+                onValueChange={setBadge}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select optional badge" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Badge</SelectItem>
+                  <SelectItem value="best_seller">Best Seller</SelectItem>
+                  <SelectItem value="new_arrival">New Arrival</SelectItem>
+                  <SelectItem value="trending">Trending</SelectItem>
+                  <SelectItem value="hot_deal">Hot Deal</SelectItem>
+                  <SelectItem value="special_offer">Special Offer</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

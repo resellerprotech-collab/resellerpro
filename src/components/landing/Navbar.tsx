@@ -23,13 +23,13 @@ export default function Navbar() {
                 className="h-14 w-12 object-contain mr-2"
               />
             </div>
-            <span className="text-2xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
+            <span className="text-[18px] font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
               ResellerPro
             </span>
           </Link>
 
           {/* Center Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-8 text-black">
             {['Features', 'Pricing', 'About', 'Contact'].map((item) => {
               const href = `/${item.toLowerCase()}`
               const isActive = pathname === href
@@ -47,14 +47,14 @@ export default function Navbar() {
           </div>
 
           {/* Right Buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <Link href="/signin">
-              <button className="bg-primary sm:bg-transparent text-sm px-6 py-2.5 font-semibold text-primary-foreground rounded-full sm:rounded-none sm:text-foreground sm:hover:text-primary transition-colors">
+              <button className="bg-primary sm:bg-transparent text-sm px-6 py-2.5 font-semibold text-white rounded-full sm:rounded-none sm:text-foreground sm:hover:text-primary transition-colors">
                 Sign in
               </button>
             </Link>
             <Link href="/signup">
-              <button className="hidden sm:block px-6 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 transform hover:-translate-y-0.5">
+              <button className="hidden sm:block px-3 md:px-6 py-2.5 bg-primary text-white rounded-full text-sm font-semibold hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 transform hover:-translate-y-0.5">
                 Start now
               </button>
             </Link>

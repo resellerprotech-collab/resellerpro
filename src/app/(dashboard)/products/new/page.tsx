@@ -43,6 +43,8 @@ export default function NewProductPage() {
   const [sku, setSku] = useState('')
   const [costPrice, setCostPrice] = useState('')
   const [sellingPrice, setSellingPrice] = useState('')
+  const [compareAtPrice, setCompareAtPrice] = useState('')
+  const [badge, setBadge] = useState('')
   const [stockQuantity, setStockQuantity] = useState('10')
   const [stockStatus, setStockStatus] = useState('in_stock')
   const [videoUrl, setVideoUrl] = useState('')
@@ -263,6 +265,8 @@ export default function NewProductPage() {
       if (sku) formData.append('sku', sku)
       formData.append('cost_price', costPrice)
       formData.append('selling_price', sellingPrice)
+      if (compareAtPrice) formData.append('compare_at_price', compareAtPrice)
+      if (badge && badge !== 'none') formData.append('badge', badge)
       formData.append('stock_quantity', stockQuantity)
       formData.append('stock_status', stockStatus)
       if (videoUrl) formData.append('video_url', videoUrl)
@@ -425,7 +429,7 @@ export default function NewProductPage() {
               </div>
 
               {/* Pricing */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cost_price">Cost Price (₹) *</Label>
                   <Input
@@ -452,10 +456,25 @@ export default function NewProductPage() {
                     disabled={isLoading}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="compare_at_price">Original Price / MRP (₹)</Label>
+                  <Input
+                    id="compare_at_price"
+                    type="text"
+                    inputMode="decimal"
+                    value={compareAtPrice}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || /^\d*\.?\d*$/.test(val)) setCompareAtPrice(val)
+                    }}
+                    placeholder="e.g., 7000 (shows ~~₹7000~~)"
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
 
-              {/* Category and Stock */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Category, Badge, and Stock */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
                   <Input
@@ -465,6 +484,27 @@ export default function NewProductPage() {
                     placeholder="e.g., Electronics"
                     disabled={isLoading}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Product Badge / Highlight</Label>
+                  <Select
+                    value={badge}
+                    onValueChange={setBadge}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select optional badge" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Badge</SelectItem>
+                      <SelectItem value="best_seller">Best Seller</SelectItem>
+                      <SelectItem value="new_arrival">New Arrival</SelectItem>
+                      <SelectItem value="trending">Trending</SelectItem>
+                      <SelectItem value="hot_deal">Hot Deal</SelectItem>
+                      <SelectItem value="special_offer">Special Offer</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

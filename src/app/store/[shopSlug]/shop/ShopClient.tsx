@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Filter, ChevronDown, Folder, Search, ArrowUpDown, RefreshCw, Layers } from 'lucide-react'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreProductCard } from '@/components/store/StoreProductCard'
@@ -28,8 +29,12 @@ export function ShopClient({
   initialSearch = '',
   initialCategory = null as any,
 }: ShopClientProps) {
-  const [searchQuery, setSearchQuery] = useState(initialSearch)
-  const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory || null)
+  const searchParams = useSearchParams()
+  const categoryFromUrl = searchParams.get('category')
+  const searchFromUrl = searchParams.get('search')
+
+  const [searchQuery, setSearchQuery] = useState(searchFromUrl || initialSearch)
+  const [activeCategory, setActiveCategory] = useState<string | null>(categoryFromUrl || initialCategory || null)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [visibleCount, setVisibleCount] = useState(12)
   const setShopSlug = useCartStore((s) => s.setShopSlug)

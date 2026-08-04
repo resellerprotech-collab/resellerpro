@@ -1,12 +1,14 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ShopTheme, Product } from '@/types'
 import { ShopClient } from './ShopClient'
 
+export const revalidate = 3600 // ISR: 100% cached on Edge/CDN, instant on-demand via revalidatePath
+
 interface Props {
   params: { shopSlug: string }
-  searchParams?: { category?: string; search?: string }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -26,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function DedicatedShopPage({ params, searchParams }: Props) {
+export default async function DedicatedShopPage({ params }: Props) {
   const { shopSlug } = params
   const supabase = await createAdminClient()
 
@@ -61,13 +63,13 @@ export default async function DedicatedShopPage({ params, searchParams }: Props)
   const theme = profile.shop_theme as ShopTheme | null
 
   return (
-    <ShopClient
-      profile={profile}
-      products={products}
-      categories={categories}
-      theme={theme}
-      initialSearch={searchParams?.search || ''}
-      initialCategory={searchParams?.category || null as any}
-    />
+    <Suspense fallback={<div className="min-h-screen bg-white p-8 text-center text-slate-400">Loading shop catalog...</div>}>
+      <ShopClient
+        profile={profile}
+        products={products}
+        categories={categories}
+        theme={theme}
+      />
+    </Suspense>
   )
 }
