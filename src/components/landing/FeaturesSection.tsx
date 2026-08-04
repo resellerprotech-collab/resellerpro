@@ -22,33 +22,39 @@ import {
   MoreHorizontal,
   LayoutGrid,
   ShoppingBag,
-  Circle
+  Circle,
+  StoreIcon,
+  Package2,
+  DatabaseIcon,
+  ShieldAlert,
+  ChartNoAxesCombined,
+  Copy
 } from 'lucide-react'
 
 export default function FeaturesSection() {
   return (
     <section id="features" className="relative py-14 lg:py-20 overflow-hidden bg-gradient-to-b from-background via-secondary/20 to-background">
-      
+
       {/* Background Elements matching HeroSection */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-        <motion.div 
+        <motion.div
           className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-[120px]"
           animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.05, 1] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-[-5%] left-[-5%] w-[500px] h-[500px] bg-gradient-to-tr from-secondary via-secondary/50 to-transparent rounded-full blur-[100px]"
           animate={{ opacity: [0.4, 0.6, 0.4], scale: [1, 1.05, 1] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
         <div className="absolute top-[30%] left-[20%] w-[350px] h-[350px] bg-primary/10 rounded-full blur-[90px]" />
-        
+
         {/* Hero Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_80%)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.2]" style={{ fontFamily: "'Switzer', sans-serif" }}>
@@ -65,17 +71,19 @@ export default function FeaturesSection() {
 
         {/* Bento Grid */}
         <div className="space-y-4 sm:space-y-5">
-          
+
           {/* Top Row: 3 Equal-Width Bento Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
 
             {/* Card 1: Custom Store Creation */}
             <div className="bg-card/90 dark:bg-card/80 backdrop-blur-xl border hover:border-primary/40 rounded-2xl p-4 sm:p-5 shadow-md shadow-primary/5 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
               <div>
-                <h3 className="text-lg font-bold text-foreground mb-1.5">
-                  Custom Store Creation
-                </h3>
-
+                <div className='flex gap-2 text-primary'>
+                  <Package2 />
+                  <h3 className="text-lg font-bold text-foreground mb-1.5">
+                    Custom Store Creation
+                  </h3>
+                </div>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
                   Create your own branded online store in minutes. Fully customizable templates, your domain, your brand.
                 </p>
@@ -89,10 +97,10 @@ export default function FeaturesSection() {
                     'Select your favorite theme & color palette',
                     'Customize fonts, buttons & style'
                   ].map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-2  text-[10px] text-foreground/80">
-                    <div>
-                      <Circle className='w-2 h-2 bg-blue-700 rounded border-none'/>
-                    </div>
+                    <li key={idx} className="flex items-center gap-2 text-muted-foreground  text-[10px] text-foreground/80">
+                      <div>
+                        <Circle className='w-2 h-2 bg-blue-700 rounded border-none' />
+                      </div>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -144,9 +152,13 @@ export default function FeaturesSection() {
             {/* Card 2: CRM Database */}
             <div className="bg-card/90 dark:bg-card/80 backdrop-blur-xl border hover:border-primary/40 rounded-2xl p-4 sm:p-5 shadow-md shadow-primary/5 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
               <div>
-                <h3 className="text-lg font-bold text-foreground mb-1.5">
-                  CRM Database
-                </h3>
+                <div className='flex gap-2 text-green-500'>
+                  <DatabaseIcon />
+                  <h3 className="text-lg font-bold text-foreground mb-1.5">
+                    CRM Database
+                  </h3>
+                </div>
+
 
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
                   All your customer data organized in one place. Track order history, preferences, and build lasting relationships.
@@ -209,9 +221,13 @@ export default function FeaturesSection() {
               <div>
                 {/* Top Section: Title, Description & Pill Tags */}
                 <div className="space-y-2 mb-3">
-                  <h3 className="text-lg font-bold text-foreground">
-                    Security by Design
-                  </h3>
+                  <div className='flex gap-2 text-purple-500'>
+                    <ShieldAlert />
+                    <h3 className="text-lg font-bold text-foreground">
+                      Security by Design
+                    </h3>
+                  </div>
+
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Industry-standard security measures to protect your business and customer information.
@@ -236,7 +252,7 @@ export default function FeaturesSection() {
                 {/* Middle Section: 3D Shield Visual Showcase Container (filling middle space) */}
                 <div className="bg-gradient-to-br from-primary/5 via-secondary/50 to-indigo-500/5 border border-border/80 rounded-xl p-3 shadow-inner relative overflow-hidden flex items-center justify-center my-3">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50 blur-xl pointer-events-none" />
-                  
+
                   <svg className="w-28 h-28 overflow-visible relative z-10" viewBox="0 0 100 100" fill="none">
                     <defs>
                       <linearGradient id="shieldOuterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -256,7 +272,7 @@ export default function FeaturesSection() {
                     {/* Floating Orbital Rings */}
                     <ellipse cx="50" cy="50" rx="44" ry="22" fill="none" stroke="hsl(var(--primary) / 0.3)" strokeWidth="1" strokeDasharray="3 3" transform="rotate(-20 50 50)" />
                     <ellipse cx="50" cy="50" rx="46" ry="18" fill="none" stroke="hsl(var(--primary) / 0.25)" strokeWidth="1" transform="rotate(15 50 50)" />
-                    
+
                     {/* Orbital Particles */}
                     <circle cx="12" cy="40" r="2" fill="hsl(var(--primary))" opacity="0.7" />
                     <circle cx="90" cy="35" r="2.5" fill="hsl(var(--primary))" opacity="0.8" />
@@ -343,9 +359,13 @@ export default function FeaturesSection() {
 
                 {/* Left Info Column */}
                 <div className="md:col-span-5 space-y-2.5">
-                  <h3 className="text-lg font-bold text-foreground">
-                    Real-time Analytics
-                  </h3>
+                  <div className="flex gap-2 text-red-500">
+                    <ChartNoAxesCombined />
+                    <h3 className="text-lg font-bold text-foreground">
+                      Real-time Analytics
+                    </h3>
+                  </div>
+
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Track your business performance with detailed analytics. Know your best products, top customers, and revenue trends at a glance.
@@ -359,7 +379,7 @@ export default function FeaturesSection() {
 
                 {/* Right Dashboard Mockup */}
                 <div className="md:col-span-7 bg-secondary/40 border border-border/80 rounded-xl p-3 shadow-inner space-y-2.5">
-                  
+
                   {/* 4 Stat Metrics */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                     {[
@@ -403,7 +423,7 @@ export default function FeaturesSection() {
                         <line x1="0" y1="12" x2="300" y2="12" stroke="currentColor" className="text-border/40" strokeDasharray="3 3" />
                         <line x1="0" y1="32" x2="300" y2="32" stroke="currentColor" className="text-border/40" strokeDasharray="3 3" />
                         <line x1="0" y1="52" x2="300" y2="52" stroke="currentColor" className="text-border/40" strokeDasharray="3 3" />
-                        
+
                         {/* Area */}
                         <path
                           d="M 0 60 Q 30 55, 60 42 T 120 35 T 180 38 T 240 22 T 300 10 L 300 68 L 0 68 Z"
@@ -444,9 +464,13 @@ export default function FeaturesSection() {
 
                 {/* Left Info Column */}
                 <div className="md:col-span-6 space-y-2.5">
-                  <h3 className="text-lg font-bold text-foreground">
-                    Smart Paste
-                  </h3>
+                  <div className="flex gap-2 text-yellow-500">
+                    <Copy/>
+                    <h3 className="text-lg font-bold text-foreground">
+                      Smart Paste
+                    </h3>
+                  </div>
+
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Simply paste customer details from WhatsApp, emails, or any source and our AI will automatically detect and organize the information.
@@ -454,9 +478,9 @@ export default function FeaturesSection() {
 
                   <ul className="space-y-1.5 pt-0.5">
                     {[
-                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none'/>, label: 'AI-powered extraction' },
-                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none'/>, label: 'Multi-source support' },
-                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none'/>, label: '99% accuracy rate' }
+                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none' />, label: 'AI-powered extraction' },
+                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none' />, label: 'Multi-source support' },
+                      { icon: <Circle className='w-2 h-2 bg-blue-700 rounded border-none' />, label: '99% accuracy rate' }
                     ].map((item, idx) => (
                       <li key={idx} className="flex items-center gap-1.5 text-xs text-foreground/80 font-medium">
                         <span className="text-xs">{item.icon}</span>
@@ -468,7 +492,7 @@ export default function FeaturesSection() {
 
                 {/* Right Floating Smart Paste Card */}
                 <div className="md:col-span-6 bg-secondary/40 border border-border/80 rounded-xl p-2.5 shadow-inner space-y-2">
-                  
+
                   {/* Header */}
                   <div className="flex items-center justify-between pb-0.5">
                     <span className="text-[11px] font-bold text-foreground">Smart Paste</span>
@@ -508,7 +532,7 @@ export default function FeaturesSection() {
         {/* Footer Trust Banner */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 text-muted-foreground text-xs sm:text-sm font-medium">
           <span>Trusted by 10,000+ resellers worldwide</span>
-          
+
           <div className="flex items-center -space-x-2 overflow-hidden">
             <img className="inline-block h-6 w-6 rounded-full ring-2 ring-background object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80" alt="Reseller User" />
             <img className="inline-block h-6 w-6 rounded-full ring-2 ring-background object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" alt="Reseller User" />
