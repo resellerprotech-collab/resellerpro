@@ -22,6 +22,9 @@ const nextConfig = withPWA({
     ],
   },
   experimental: {
+    staleTimes: {
+      dynamic: 0,
+    },
     serverActions: {
       bodySizeLimit: '10mb',
     },
