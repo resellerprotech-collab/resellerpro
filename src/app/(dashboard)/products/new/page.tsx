@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CreatableSelect } from '@/components/ui/creatable-select'
 import { useToast } from '@/hooks/use-toast'
 import { ArrowLeft, Save, Upload, X, Loader2, WifiOff, Lock, Video, Music } from 'lucide-react'
 import Link from 'next/link'
@@ -19,6 +20,7 @@ import { useOfflineQueue } from '@/lib/hooks/useOfflineQueue'
 import { useQueryClient } from '@tanstack/react-query'
 import { createProduct } from '../actions'
 import { RequireVerification } from '@/components/shared/RequireVerification'
+import { CreateCategoryModal } from '@/components/categories/CreateCategoryModal'
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -40,6 +42,29 @@ export default function NewProductPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<{label: string, value: string}[]>([])
+  
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+
+  // Fetch unique categories
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('user_id', user.id)
+        
+      if (data) {
+        const unique = Array.from(new Set(data.map(d => d.name).filter(c => c && c.trim() !== '')))
+        setCategories(unique.map(c => ({ label: c, value: c })))
+      }
+    }
+    fetchCategories()
+  }, [supabase.auth])
   const [sku, setSku] = useState('')
   const [costPrice, setCostPrice] = useState('')
   const [sellingPrice, setSellingPrice] = useState('')
@@ -477,11 +502,17 @@ export default function NewProductPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
+                  <CreatableSelect
+                    options={categories}
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Electronics"
+                    onValueChange={setCategory}
+                    onCreateOption={(name) => {
+                      setNewCategoryName(name)
+                      setIsCategoryModalOpen(true)
+                    }}
+                    placeholder="Select or create..."
+                    searchPlaceholder="Search categories..."
+                    emptyMessage="No categories found."
                     disabled={isLoading}
                   />
                 </div>
@@ -663,6 +694,15 @@ export default function NewProductPage() {
           </Card>
         </form>
         <LimitReachedModal {...limitModalProps} />
+        <CreateCategoryModal 
+          open={isCategoryModalOpen} 
+          onOpenChange={setIsCategoryModalOpen}
+          initialName={newCategoryName}
+          onSuccess={(name) => {
+            setCategories(prev => [...prev, { label: name, value: name }])
+            setCategory(name)
+          }}
+        />
       </div>
     </RequireVerification>
   )
