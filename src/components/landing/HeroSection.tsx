@@ -47,7 +47,7 @@ export default function HeroSection() {
       <div className="block lg:hidden">
 
           {/* TOP: Text content — padded */}
-          <div className="px-5 pt-2 pb-5 space-y-4">
+          <div className="px-5 pt-10 pb-5 space-y-4">
             <h1 className="text-3xl md:text-5xl font-bold leading-[1.15] text-foreground" style={{ fontFamily: "'Switzer', sans-serif" }}>
               Supercharge your{' '}
               <span className="relative inline-block">
@@ -82,7 +82,7 @@ export default function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1 w-full">
               <Link href="/signup" className="inline-block group w-full">
-                <button className="px-5 py-3 w-full justify-center bg-primary text-primary-foreground rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center gap-2 relative overflow-hidden group/btn">
+                <button className="px-5 py-3 w-full justify-center bg-primary text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center gap-2 relative overflow-hidden group/btn">
                   <span className="relative z-10 flex items-center gap-1.5">
                     Get Started Now
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -106,18 +106,18 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* BOTTOM: Phone section — blue gradient background */}
-          <div className="relative overflow-hidden rounded-t-[36px] bg-gradient-to-b from-[#dce9f8] via-[#c5d8f5] to-[#b0c8ef] dark:from-slate-800 dark:via-blue-950 dark:to-slate-900" style={{ height: '450px' }}>
+          {/* BOTTOM: Phone section — dark mode blue gradient background */}
+          <div className="relative overflow-hidden rounded-t-[36px] dark:bg-gradient-to-br dark:from-blue-900/80 dark:via-blue-950 dark:to-slate-900" style={{ height: '450px' }}>
 
-            {/* Blue radial glow */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Blue radial glow — dark mode only */}
+            <div className="hidden dark:flex absolute inset-0 items-center justify-center pointer-events-none">
               <div className="absolute w-[500px] h-[500px] rounded-full bg-blue-500/30 blur-[100px]" />
               <div className="absolute w-[320px] h-[320px] rounded-full bg-blue-400/40 blur-[65px]" />
               <div className="absolute w-[160px] h-[160px] rounded-full bg-blue-300/50 blur-[35px]" />
             </div>
 
-            {/* White concentric rings — visible on blue bg */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* White concentric rings — dark mode only */}
+            <div className="hidden dark:flex absolute inset-0 items-center justify-center pointer-events-none">
               <div className="absolute w-[420px] h-[420px] rounded-full border border-white/20" />
               <div className="absolute w-[340px] h-[340px] rounded-full border border-white/28" />
               <div className="absolute w-[260px] h-[260px] rounded-full border border-white/35" />
@@ -269,7 +269,7 @@ export default function HeroSection() {
         </div>{/* end mobile-only block */}
 
       {/* Desktop container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div className="relative z-10 hidden lg:grid lg:grid-cols-2 lg:gap-0 items-center">
 
           {/* LEFT: Text Content */}
@@ -309,7 +309,7 @@ export default function HeroSection() {
 
             <div className="flex items-center justify-start gap-4 pt-2">
               <Link href="/signup" className="group">
-                <button className="px-4 py-3 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground rounded-2xl font-semibold text-sm transition-all duration-300 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center justify-center gap-2 relative overflow-hidden group/btn">
+                <button className="px-4 py-3 bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl font-semibold text-sm transition-all duration-300 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.02] flex items-center justify-center gap-2 relative overflow-hidden group/btn">
                   <span className="relative z-10 flex items-center gap-2">
                     Start Free Trial
                     <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
