@@ -41,7 +41,7 @@ export class CmsSectionsService {
       return existingSections as CmsSectionItem[]
     }
 
-    // If no sections found, auto-seed from profile shop_theme
+    // Auto-seed from profile shop_theme JSONB
     return await this.seedSectionsFromProfileTheme(userId)
   }
 
@@ -84,26 +84,10 @@ export class CmsSectionsService {
       },
       {
         user_id: userId,
-        section_type: 'categories',
-        label: 'Category Grid Showcase',
-        is_enabled: theme.categoryShowcase !== false,
-        sort_order: 2,
-        content: {}
-      },
-      {
-        user_id: userId,
-        section_type: 'featured_products',
-        label: 'Featured Products Grid',
-        is_enabled: true,
-        sort_order: 3,
-        content: { title: 'Featured Products', subtitle: 'Handpicked Selections' }
-      },
-      {
-        user_id: userId,
         section_type: 'promotional_banner',
         label: 'Promotional Banner Section',
         is_enabled: theme.promoSectionEnabled !== false,
-        sort_order: 4,
+        sort_order: 2,
         content: {
           promoLayout: theme.promoLayout || 'full_width',
           promoFullBanner: theme.promoFullBanner || {},
@@ -113,18 +97,10 @@ export class CmsSectionsService {
       },
       {
         user_id: userId,
-        section_type: 'best_sellers',
-        label: 'Best Sellers Showcase',
-        is_enabled: true,
-        sort_order: 5,
-        content: { title: 'Best Sellers', subtitle: 'Customer Favorites' }
-      },
-      {
-        user_id: userId,
         section_type: 'offer_strip',
         label: 'Special Promotion Offer Strip',
         is_enabled: theme.bannerEnabled !== false,
-        sort_order: 6,
+        sort_order: 3,
         content: {
           bannerText: theme.bannerText || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499',
           promoCode: 'SAVE10'
@@ -135,7 +111,7 @@ export class CmsSectionsService {
         section_type: 'why_choose_us',
         label: 'Trust Badges & Value Propositions',
         is_enabled: theme.trustBadgesEnabled !== false,
-        sort_order: 7,
+        sort_order: 4,
         content: { trustBadges: theme.trustBadges || ['secure_payment', 'fast_delivery', 'easy_returns'] }
       },
       {
@@ -143,21 +119,13 @@ export class CmsSectionsService {
         section_type: 'testimonials',
         label: 'Customer Reviews & Testimonials',
         is_enabled: theme.testimonialsEnabled !== false,
-        sort_order: 8,
+        sort_order: 5,
         content: {
           testimonials: theme.testimonials || [
             { name: 'Priya Sharma', text: 'Loved the quality of the products! Delivery was super fast.', rating: 5 },
             { name: 'Rahul Verma', text: 'Great seller and prompt WhatsApp communication.', rating: 5 }
           ]
         }
-      },
-      {
-        user_id: userId,
-        section_type: 'newsletter',
-        label: 'Newsletter Signup Section',
-        is_enabled: true,
-        sort_order: 9,
-        content: { title: 'Join Our VIP Circle', subtitle: 'Subscribe to get exclusive discount codes & new arrival alerts.' }
       }
     ]
 
@@ -205,6 +173,33 @@ export class CmsSectionsService {
       .single()
 
     if (error) throw error
+
+    // Sync hero content back to profile.shop_theme for Storefront compatibility
+    if (sectionType === 'hero' && payload.content) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('shop_theme')
+        .eq('id', userId)
+        .single()
+
+      const currentTheme = profile?.shop_theme || {}
+      const updatedTheme = {
+        ...currentTheme,
+        heroTitle: payload.content.heroTitle ?? currentTheme.heroTitle,
+        heroSubtitle: payload.content.heroSubtitle ?? currentTheme.heroSubtitle,
+        heroCtaText: payload.content.heroCtaText ?? currentTheme.heroCtaText,
+        heroCtaLink: payload.content.heroCtaLink ?? currentTheme.heroCtaLink,
+        heroImageUrl: payload.content.heroImageUrl ?? currentTheme.heroImageUrl,
+        heroImages: payload.content.heroImages ?? currentTheme.heroImages,
+        heroBanners: payload.content.heroBanners ?? currentTheme.heroBanners
+      }
+
+      await supabase
+        .from('profiles')
+        .update({ shop_theme: updatedTheme, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+    }
+
     return data
   }
 
