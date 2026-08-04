@@ -41,7 +41,7 @@ export function ProductCard({ product, theme, layout = 'grid' }: ProductCardProp
   }
 
   const sellingPrice = product.selling_price || 0
-  const originalPrice = product.original_price || sellingPrice * 1.25 // Fake original price if not provided for demo aesthetic
+  const originalPrice = product.compare_at_price || product.original_price || (sellingPrice > 0 ? sellingPrice * 1.25 : 0)
   const hasDiscount = originalPrice > sellingPrice
   const discountPercent = hasDiscount ? Math.round(((originalPrice - sellingPrice) / originalPrice) * 100) : 0
   const reviewCount = Number(product.review_count || 0)

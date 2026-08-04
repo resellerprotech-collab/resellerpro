@@ -59,6 +59,8 @@ export interface Product {
   image_url?: string
   cost_price: number
   selling_price: number
+  compare_at_price?: number | null
+  badge?: string | null
   profit: number
   profit_margin: number
   stock_status: StockStatus

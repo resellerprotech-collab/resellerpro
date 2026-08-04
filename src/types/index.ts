@@ -178,6 +178,7 @@ export interface Product {
   selling_price: number
   price?: number // alias for selling_price on storefront
   compare_at_price?: number | null
+  badge?: string | null
   profit: number
   profit_margin: number
   stock_status: StockStatus
