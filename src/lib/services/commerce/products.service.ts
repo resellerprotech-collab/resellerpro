@@ -17,7 +17,6 @@ export class CommerceProductsService {
       .from('products')
       .select('*', { count: 'exact' })
       .eq('user_id', storeId)
-      .eq('is_active', true)
 
     if (options.category && options.category.trim()) {
       query = query.eq('category', options.category.trim())
@@ -52,7 +51,6 @@ export class CommerceProductsService {
       .select('*')
       .eq('user_id', storeId)
       .eq('id', productId)
-      .eq('is_active', true)
       .single()
 
     if (error || !data) return null
