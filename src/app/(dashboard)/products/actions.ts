@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const ProductSchema = z.object({
@@ -145,6 +146,19 @@ export async function createProduct(prev: FormState, formData: FormData): Promis
     return { success: false, message: error.message };
   }
 
+  // Revalidate specific seller storefront & admin products list
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('shop_slug')
+    .eq('id', user.id)
+    .single();
+
+  revalidatePath('/products');
+  if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`);
+    revalidatePath(`/store/${profile.shop_slug}/shop`);
+  }
+
   return { success: true, message: "Product created successfully" };
 }
 
@@ -209,5 +223,57 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
     return { success: false, message: error.message };
   }
 
+  // Revalidate specific seller storefront & admin products list
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('shop_slug')
+    .eq('id', user.id)
+    .single();
+
+  revalidatePath('/products');
+  if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`);
+    revalidatePath(`/store/${profile.shop_slug}/shop`);
+  }
+
   return { success: true, message: "Product updated" };
+}
+
+// ⛳ REVALIDATE STOREFRONT ACTION (for client component triggers)
+export async function revalidateStorefrontAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('shop_slug')
+    .eq('id', user.id)
+    .single();
+
+  revalidatePath('/products');
+  if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`);
+    revalidatePath(`/store/${profile.shop_slug}/shop`);
+  }
+}
+
+// ⛳ DELETE PRODUCT ACTION
+export async function deleteProductAction(productId: string): Promise<FormState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "Not authenticated" };
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", productId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  await revalidateStorefrontAction();
+  return { success: true, message: "Product deleted" };
 }

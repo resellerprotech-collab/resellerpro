@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useQueryClient } from '@tanstack/react-query'
+import { revalidateStorefrontAction } from '@/app/(dashboard)/products/actions'
 import { useToast } from '@/hooks/use-toast'
 import { MoreVertical, Edit, Eye, Trash, Copy, Package } from 'lucide-react'
 import { WhatsAppShare } from './WhatsAppShare'
@@ -81,6 +82,8 @@ export function ProductRow({ product }: { product: Product }) {
         description: `Created a copy of "${product.name}"`,
       })
 
+      revalidateStorefrontAction()
+
       // Invalidate react-query cache to refresh the list immediately
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['products-stats'] })
@@ -113,6 +116,8 @@ export function ProductRow({ product }: { product: Product }) {
         title: 'Product Deleted',
         description: `"${product.name}" has been removed.`,
       })
+
+      revalidateStorefrontAction()
 
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['products-stats'] }) // Refresh stats too
