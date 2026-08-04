@@ -237,10 +237,13 @@ export default function OnboardingPage() {
   // ── Step saves ─────────────────────────────────────
   const saveStep2 = async () => {
     setSaving(true)
-    // Run update with a catch/fallback in case the database hasn't migrated business_type column
-    const { error } = await supabase.from('profiles').update({ business_type: businessType }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ 
+      business_type: businessType,
+      onboarding_step: 3
+    }).eq('id', user.id)
     if (error) {
       console.warn('Skipping business_type save (column not created yet):', error.message)
+      await supabase.from('profiles').update({ onboarding_step: 3 }).eq('id', user.id)
     }
     setSaving(false)
     goNext()
@@ -248,10 +251,13 @@ export default function OnboardingPage() {
 
   const saveStep3 = async () => {
     setSaving(true)
-    // Run update with a catch/fallback in case the database hasn't migrated business_categories column
-    const { error } = await supabase.from('profiles').update({ business_categories: businessCategories }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ 
+      business_categories: businessCategories,
+      onboarding_step: 4
+    }).eq('id', user.id)
     if (error) {
       console.warn('Skipping business_categories save (column not created yet):', error.message)
+      await supabase.from('profiles').update({ onboarding_step: 4 }).eq('id', user.id)
     }
     setSaving(false)
     goNext()
@@ -262,11 +268,12 @@ export default function OnboardingPage() {
     if (slugStatus === 'taken' || slugStatus === 'checking') return
     setSaving(true)
     
-    // Try saving all fields including new store_slug column
+    // Try saving all fields including new store_slug column and step
     const { error } = await supabase.from('profiles').update({
       shop_name: businessName.trim(),
       shop_slug: storeSlug,
       store_slug: storeSlug,
+      onboarding_step: 5,
     }).eq('id', user.id)
 
     if (error) {
@@ -275,6 +282,7 @@ export default function OnboardingPage() {
       await supabase.from('profiles').update({
         shop_name: businessName.trim(),
         shop_slug: storeSlug,
+        onboarding_step: 5,
       }).eq('id', user.id)
     }
 

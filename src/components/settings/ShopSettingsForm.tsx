@@ -1002,7 +1002,7 @@ export default function ShopSettingsForm({
               {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
             </p>
             <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
-              resellerpro.in/{formData.shop_slug} · {productCount} products
+              {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}{formData.shop_slug} · {productCount} products
             </p>
           </div>
           <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer"
@@ -1035,7 +1035,9 @@ export default function ShopSettingsForm({
             <Section icon={Globe} title="Store URL">
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-800 rounded-l-lg text-slate-500 dark:text-slate-400 text-sm shrink-0">resellerpro.in/</div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-800 rounded-l-lg text-slate-500 dark:text-slate-400 text-sm shrink-0">
+                    {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}
+                  </div>
                   <Input id="shop_slug" name="shop_slug" value={formData.shop_slug} onChange={handleChange} placeholder="your-shop-name" className="rounded-l-none" disabled={isPending} />
                 </div>
                 <p className="text-xs text-muted-foreground">Lowercase letters, numbers, hyphens only.</p>
