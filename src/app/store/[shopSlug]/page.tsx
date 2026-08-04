@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { ShopTheme, Product } from '@/types'
 import { StorefrontClient } from './StorefrontClient'
 
+export const revalidate = 3600 // ISR: background revalidation every hour, instant on-demand via revalidatePath
+
 interface Props {
   params: { shopSlug: string }
 }
@@ -66,9 +68,12 @@ export default async function StorePage({ params }: Props) {
 
   const theme = profile.shop_theme as ShopTheme | null
 
-  // Fetch CMS sections (with auto-seed fallback)
-  const { CmsSectionsService } = await import('@/lib/services/cms/sections.service')
-  const cmsSections = await CmsSectionsService.getSections(profile.id)
+  // Fetch CMS sections only when in Headless mode
+  let cmsSections = undefined
+  if (profile.store_mode === 'headless') {
+    const { CmsSectionsService } = await import('@/lib/services/cms/sections.service')
+    cmsSections = await CmsSectionsService.getSections(profile.id)
+  }
 
   return (
     <StorefrontClient

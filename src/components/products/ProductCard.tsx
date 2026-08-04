@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { revalidateStorefrontAction } from '@/app/(dashboard)/products/actions'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -121,6 +122,8 @@ export function ProductCard({ product }: { product: Product }) {
         title: 'Product Deleted ✓',
         description: `"${product.name}" has been permanently deleted`,
       })
+
+      revalidateStorefrontAction()
 
       setShowDeleteDialog(false)
       queryClient.invalidateQueries({ queryKey: ['products'] })
