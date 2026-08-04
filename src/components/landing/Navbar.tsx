@@ -20,7 +20,7 @@ export default function Navbar() {
                 alt="ResellerPro Logo"
                 width={64}
                 height={64}
-                className="h-16 w-16 object-contain mr-2"
+                className="h-14 w-12 object-contain mr-2"
               />
             </div>
             <span className="text-2xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
