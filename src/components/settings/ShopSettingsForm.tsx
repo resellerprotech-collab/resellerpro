@@ -83,7 +83,7 @@ export default function ShopSettingsForm({
 
   const [formData, setFormData] = useState({
     // Basic
-    shop_slug: profile.shop_slug || (profile as any).store_slug || '',
+    shop_slug: profile.shop_slug || '',
     shop_description: profile.shop_description || '',
     shop_logo_url: theme.shop_logo_url || profile.shop_logo_url || '',
     // Appearance
