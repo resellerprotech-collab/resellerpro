@@ -40,6 +40,8 @@ export interface ShopTheme {
   secondaryColor?: string
   accentColor: string
   neutralDarkColor?: string
+  navbarBgColor?: string
+  navbarTextColor?: string
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
   // Advanced (existing)
@@ -159,6 +161,17 @@ export interface Profile {
   business_email?: string | null
   business_phone?: string | null
   business_address?: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ─── Category ─────────────────────────────────────────────────────────────────
+
+export interface Category {
+  id: string
+  user_id: string
+  name: string
+  image_url?: string
   created_at: string
   updated_at: string
 }

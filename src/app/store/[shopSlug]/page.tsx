@@ -57,14 +57,20 @@ export default async function StorePage({ params }: Props) {
     price: p.selling_price,
   }))
 
-  // Extract categories
-  const categories = Array.from(
-    new Map(
-      products
-        .filter((p) => p.category)
-        .map((p) => [p.category, p.category])
-    ).values()
-  ) as string[]
+  // Fetch managed categories from DB
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('name, image_url')
+    .eq('user_id', profile.id)
+
+  const managedCategoriesMap = new Map((dbCategories || []).map(c => [c.name.toLowerCase(), c]))
+
+  // Extract categories from products and merge with DB categories
+  const categoriesSet = new Set(products.filter((p) => p.category).map((p) => p.category!))
+  const categories = Array.from(categoriesSet).map(name => {
+    return managedCategoriesMap.get(name.toLowerCase()) || { name, image_url: undefined }
+  })
+
 
   const theme = profile.shop_theme as ShopTheme | null
 
