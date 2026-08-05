@@ -146,7 +146,6 @@ export async function signup(
 
   // Guaranteed Profile Creation / Self-Healing Upsert
   try {
-    const defaultSlug = email ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : `user${adminUser.user.id.slice(0, 6)}`
     await adminSupabase
       .from('profiles')
       .upsert({
@@ -155,7 +154,6 @@ export async function signup(
         full_name: fullName,
         business_name: businessName || 'My Shop',
         phone: phone || null,
-        shop_slug: defaultSlug,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id', ignoreDuplicates: true })
   } catch (e) {

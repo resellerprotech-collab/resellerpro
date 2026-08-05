@@ -162,7 +162,7 @@ export default function OnboardingPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed, business_type, business_categories, store_slug, shop_slug, shop_name, product_count_range')
+        .select('onboarding_completed, business_type, business_categories, shop_slug, shop_name, product_count_range')
         .eq('id', user.id)
         .single()
 
@@ -177,7 +177,7 @@ export default function OnboardingPage() {
       // Only set slug if user had previously entered business name or custom slug
       if (profile?.shop_name) {
         setBusinessName(profile.shop_name)
-        const slug = profile.store_slug || profile.shop_slug || ''
+        const slug = profile.shop_slug || ''
         setStoreSlug(slug)
         if (slug) setSlugStatus('available')
       }
@@ -270,23 +270,12 @@ export default function OnboardingPage() {
     if (slugStatus === 'taken' || slugStatus === 'checking') return
     setSaving(true)
     
-    // Try saving all fields including new store_slug column and step
-    const { error } = await supabase.from('profiles').update({
+    await supabase.from('profiles').update({
+      business_name: businessName.trim(),
       shop_name: businessName.trim(),
       shop_slug: storeSlug,
-      store_slug: storeSlug,
       onboarding_step: 5,
     }).eq('id', user.id)
-
-    if (error) {
-      console.warn('Fallback: Saving business name/slug without store_slug:', error.message)
-      // Save using only existing guaranteed columns
-      await supabase.from('profiles').update({
-        shop_name: businessName.trim(),
-        shop_slug: storeSlug,
-        onboarding_step: 5,
-      }).eq('id', user.id)
-    }
 
     setSaving(false)
     goNext()

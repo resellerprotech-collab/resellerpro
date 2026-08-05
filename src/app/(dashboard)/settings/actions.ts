@@ -508,24 +508,13 @@ export async function updateShopSettings(formData: FormData) {
 
     if (shop_slug) {
       updateData.shop_slug = shop_slug
-      updateData.store_slug = shop_slug
     }
 
-    // Try updating profiles table with all fields
+    // Update profiles table
     let { error } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
-
-    // Fallback if store_slug column doesn't exist yet on profiles
-    if (error && error.message.includes('store_slug')) {
-      delete updateData.store_slug
-      const retry = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', userId)
-      error = retry.error
-    }
 
     // Fallback if shop_logo_url column is attempted or requested directly
     if (error && error.message.includes('shop_logo_url')) {
