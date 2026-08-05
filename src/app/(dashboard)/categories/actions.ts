@@ -107,7 +107,7 @@ export async function updateCategoryAction(formData: FormData) {
   }
 
   try {
-    let updateData: any = { name }
+    const updateData: any = { name }
 
     if (removeImage) {
       updateData.image_url = null
