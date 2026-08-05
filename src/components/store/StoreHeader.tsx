@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, ShoppingBag, Heart, User, Menu, X, Instagram, Facebook, Twitter, Youtube, Sparkles, MessageCircle } from 'lucide-react'
@@ -128,14 +128,20 @@ export function StoreHeader({
       )}
 
       {/* Sticky Main Navbar */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
+      <header 
+        className="sticky top-0 z-40 backdrop-blur-md border-b shadow-sm transition-all duration-300"
+        style={{ 
+          backgroundColor: 'var(--store-primary-10)',
+          borderColor: 'var(--store-primary-20)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           
           {/* Left: Brand Logo & Name */}
           <Link href={`/store/${shopSlug}`} className="flex items-center gap-3 flex-shrink-0 group">
             {logoUrl ? (
-              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
-                <Image src={logoUrl} alt={shopName} fill className="object-cover" />
+              <div className="relative h-10 w-auto min-w-[40px] max-w-[160px] flex items-center transition-transform duration-300 group-hover:scale-105">
+                <img src={logoUrl} alt={shopName} className="object-contain object-left h-full w-auto" />
               </div>
             ) : (
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shadow-sm" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
