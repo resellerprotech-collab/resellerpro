@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
   Star, Truck, ShieldCheck, MessageCircle, ArrowRight, ChevronDown,
   RotateCcw, Sparkles, Check, HeartHandshake, ChevronLeft, ChevronRight,
-  Folder, Watch, Headphones, Shirt, Laptop, Package, Layers, Home
+  Watch, Headphones, Shirt, Laptop, Package, Layers, Home
 } from 'lucide-react'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreProductCard } from '@/components/store/StoreProductCard'
@@ -46,6 +46,18 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
   const [searchQuery, setSearchQuery] = useState('')
   const setShopSlug = useCartStore((s) => s.setShopSlug)
   const { toast } = useToast()
+  
+  const categorySliderRef = useRef<HTMLDivElement>(null)
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categorySliderRef.current) {
+      const scrollAmount = 400
+      categorySliderRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      })
+    }
+  }
 
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubscribing, setNewsletterSubscribing] = useState(false)
@@ -309,35 +321,83 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x">
-            <Link
-              href={`/store/${shopSlug}/shop`}
-              className="snap-start shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-full border border-slate-100 hover:border-slate-200 transition-all font-bold text-xs gap-2 bg-slate-50/50 hover:bg-slate-50 group"
-            >
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-800 shadow-sm group-hover:scale-105 transition-transform">
-                <Folder className="w-4 h-4 text-slate-700" />
-              </div>
-              <span className="text-[10px] text-slate-600 font-extrabold uppercase">All Products</span>
-            </Link>
-
-            {displayCategories.map((cat) => (
-              <Link
-                key={cat.name}
-                href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat.name)}`}
-                className="snap-start shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-full border border-slate-100 hover:border-slate-200 transition-all font-bold text-xs gap-2 bg-slate-50/50 hover:bg-slate-50 group"
+          <div className="relative group/slider">
+            {/* Left Scroll Button */}
+            {displayCategories.length >= 5 && (
+              <button
+                type="button"
+                onClick={() => scrollCategories('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-800 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 focus:opacity-100 hidden md:flex"
+                aria-label="Scroll left"
               >
-                <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden relative">
-                  {cat.image_url ? (
-                    <Image src={cat.image_url} alt={cat.name} fill className="object-cover" sizes="40px" />
-                  ) : (
-                    getCategoryIcon(cat.name)
-                  )}
-                </div>
-                <span className="text-[10px] text-slate-600 font-extrabold uppercase tracking-tight line-clamp-1 w-full px-1 text-center">
-                  {cat.name}
-                </span>
-              </Link>
-            ))}
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Scrollable category list */}
+            <div 
+              ref={categorySliderRef}
+              className={`flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x scroll-smooth ${
+                displayCategories.length < 5 ? 'justify-start md:justify-center' : 'justify-start'
+              }`}
+            >
+              {displayCategories.map((cat) => {
+                const hasImage = !!cat.image_url
+                return (
+                  <Link
+                    key={cat.name}
+                    href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat.name)}`}
+                    className={`snap-start shrink-0 flex flex-col justify-end p-3.5 w-52 sm:w-60 aspect-[1.8/1] rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md group relative overflow-hidden ${
+                      hasImage 
+                        ? "border-transparent text-white" 
+                        : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-700 hover:border-slate-200"
+                    }`}
+                  >
+                    {hasImage ? (
+                      <>
+                        {/* Category Image Background */}
+                        <Image 
+                          src={cat.image_url!} 
+                          alt={cat.name} 
+                          fill 
+                          className="object-cover absolute inset-0 group-hover:scale-115 transition-transform duration-500" 
+                          sizes="(max-width: 640px) 224px, 256px" 
+                        />
+                        {/* Dark Overlay for Readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10" />
+                        <span className="relative z-20 text-[11px] sm:text-xs font-black uppercase tracking-wider text-center w-full line-clamp-2">
+                          {cat.name}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {/* Fallback Icon Style */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pb-8">
+                          <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                            {getCategoryIcon(cat.name)}
+                          </div>
+                        </div>
+                        <span className="relative z-10 text-[11px] sm:text-xs font-black uppercase tracking-wider text-center w-full line-clamp-2">
+                          {cat.name}
+                        </span>
+                      </>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+
+            {/* Right Scroll Button */}
+            {displayCategories.length >= 5 && (
+              <button
+                type="button"
+                onClick={() => scrollCategories('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center text-slate-800 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all opacity-0 group-hover/slider:opacity-100 focus:opacity-100 hidden md:flex"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </section>
 

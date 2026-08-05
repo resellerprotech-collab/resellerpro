@@ -42,6 +42,7 @@ export interface ShopTheme {
   neutralDarkColor?: string
   navbarBgColor?: string
   navbarTextColor?: string
+  logoIncludesName?: boolean
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
   // Advanced (existing)
