@@ -40,6 +40,8 @@ export interface ShopTheme {
   secondaryColor?: string
   accentColor: string
   neutralDarkColor?: string
+  navbarBgColor?: string
+  navbarTextColor?: string
   layout: 'grid' | 'list'
   preset: 'midnight' | 'rose' | 'mint' | 'ocean'
   // Advanced (existing)
