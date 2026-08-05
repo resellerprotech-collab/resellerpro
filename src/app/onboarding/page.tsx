@@ -35,6 +35,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { saveOnboardingStep4Action, saveOnboardingStep5Action } from './actions'
 
 // ─────────────────────────────────────────────────────
 // Constants
@@ -269,33 +270,32 @@ export default function OnboardingPage() {
     if (!businessName.trim()) return
     if (slugStatus === 'taken' || slugStatus === 'checking') return
     setSaving(true)
-    
-    await supabase.from('profiles').update({
-      business_name: businessName.trim(),
-      shop_name: businessName.trim(),
-      shop_slug: storeSlug,
-      onboarding_step: 5,
-    }).eq('id', user.id)
 
-    setSaving(false)
-    goNext()
+    try {
+      const res = await saveOnboardingStep4Action(businessName, storeSlug)
+      if (!res.success) {
+        console.warn('[saveStep4] Server action fallback to client update:', res.message)
+        await supabase.from('profiles').update({
+          business_name: businessName.trim(),
+          shop_name: businessName.trim(),
+          shop_slug: storeSlug,
+          onboarding_step: 5,
+        }).eq('id', user.id)
+      }
+      goNext()
+    } finally {
+      setSaving(false)
+    }
   }
 
   const saveStep5AndFinish = async () => {
     if (!productCountRange) return
     setSaving(true)
     try {
-      // Mark onboarding complete & try saving product count range
-      const { error } = await supabase.from('profiles').update({
-        product_count_range: productCountRange,
-        onboarding_completed: true,
-        onboarding_step: TOTAL_STEPS + 1,
-      }).eq('id', user.id)
-
-      if (error) {
-        console.warn('Fallback: Marking onboarding complete without product_count_range:', error.message)
-        // Mark completed using existing columns
+      const res = await saveOnboardingStep5Action(productCountRange)
+      if (!res.success) {
         await supabase.from('profiles').update({
+          product_count_range: productCountRange,
           onboarding_completed: true,
           onboarding_step: TOTAL_STEPS + 1,
         }).eq('id', user.id)
