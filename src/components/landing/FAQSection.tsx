@@ -1,70 +1,48 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Minus, HelpCircle, Sparkles } from 'lucide-react';
+import { Plus, Minus, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FAQItemProps {
   question: string;
   answer: string;
-  index: number;
   isOpen: boolean;
   onToggle: () => void;
 }
 
-function FAQItem({ question, answer, index, isOpen, onToggle }: FAQItemProps) {
+function FAQItem({ question, answer, isOpen, onToggle }: FAQItemProps) {
   return (
-    <div
-      className="group border-2 border-border/50 rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300 hover:shadow-lg bg-card"
-      style={{ animationDelay: `${index * 100}ms` }}
-    >
-      <div
-        className="w-full flex items-center justify-between p-6 text-left hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 transition-all duration-300"
+    <div className="border border-slate-200 rounded-xl bg-white transition-all duration-200 overflow-hidden hover:border-slate-300">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 sm:p-5 text-left focus:outline-none group cursor-pointer"
+        aria-expanded={isOpen}
       >
-        <div className="flex items-start space-x-4 flex-1">
-          <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${isOpen
-            ? 'bg-gradient-to-br from-primary to-blue-600'
-            : 'bg-secondary group-hover:bg-primary/10'
-            }`}>
-            <HelpCircle
-              className={`transition-colors duration-300 ${isOpen ? 'text-white' : 'text-muted-foreground group-hover:text-primary'
-                }`}
-              size={20}
-            />
+        <div className="flex items-center gap-3 sm:gap-4 flex-1 pr-4">
+          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center flex-shrink-0 group-hover:text-blue-600 transition-colors">
+            <HelpCircle className="w-4 h-4" />
           </div>
-          <h3 className={`text-lg font-semibold transition-colors duration-300 pr-4 ${isOpen ? 'text-primary' : 'text-foreground group-hover:text-primary'
-            }`}>
+          <span className="text-xs sm:text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors">
             {question}
-          </h3>
+          </span>
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggle();
-          }}
-          className={`relative z-10 flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${isOpen
-            ? 'bg-primary rotate-180'
-            : 'bg-secondary group-hover:bg-primary/20 hover:bg-primary/30'
-            }`}
-          aria-label={isOpen ? "Collapse answer" : "Expand answer"}
-        >
-          {isOpen ? (
-            <Minus className="text-white" size={20} strokeWidth={3} />
-          ) : (
-            <Plus className="text-muted-foreground group-hover:text-primary" size={20} strokeWidth={3} />
-          )}
-        </button>
-      </div>
+        <div className={`w-7 h-7 flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-in-out transform ${
+          isOpen 
+            ? 'bg-blue-600 text-white rounded-full rotate-180 shadow-sm' 
+            : 'bg-slate-100 text-slate-500 rounded-md group-hover:bg-blue-500/10 group-hover:text-blue-600'
+        }`}>
+          <Plus className={`w-4 h-4 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-45' : 'rotate-0'}`} />
+        </div>
+      </button>
 
-      <div
-        className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96' : 'max-h-0'
-          }`}
-      >
-        <div className="p-6 pt-0 pl-20 bg-gradient-to-r from-primary/5 to-transparent">
-          <p className="text-muted-foreground leading-relaxed">
+      <div className={`grid transition-all duration-300 ease-in-out ${
+        isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+      }`}>
+        <div className="overflow-hidden">
+          <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 pl-11 sm:pl-14 text-xs sm:text-sm text-slate-600 leading-relaxed">
             {answer}
-          </p>
+          </div>
         </div>
       </div>
     </div>
@@ -73,6 +51,7 @@ function FAQItem({ question, answer, index, isOpen, onToggle }: FAQItemProps) {
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showAllMobile, setShowAllMobile] = useState(false);
 
   const faqs = [
     {
@@ -122,88 +101,90 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq" className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-background">
-      {/* Background Effects */}
-      <div className="absolute top-1/4 right-10 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-      <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-blue-200/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-
-      <div className="max-w-4xl mx-auto">
+    <section id="faq" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-white text-slate-900 relative">
+      {/* Top Section Container */}
+      <div className="max-w-3xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-16 space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-primary/10 px-4 py-2 rounded-full text-sm font-medium text-primary mb-4 border border-primary/20">
-            <Sparkles size={16} />
-            <span>Got Questions?</span>
-          </div>
-
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground">
-            Frequently Asked{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">
-              Questions
-            </span>
+        <div className="text-center mb-10 sm:mb-12 space-y-2">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight">
+            Frequently Asked <span className="text-blue-600">Questions</span>
           </h2>
 
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to know about Reseller Pro. Can't find what you're looking for?
-            <a href="mailto:resellerpro.tech@gmail.com" className="text-blue-600 hover:text-blue-700 font-medium ml-1">
-              Contact us
-            </a>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
+            Everything you need to know about Reseller Pro. Can't find what you're looking for?{' '}
+         
           </p>
         </div>
 
-        {/* FAQ Items */}
-        <div className="space-y-4 mb-16">
+        {/* FAQ Items Accordion */}
+        <div className="space-y-3 mb-12">
           {faqs.map((faq, index) => (
-            <FAQItem
+            <div
               key={index}
-              question={faq.question}
-              answer={faq.answer}
-              index={index}
-              isOpen={openIndex === index}
-              onToggle={() => handleToggle(index)}
-            />
+              className={index >= 4 && !showAllMobile ? 'hidden md:block' : 'block'}
+            >
+              <FAQItem
+                question={faq.question}
+                answer={faq.answer}
+                isOpen={openIndex === index}
+                onToggle={() => handleToggle(index)}
+              />
+            </div>
           ))}
-        </div>
 
-        {/* Bottom CTA */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 text-center shadow-xl">
-          <h3 className="text-2xl font-bold text-white mb-3">
-            Still have questions?
-          </h3>
-          <p className="text-blue-100 mb-6 max-w-xl mx-auto">
-            We're here to help! Reach out to our team and we'll get back to you within 24 hours.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="mailto:resellerpro.tech@gmail.com"
-              className="px-8 py-4 bg-white text-blue-600 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-lg hover:shadow-xl"
+          {/* Mobile View More / Show Less Button */}
+          <div className="md:hidden text-center pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAllMobile(!showAllMobile)}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border border-blue-200 bg-blue-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors shadow-xs cursor-pointer"
             >
-              Email Us
-            </a>
-            <a
-              href="tel:+917736767759"
-              className="px-8 py-4 bg-transparent text-white rounded-xl hover:bg-white/10 transition-all font-semibold border-2 border-white/30 backdrop-blur-sm"
-            >
-              Call +91 7736767759
-            </a>
+              <span>{showAllMobile ? 'Show Less' : 'View More Questions'}</span>
+              {showAllMobile ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
+      {/* Bottom CTA Box (Wider Container with Centered Content) */}
+      <div className="max-w-4xl lg:max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-cyan-600 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-lg w-full overflow-hidden">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 md:gap-12 max-w-3xl mx-auto">
+            {/* Left 3D Support Graphic */}
+            <div className="flex-shrink-0 flex items-center justify-center">
+              <img
+                src="/images/support_headset_3d.png"
+                alt="Customer Support"
+                className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain drop-shadow-xl transform hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Right Content Column */}
+            <div className="text-center md:text-left space-y-3">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+                Still have questions?
+              </h3>
+              <p className="text-xs sm:text-sm text-blue-100 max-w-md leading-relaxed">
+                We're here to help! Reach out to our team and we'll get back to you within 24 hours.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 pt-2">
+                <a
+                  href="mailto:resellerpro.tech@gmail.com"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all font-semibold text-xs sm:text-sm shadow-xs text-center"
+                >
+                  Email Us
+                </a>
+                <a
+                  href="tel:+917736767759"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-lg transition-all font-semibold text-xs sm:text-sm backdrop-blur-xs text-center"
+                >
+                  Call +91 7736767759
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

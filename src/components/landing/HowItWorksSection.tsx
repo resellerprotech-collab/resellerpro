@@ -49,7 +49,7 @@ interface StepCardProps {
 function StepPreview({ number }: { number: number }) {
   if (number === 1) {
     return (
-      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+      <div className="bg-slate-900 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -79,7 +79,7 @@ function StepPreview({ number }: { number: number }) {
 
   if (number === 2) {
     return (
-      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+      <div className="bg-slate-900 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <span className="text-xs font-semibold text-slate-300">Pipeline Stage Tracker</span>
           <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">3 Active Stages</span>
@@ -113,7 +113,7 @@ function StepPreview({ number }: { number: number }) {
 
   if (number === 3) {
     return (
-      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-2.5 font-sans">
+      <div className="bg-slate-900 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-2.5 font-sans">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <span className="text-xs font-semibold text-slate-300 font-sans">1-Click Order Generation</span>
           <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium">Smart Paste</span>
@@ -139,7 +139,7 @@ function StepPreview({ number }: { number: number }) {
 
   if (number === 4) {
     return (
-      <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+      <div className="bg-slate-900 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <div className="flex items-center gap-2">
             <Truck className="w-3.5 h-3.5 text-amber-400" />
@@ -167,7 +167,7 @@ function StepPreview({ number }: { number: number }) {
   }
 
   return (
-    <div className="bg-slate-900/90 dark:bg-slate-950 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
+    <div className="bg-slate-900 border border-slate-700/60 rounded-xl p-3.5 sm:p-4 text-white shadow-inner space-y-3 font-sans">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
@@ -212,19 +212,21 @@ function StepCard({
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: false, amount: 0.15 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`sticky transition-all duration-300 rounded-[10px] border ${theme.cardBorder} ${theme.borderAccent} ${theme.cardBg} backdrop-blur-xl p-5 sm:p-7 lg:p-8 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] mb-8 sm:mb-12 group`}
+      className={`sticky transition-all duration-300 rounded-[24px] border ${theme.cardBorder} ${theme.borderAccent} ${theme.cardBg} backdrop-blur-xl p-3.5 sm:p-5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] mb-8 sm:mb-14 group min-h-[340px] flex flex-col justify-center`}
       style={{
         top: `calc(90px + ${index * 28}px)`,
         zIndex: index + 1
       }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-        {/* Left Info Column */}
-        <div className="lg:col-span-7 space-y-4">
+      {/* Outer Box containing 2 Inner Boxes */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
+        
+        {/* Left Inner Box (Content Container) */}
+        <div className="lg:col-span-7 bg-white/95 rounded-[10px]  p-5 sm:p-6 shadow-sm flex flex-col justify-between space-y-4">
           {/* Header & Step Badge */}
           <div className="flex items-center justify-between">
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${theme.bg} ${theme.text} flex items-center justify-center p-2.5 sm:p-3 transition-transform duration-300 group-hover:scale-105 shadow-xs`}>
-              <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${theme.bg} ${theme.text} flex items-center justify-center p-2.5 transition-transform duration-300 group-hover:scale-105 shadow-xs`}>
+              <Icon className="w-5 h-5" />
             </div>
             <span className={`inline-flex items-center justify-center text-center px-3 py-1 rounded-full text-[10px] sm:text-xs font-extrabold tracking-wider leading-none ${theme.badgeBg} ${theme.badgeText} border ${theme.badgeBorder}`}>
               STEP 0{number}
@@ -232,32 +234,34 @@ function StepCard({
           </div>
 
           {/* Title & Description */}
-          <div>
-            <h3 className="text-lg sm:text-2xl font-extrabold text-foreground mb-1.5 leading-snug">
+          <div className="space-y-1.5">
+            <h3 className="text-base sm:text-xl font-extrabold text-slate-900 leading-snug">
               {title}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed font-normal">
               {description}
             </p>
           </div>
 
           {/* Key Details Checklist */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/40">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 border-t border-slate-100">
             {details.map((detail, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-xs text-foreground/90 font-medium">
+              <div key={idx} className="flex items-center gap-2 text-xs text-slate-800 font-medium">
                 <div className={`w-4 h-4 rounded-full border ${theme.checkBorder} ${theme.checkBg} ${theme.text} flex items-center justify-center flex-shrink-0`}>
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span className="text-[11px] sm:text-xs truncate">{detail}</span>
+                <span className="text-xs truncate">{detail}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right Visual Preview Column */}
-        <div className="lg:col-span-5">
+        {/* Right Inner Box (Visual Preview Graphic Container) */}
+        <div className="lg:col-span-5 bg-slate-950/90 rounded-2xl border border-slate-800 p-4 sm:p-5 flex flex-col justify-center shadow-inner overflow-hidden relative">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.04)_0%,transparent_70%)] pointer-events-none" />
           <StepPreview number={number} />
         </div>
+
       </div>
     </motion.div>
   )
@@ -270,133 +274,138 @@ export default function HowItWorksSection() {
     {
       number: 1,
       icon: MessageSquare,
-      title: 'Add WhatsApp Enquiries',
-      description: 'When you receive a customer message, quickly add it as an enquiry. Never lose a lead again.',
+      title: 'Capture & Organize WhatsApp Enquiries',
+      description: 'When customer leads message you on WhatsApp or Instagram, capture their details instantly into your central sales pipeline. Stop letting inquiries get lost in endless chat histories or forgotten in daily message chaos.',
       details: [
-        'Save Name & Phone',
-        'Track pending leads',
-        'Set reminders'
+        'Auto-Save Name & Phone',
+        'Organized Lead Pipeline',
+        'Follow-up Notifications',
+        'Categorize Lead Urgency'
       ],
       theme: {
-        bg: 'bg-blue-500/10 dark:bg-blue-500/20',
-        text: 'text-blue-600 dark:text-blue-400',
+        bg: 'bg-blue-500/10',
+        text: 'text-blue-600',
         badgeBg: 'bg-blue-500/10',
-        badgeText: 'text-blue-600 dark:text-blue-400',
+        badgeText: 'text-blue-600',
         badgeBorder: 'border-blue-500/20',
         checkBg: 'bg-blue-500/10',
         checkBorder: 'border-blue-500/30',
         borderAccent: 'hover:border-blue-500/40',
-        cardBg: 'bg-gradient-to-br from-blue-50/90 via-card to-blue-100/40 dark:from-slate-900 dark:via-card dark:to-blue-950/40',
-        cardBorder: 'border-blue-200/80 dark:border-blue-800/40'
+        cardBg: 'bg-white',
+        cardBorder: 'border-slate-200/80'
       }
     },
     {
       number: 2,
       icon: CheckCircle2,
-      title: 'Track Enquiry Status',
-      description: 'Visualize your sales pipeline. Move customers from "Enquiry" to "Converted" with a click.',
+      title: 'Track & Manage Pipeline Status',
+      description: 'Effortlessly track every customer through your sales funnel. Move leads seamlessly from "New Enquiry" to "Negotiating" to "Converted" with a single tap, ensuring clear visibility over all pending sales opportunities.',
       details: [
-        'Status labels',
-        'Filter by progress',
-        'Follow-up alerts'
+        'Visual Kanban Pipeline',
+        'Filter Leads by Stage',
+        'Automated Activity Logs',
+        'Smart Follow-up Reminders'
       ],
       theme: {
-        bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
-        text: 'text-emerald-600 dark:text-emerald-400',
+        bg: 'bg-emerald-500/10',
+        text: 'text-emerald-600',
         badgeBg: 'bg-emerald-500/10',
-        badgeText: 'text-emerald-600 dark:text-emerald-400',
+        badgeText: 'text-emerald-600',
         badgeBorder: 'border-emerald-500/20',
         checkBg: 'bg-emerald-500/10',
         checkBorder: 'border-emerald-500/30',
         borderAccent: 'hover:border-emerald-500/40',
-        cardBg: 'bg-gradient-to-br from-emerald-50/90 via-card to-emerald-100/40 dark:from-slate-900 dark:via-card dark:to-emerald-950/40',
-        cardBorder: 'border-emerald-200/80 dark:border-emerald-800/40'
+        cardBg: 'bg-white',
+        cardBorder: 'border-slate-200/80'
       }
     },
     {
       number: 3,
       icon: Copy,
-      title: 'Convert to Order',
-      description: 'Customer said yes? Instantly convert the chat into a formal order without re-typing details.',
+      title: '1-Click Order Conversion via AI Smart Paste',
+      description: 'When a customer confirms their purchase, copy-paste their raw WhatsApp address directly into ResellerPro. Our AI Smart Paste extracts Name, Phone, Delivery Address, PIN Code, and Items in seconds with zero manual typing.',
       details: [
-        'Smart Paste details',
-        'Select products',
-        'Auto-calculate total'
+        'AI Address & PIN Extraction',
+        'Zero Typing Error Rate',
+        'Auto Product & Cost Sync',
+        'Instant Invoice & GST Billing'
       ],
       theme: {
-        bg: 'bg-purple-500/10 dark:bg-purple-500/20',
-        text: 'text-purple-600 dark:text-purple-400',
+        bg: 'bg-purple-500/10',
+        text: 'text-purple-600',
         badgeBg: 'bg-purple-500/10',
-        badgeText: 'text-purple-600 dark:text-purple-400',
+        badgeText: 'text-purple-600',
         badgeBorder: 'border-purple-500/20',
         checkBg: 'bg-purple-500/10',
         checkBorder: 'border-purple-500/30',
         borderAccent: 'hover:border-purple-500/40',
-        cardBg: 'bg-gradient-to-br from-purple-50/90 via-card to-purple-100/40 dark:from-slate-900 dark:via-card dark:to-purple-950/40',
-        cardBorder: 'border-purple-200/80 dark:border-purple-800/40'
+        cardBg: 'bg-white',
+        cardBorder: 'border-slate-200/80'
       }
     },
     {
       number: 4,
       icon: Package,
-      title: 'Manage & Ship',
-      description: 'Keep track of what needs to be packed, shipped, or delivered. Update customers in real-time.',
+      title: 'Streamline Packaging, Shipping & Delivery',
+      description: 'Keep full control over every order from packaging to final courier dispatch. Send automated WhatsApp dispatch updates and real-time tracking links directly to your buyers so they stay informed at every step.',
       details: [
-        'Shipment tracking',
-        'WhatsApp templates',
-        'One-click updates'
+        'Courier & AWB Tracking',
+        'Auto WhatsApp Updates',
+        'One-Click Status Change',
+        'Prepaid & COD Verification'
       ],
       theme: {
-        bg: 'bg-amber-500/10 dark:bg-amber-500/20',
-        text: 'text-amber-600 dark:text-amber-400',
+        bg: 'bg-amber-500/10',
+        text: 'text-amber-600',
         badgeBg: 'bg-amber-500/10',
-        badgeText: 'text-amber-600 dark:text-amber-400',
+        badgeText: 'text-amber-600',
         badgeBorder: 'border-amber-500/20',
         checkBg: 'bg-amber-500/10',
         checkBorder: 'border-amber-500/30',
         borderAccent: 'hover:border-amber-500/40',
-        cardBg: 'bg-gradient-to-br from-amber-50/90 via-card to-amber-100/40 dark:from-slate-900 dark:via-card dark:to-amber-950/40',
-        cardBorder: 'border-amber-200/80 dark:border-amber-800/40'
+        cardBg: 'bg-white',
+        cardBorder: 'border-slate-200/80'
       }
     },
     {
       number: 5,
       icon: BarChart3,
-      title: 'View Analytics',
-      description: 'Understand your profit margins. See which products are selling and who your best customers are.',
+      title: 'Monitor Real-Time Net Profit & Business Analytics',
+      description: 'Gain complete clarity on your financial growth with real-time profit analytics dashboards. Track your exact net profit after product supplier costs, shipping fees, top-selling items, and repeat customer rates.',
       details: [
-        'Daily profit reports',
-        'Order trends',
-        'Export data'
+        'Live Net Profit Tracking',
+        'Top Selling Product Stats',
+        'Margin & Cost Breakdowns',
+        'One-Click Data Exports'
       ],
       theme: {
-        bg: 'bg-blue-500/10 dark:bg-blue-500/20',
-        text: 'text-blue-600 dark:text-blue-400',
-        badgeBg: 'bg-blue-500/10',
-        badgeText: 'text-blue-600 dark:text-blue-400',
-        badgeBorder: 'border-blue-500/20',
-        checkBg: 'bg-blue-500/10',
-        checkBorder: 'border-blue-500/30',
-        borderAccent: 'hover:border-blue-500/40',
-        cardBg: 'bg-gradient-to-br from-indigo-50/90 via-card to-indigo-100/40 dark:from-slate-900 dark:via-card dark:to-indigo-950/40',
-        cardBorder: 'border-indigo-200/80 dark:border-indigo-800/40'
+        bg: 'bg-rose-500/10',
+        text: 'text-rose-600',
+        badgeBg: 'bg-rose-500/10',
+        badgeText: 'text-rose-600',
+        badgeBorder: 'border-rose-500/20',
+        checkBg: 'bg-rose-500/10',
+        checkBorder: 'border-rose-500/30',
+        borderAccent: 'hover:border-rose-500/40',
+        cardBg: 'bg-white',
+        cardBorder: 'border-slate-200/80'
       }
     },
   ]
 
   return (
     <>
-      <section id="workflow" className="relative py-14 lg:py-20 [overflow-x:clip] bg-gradient-to-b from-background via-secondary/20 to-background">
+      <section id="workflow" className="relative py-14 lg:py-20 [overflow-x:clip] bg-white text-slate-900">
         
         {/* Ambient Glows */}
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
           <motion.div 
-            className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px]"
+            className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-[120px]"
             animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.05, 1] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div 
-            className="absolute bottom-1/4 right-[-10%] w-[500px] h-[500px] bg-secondary/40 rounded-full blur-[100px]"
+            className="absolute bottom-1/4 right-[-10%] w-[500px] h-[500px] bg-slate-100 rounded-full blur-[100px]"
             animate={{ opacity: [0.3, 0.5, 0.3], scale: [1, 1.05, 1] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
           />
@@ -406,21 +415,21 @@ export default function HowItWorksSection() {
 
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-3">
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.2]">
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight leading-[1.2]">
               From Chaos to{' '}
-              <span className="bg-gradient-to-r from-primary via-blue-600 to-indigo-600 bg-clip-text text-transparent inline-block pb-[0.15em]">
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent inline-block pb-[0.15em]">
                 Clarity
               </span>
             </h2>
 
-            <p className="text-xs sm:text-sm text-black dark:text-white max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
               A simple 5-step workflow designed specifically for WhatsApp resellers.<br className="hidden sm:inline" />
               No learning curve required.
             </p>
           </div>
 
           {/* Sticky Stacked Cards Container (5 Boxes coming bottom to top over each other) */}
-          <div className="max-w-4xl mx-auto relative mb-16 sm:mb-24">
+          <div className="max-w-5xl mx-auto relative mb-16 sm:mb-24">
             {steps.map((step, idx) => (
               <StepCard
                 key={step.number}
@@ -430,22 +439,22 @@ export default function HowItWorksSection() {
             ))}
           </div>
 
-          {/* Bottom Wide CTA Banner (Horizontal X-Axis Gradient with White Center Slope) */}
-          <div className="relative rounded-[10px]  overflow-hidden border border-blue-200/60 dark:border-blue-800/40 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70 dark:from-blue-950/50 dark:via-card dark:to-blue-950/50">
-            {/* Center X-Axis White Glow with Soft Blue Edges */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,1)_0%,rgba(239,246,255,0.75)_50%,rgba(219,234,254,0.85)_100%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.95)_0%,rgba(30,58,138,0.35)_100%)] pointer-events-none -z-10" />
+          {/* Bottom Wide CTA Banner */}
+          <div className="relative rounded-[10px] overflow-hidden border border-blue-200/60 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70">
+            {/* Center X-Axis White Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,1)_0%,rgba(239,246,255,0.75)_50%,rgba(219,234,254,0.85)_100%)] pointer-events-none -z-10" />
 
             <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground leading-tight">
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
                 Stop Managing Your Business on a Notepad
               </h3>
-              <p className="text-xs sm:text-sm text-black dark:text-white max-w-xl mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
                 Experience the power of a dedicated CRM built for your reselling business. Setup takes less than 2 minutes.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <Link href="/signup" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 via-primary to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-bold text-xs sm:text-sm shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 group/btn">
+                  <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-bold text-xs sm:text-sm shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 group/btn">
                     <span>Start Free Trial</span>
                     <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
@@ -453,14 +462,14 @@ export default function HowItWorksSection() {
 
                 <button 
                   onClick={() => setShowDemo(true)}
-                  className="w-full sm:w-auto px-6 py-3 bg-white/80 dark:bg-card/90 text-foreground border border-border/80 rounded-full font-bold text-xs sm:text-sm hover:bg-white dark:hover:bg-card transition-all flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full sm:w-auto px-6 py-3 bg-white text-slate-900 border border-slate-200 rounded-full font-bold text-xs sm:text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xs"
                 >
-                  <PlayCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <PlayCircle className="w-4 h-4 text-blue-600" />
                   <span>Watch Demo</span>
                 </button>
               </div>
 
-              <div className="flex items-center justify-center gap-4 sm:gap-6 pt-3 text-[11px] font-medium text-muted-foreground">
+              <div className="flex items-center justify-center gap-4 sm:gap-6 pt-3 text-[11px] font-medium text-slate-600">
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Free Forever Plan</span>
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> No Credit Card Required</span>
               </div>
