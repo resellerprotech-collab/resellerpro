@@ -21,6 +21,7 @@ import { useOfflineQueue } from '@/lib/hooks/useOfflineQueue'
 import { RequireVerification } from '../shared/RequireVerification'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
 import { LimitReachedModal } from '../subscription/LimitReachedModal'
+import { ThemeToggleToast } from './ThemeToggleToast'
 
 export default function Header() {
   const router = useRouter()
@@ -50,6 +51,7 @@ export default function Header() {
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
+        <ThemeToggleToast />
 
         {/* Notifications */}
         <NotificationDrawer />

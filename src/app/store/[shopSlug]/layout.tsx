@@ -15,6 +15,8 @@ function getThemeCSSVars(theme: ShopTheme | null): string {
   const secondary = theme?.secondaryColor || '#f97316'
   const accent = theme?.accentColor || '#8b5cf6'
   const neutralDark = theme?.neutralDarkColor || '#0f172a'
+  const navbarBg = theme?.navbarBgColor || '#ffffff'
+  const navbarText = theme?.navbarTextColor || '#0f172a'
 
   const btnRadius =
     theme?.buttonStyle === 'pill' ? '9999px' :
@@ -48,6 +50,8 @@ function getThemeCSSVars(theme: ShopTheme | null): string {
       --store-secondary: ${secondary};
       --store-accent: ${accent};
       --store-neutral-dark: ${neutralDark};
+      --store-navbar-bg: ${navbarBg};
+      --store-navbar-text: ${navbarText};
       --store-primary-10: ${primary}1a;
       --store-primary-20: ${primary}33;
       --store-btn-radius: ${btnRadius};
