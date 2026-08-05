@@ -141,7 +141,9 @@ export function StoreHeader({
           {/* Left: Brand Logo & Name */}
           <Link href={`/store/${shopSlug}`} className="flex items-center gap-3 flex-shrink-0 group">
             {logoUrl ? (
-              <div className="relative h-10 w-auto min-w-[40px] max-w-[160px] flex items-center transition-transform duration-300 group-hover:scale-105">
+              <div className={`relative h-10 w-auto min-w-[40px] flex items-center transition-transform duration-300 group-hover:scale-105 ${
+                theme?.logoIncludesName ? 'max-w-[240px]' : 'max-w-[160px]'
+              }`}>
                 <img src={logoUrl} alt={shopName} className="object-contain object-left h-full w-auto" />
               </div>
             ) : (
@@ -149,12 +151,14 @@ export function StoreHeader({
                 {shopName.charAt(0).toUpperCase()}
               </div>
             )}
-            <span 
-              className="font-black text-base tracking-tight uppercase group-hover:opacity-80 transition-opacity"
-              style={{ color: 'var(--store-navbar-text)' }}
-            >
-              {shopName}
-            </span>
+            {(!logoUrl || !theme?.logoIncludesName) && (
+              <span 
+                className="font-black text-base tracking-tight uppercase group-hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--store-navbar-text)' }}
+              >
+                {shopName}
+              </span>
+            )}
           </Link>
 
           {/* Center: Desktop Navigation Links */}
