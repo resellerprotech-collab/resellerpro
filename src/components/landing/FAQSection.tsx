@@ -101,7 +101,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-white text-slate-900 relative">
+    <section id="faq" className="py-16 md:py-12 px-4 sm:px-6 lg:px-8 bg-white text-slate-900 relative">
       {/* Top Section Container */}
       <div className="max-w-3xl mx-auto">
         {/* Section Header */}

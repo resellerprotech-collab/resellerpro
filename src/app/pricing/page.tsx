@@ -7,9 +7,11 @@ import PricingSection from '@/components/landing/PricingSection'
 
 export default function PricingPage() {
     return (
-        <div>
+        <div className="min-h-screen bg-white">
             <Navbar />
-            <PricingSection />
+            <main className="pt-20 lg:pt-24">
+                <PricingSection />
+            </main>
             <Footer />
         </div>
     )

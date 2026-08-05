@@ -208,7 +208,7 @@ export default function PricingSection() {
   ]
 
   return (
-    <section id="pricing" className="py-16 md:py-20 bg-white text-slate-900 relative overflow-hidden">
+    <section id="pricing" className="md:py-5 bg-white text-slate-900 relative overflow-hidden">
       {/* Subtle Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />
