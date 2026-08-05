@@ -60,9 +60,12 @@ export default function ShopSettingsForm({
   const [uploadingField, setUploadingField] = useState<string | null>(null)
   const [previewBannerIndex, setPreviewBannerIndex] = useState(0)
 
+  const [storeUrlPrefix, setStoreUrlPrefix] = useState('resellerpro.in/store/')
+
   useEffect(() => {
     const saved = sessionStorage.getItem('resellerpro_shop_tab')
     if (saved) setActiveTab(saved)
+    setStoreUrlPrefix(`${window.location.host}/store/`)
   }, [])
 
   const supabase = createClient()
@@ -88,6 +91,8 @@ export default function ShopSettingsForm({
     secondaryColor: theme.secondaryColor || '#f97316',
     accentColor: theme.accentColor || '#10b981',
     neutralDarkColor: theme.neutralDarkColor || '#0f172a',
+    navbarBgColor: theme.navbarBgColor || '#ffffff',
+    navbarTextColor: theme.navbarTextColor || '#0f172a',
     layout: theme.layout || 'grid',
     showPrices: theme.showPrices !== false,
     showWhatsApp: theme.showWhatsApp !== false,
@@ -1002,7 +1007,7 @@ export default function ShopSettingsForm({
               {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
             </p>
             <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
-              {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}{formData.shop_slug} · {productCount} products
+              {storeUrlPrefix}{formData.shop_slug} · {productCount} products
             </p>
           </div>
           <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer"
@@ -1036,7 +1041,7 @@ export default function ShopSettingsForm({
               <div className="space-y-2">
                 <div className="flex items-center">
                   <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-800 rounded-l-lg text-slate-500 dark:text-slate-400 text-sm shrink-0">
-                    {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}
+                    {storeUrlPrefix}
                   </div>
                   <Input id="shop_slug" name="shop_slug" value={formData.shop_slug} onChange={handleChange} placeholder="your-shop-name" className="rounded-l-none" disabled={isPending} />
                 </div>
@@ -1157,6 +1162,22 @@ export default function ShopSettingsForm({
                     onChange={handleChange}
                     onSet={(v) => setFormData(p => ({ ...p, neutralDarkColor: v }))}
                     presets={['#0f172a', '#1e293b', '#334155', '#18181b', '#27272a', '#171717']}
+                  />
+                  <ColorPicker
+                    label="Navbar Background Color"
+                    name="navbarBgColor"
+                    value={formData.navbarBgColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, navbarBgColor: v }))}
+                    presets={['#ffffff', '#f8fafc', '#0f172a', '#1e293b', '#4f46e5', '#059669']}
+                  />
+                  <ColorPicker
+                    label="Navbar Text & Icon Color"
+                    name="navbarTextColor"
+                    value={formData.navbarTextColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, navbarTextColor: v }))}
+                    presets={['#0f172a', '#334155', '#ffffff', '#e2e8f0', '#4f46e5', '#ffffff']}
                   />
                 </div>
 
