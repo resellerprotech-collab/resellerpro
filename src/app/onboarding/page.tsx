@@ -174,12 +174,13 @@ export default function OnboardingPage() {
       // Pre-fill if returning mid-onboarding
       if (profile?.business_type) setBusinessType(profile.business_type)
       if (profile?.business_categories) setBusinessCategories(profile.business_categories)
-      if (profile?.store_slug || profile?.shop_slug) {
+      // Only set slug if user had previously entered business name or custom slug
+      if (profile?.shop_name) {
+        setBusinessName(profile.shop_name)
         const slug = profile.store_slug || profile.shop_slug || ''
         setStoreSlug(slug)
         if (slug) setSlugStatus('available')
       }
-      if (profile?.shop_name) setBusinessName(profile.shop_name)
       if (profile?.product_count_range) setProductCountRange(profile.product_count_range)
 
       setLoading(false)
@@ -187,15 +188,16 @@ export default function OnboardingPage() {
     init()
   }, [])
 
+  // Track if user manually touched/edited the store slug field
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false)
+
   // ── Auto-generate slug from business name ──────────
   useEffect(() => {
-    if (businessName && step === 4) {
+    if (businessName && step === 4 && !isSlugManuallyEdited) {
       const generated = toSlug(businessName)
-      if (!storeSlug || storeSlug === toSlug(businessName.slice(0, -1))) {
-        setStoreSlug(generated)
-      }
+      setStoreSlug(generated)
     }
-  }, [businessName])
+  }, [businessName, step, isSlugManuallyEdited])
 
   // ── Check slug uniqueness ─────────────────────────
   useEffect(() => {
@@ -653,7 +655,10 @@ export default function OnboardingPage() {
                           id="storeSlug"
                           placeholder="your-store-slug"
                           value={storeSlug}
-                          onChange={e => setStoreSlug(toSlug(e.target.value))}
+                          onChange={e => {
+                            setIsSlugManuallyEdited(true)
+                            setStoreSlug(toSlug(e.target.value))
+                          }}
                           className={`h-11 rounded-xl font-mono text-sm pr-10 ${
                             slugStatus === 'available'
                               ? 'border-emerald-400 bg-emerald-50/20 dark:bg-emerald-900/10 focus:ring-emerald-500/10'

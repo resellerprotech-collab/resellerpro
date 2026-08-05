@@ -10,7 +10,7 @@ You are an expert Frontend E-Commerce Developer building a high-converting, mode
 
 You will receive:
 1. **Store Concept / Niche**: (e.g., *A premium streetwear T-Shirt brand store called "UrbanThread"*)
-2. **ResellerPro Backend Base URL**: `http://localhost:3000` (or `https://your-domain.com`)
+2. **ResellerPro Backend Base URL**: `http://localhost:3000` (or `https://resellerpro.in`)
 3. **ResellerPro API Key**: `rp_live_...`
 
 ---

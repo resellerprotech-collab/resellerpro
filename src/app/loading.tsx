@@ -1,10 +1,13 @@
+import { IosSpinner } from '@/components/ui/ios-spinner'
+
+/**
+ * Root-level loading — covers landing page, auth, and public routes.
+ * Always light mode (white background) — landing page has no dark mode.
+ */
 export default function Loading() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
-      </div>
+    <div style={{ minHeight: '100vh', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <IosSpinner size="xl" className="text-blue-600" />
     </div>
-  );
+  )
 }
