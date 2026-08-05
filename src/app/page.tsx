@@ -17,7 +17,7 @@ export default function LandingPage() {
       <PricingSection />
       <HowItWorksSection />
       <FAQSection />
-      <FinalCTASection />
+      {/* <FinalCTASection /> */}
       <Footer />  
       <EnquiryPopup />
     </div>

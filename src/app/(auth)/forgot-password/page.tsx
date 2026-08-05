@@ -69,13 +69,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-950 dark:to-slate-900">
-      <Card className="w-full max-w-md border-slate-200/60 dark:border-slate-800/60 shadow-xl shadow-blue-500/5 backdrop-blur-sm bg-white/80 dark:bg-slate-900/80">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-white text-slate-900">
+      <Card className="w-full max-w-md border border-slate-200 shadow-xl shadow-slate-200/50 bg-white">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">
+          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
             {isSuccess ? 'Check your email' : 'Forgot Password'}
           </CardTitle>
-          <CardDescription className="text-slate-500 dark:text-slate-400">
+          <CardDescription className="text-sm text-slate-600">
             {isSuccess
               ? `Verification link sent to ${email}`
               : "Enter your email to receive reset instructions."}
@@ -85,14 +85,14 @@ export default function ForgotPasswordPage() {
           {isSuccess ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="flex flex-col items-center justify-center py-4 space-y-4 text-center">
-                <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center pulse-animation">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center pulse-animation">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  <p className="text-sm font-medium text-slate-900">
                     Email Request Successful
                   </p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 px-2">
+                  <p className="text-sm text-slate-600 px-2">
                     A recovery link has been sent. Check your inbox and spam folder. The link is valid for 1 hour.
                   </p>
                 </div>
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full h-11 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="w-full h-11 border-slate-200 hover:bg-slate-50 text-slate-900 cursor-pointer"
                   onClick={() => setIsSuccess(false)}
                 >
                   Entered wrong email? Try again
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
                 <div className="text-center">
                   <Link
                     href="/signin"
-                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                   >
                     Back to login
                   </Link>
@@ -118,23 +118,23 @@ export default function ForgotPasswordPage() {
           ) : (
             <div className="space-y-4">
               {errorMessage && (
-                <Alert variant="destructive" className="bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/50">
-                  <AlertDescription className="text-rose-800 dark:text-rose-200">
+                <Alert variant="destructive" className="bg-rose-50 border border-rose-200">
+                  <AlertDescription className="text-rose-800">
                     {errorMessage}
                   </AlertDescription>
                 </Alert>
               )}
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address</Label>
                   <div className="relative group">
-                    <Mail className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <Mail className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                     <Input
                       id="email"
                       name="email"
                       type="email"
                       placeholder="you@exXXXX.com"
-                      className="pl-11 h-12 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 focus:ring-blue-500/20 transition-all"
+                      className="pl-11 h-12 bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition-all"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +144,7 @@ export default function ForgotPasswordPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] font-semibold"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all active:scale-[0.98] font-semibold cursor-pointer"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -160,9 +160,9 @@ export default function ForgotPasswordPage() {
               <div className="text-center pt-2">
                 <Link
                   href="/signin"
-                  className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                  className="text-sm text-slate-600 inline-flex items-center gap-1"
                 >
-                  Suddenly remembered? <span className="font-medium">Back to login</span>
+                  Suddenly remembered? <span className="font-medium text-blue-600">Back to login</span>
                 </Link>
               </div>
             </div>

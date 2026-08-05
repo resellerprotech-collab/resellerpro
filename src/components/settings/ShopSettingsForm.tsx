@@ -60,9 +60,12 @@ export default function ShopSettingsForm({
   const [uploadingField, setUploadingField] = useState<string | null>(null)
   const [previewBannerIndex, setPreviewBannerIndex] = useState(0)
 
+  const [storeUrlPrefix, setStoreUrlPrefix] = useState('resellerpro.in/store/')
+
   useEffect(() => {
     const saved = sessionStorage.getItem('resellerpro_shop_tab')
     if (saved) setActiveTab(saved)
+    setStoreUrlPrefix(`${window.location.host}/store/`)
   }, [])
 
   const supabase = createClient()
@@ -80,14 +83,16 @@ export default function ShopSettingsForm({
 
   const [formData, setFormData] = useState({
     // Basic
-    shop_slug: profile.shop_slug || '',
+    shop_slug: profile.shop_slug || (profile as any).store_slug || '',
     shop_description: profile.shop_description || '',
-    shop_logo_url: profile.shop_logo_url || '',
+    shop_logo_url: theme.shop_logo_url || profile.shop_logo_url || '',
     // Appearance
     primaryColor: theme.primaryColor || '#4f46e5',
     secondaryColor: theme.secondaryColor || '#f97316',
     accentColor: theme.accentColor || '#10b981',
     neutralDarkColor: theme.neutralDarkColor || '#0f172a',
+    navbarBgColor: theme.navbarBgColor || '#ffffff',
+    navbarTextColor: theme.navbarTextColor || '#0f172a',
     layout: theme.layout || 'grid',
     showPrices: theme.showPrices !== false,
     showWhatsApp: theme.showWhatsApp !== false,
@@ -935,7 +940,7 @@ export default function ShopSettingsForm({
               <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 mb-2">Launch Your Online Store 🚀</h2>
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
                 Build a <strong>Shopify-level online store</strong> with hero banners, testimonials, trust badges, custom footer, floating WhatsApp chat, and more — all with your own
-                <code className="bg-white/80 dark:bg-slate-900/80 px-1.5 py-0.5 rounded mx-1 text-indigo-600 dark:text-indigo-400 text-xs font-mono">resellerpro.in/{formData.shop_slug || 'your-store'}</code>
+                <code className="bg-white/80 dark:bg-slate-900/80 px-1.5 py-0.5 rounded mx-1 text-indigo-600 dark:text-indigo-400 text-xs font-mono">resellerpro.in/store/{formData.shop_slug || 'your-store'}</code>
                 URL!
               </p>
               <div className="grid grid-cols-2 gap-2 mb-5">
@@ -1002,7 +1007,7 @@ export default function ShopSettingsForm({
               {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
             </p>
             <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
-              {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}{formData.shop_slug} · {productCount} products
+              {storeUrlPrefix}{formData.shop_slug} · {productCount} products
             </p>
           </div>
           <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer"
@@ -1036,7 +1041,7 @@ export default function ShopSettingsForm({
               <div className="space-y-2">
                 <div className="flex items-center">
                   <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-800 rounded-l-lg text-slate-500 dark:text-slate-400 text-sm shrink-0">
-                    {typeof window !== 'undefined' ? `${window.location.host}/store/` : 'resellerpro.in/store/'}
+                    {storeUrlPrefix}
                   </div>
                   <Input id="shop_slug" name="shop_slug" value={formData.shop_slug} onChange={handleChange} placeholder="your-shop-name" className="rounded-l-none" disabled={isPending} />
                 </div>
@@ -1157,6 +1162,22 @@ export default function ShopSettingsForm({
                     onChange={handleChange}
                     onSet={(v) => setFormData(p => ({ ...p, neutralDarkColor: v }))}
                     presets={['#0f172a', '#1e293b', '#334155', '#18181b', '#27272a', '#171717']}
+                  />
+                  <ColorPicker
+                    label="Navbar Background Color"
+                    name="navbarBgColor"
+                    value={formData.navbarBgColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, navbarBgColor: v }))}
+                    presets={['#ffffff', '#f8fafc', '#0f172a', '#1e293b', '#4f46e5', '#059669']}
+                  />
+                  <ColorPicker
+                    label="Navbar Text & Icon Color"
+                    name="navbarTextColor"
+                    value={formData.navbarTextColor}
+                    onChange={handleChange}
+                    onSet={(v) => setFormData(p => ({ ...p, navbarTextColor: v }))}
+                    presets={['#0f172a', '#334155', '#ffffff', '#e2e8f0', '#4f46e5', '#ffffff']}
                   />
                 </div>
 
@@ -2624,7 +2645,7 @@ export default function ShopSettingsForm({
                 <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Google Preview</p>
                   <p className="text-blue-700 dark:text-blue-400 text-sm font-medium">{formData.seoTitle || `${profile.business_name} | ResellerPro Store`}</p>
-                  <p className="text-emerald-700 dark:text-emerald-400 text-xs">resellerpro.in/{formData.shop_slug || 'your-store'}</p>
+                  <p className="text-emerald-700 dark:text-emerald-400 text-xs">resellerpro.in/store/{formData.shop_slug || 'your-store'}</p>
                   <p className="text-slate-600 dark:text-slate-350 text-xs mt-0.5 line-clamp-2">{formData.seoDescription || `Products from ${profile.business_name}`}</p>
                 </div>
               )}
