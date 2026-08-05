@@ -208,11 +208,11 @@ function StepCard({
 }: StepCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: false, amount: 0.15 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`sticky transition-all duration-300 rounded-[24px] border ${theme.cardBorder} ${theme.borderAccent} ${theme.cardBg} backdrop-blur-xl p-3.5 sm:p-5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] mb-8 sm:mb-14 group min-h-[340px] flex flex-col justify-center`}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`sticky rounded-[24px] border ${theme.cardBorder} ${theme.borderAccent} ${theme.cardBg} backdrop-blur-xl p-3.5 sm:p-5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] hover:shadow-xl transition-shadow duration-300 mb-8 sm:mb-14 group min-h-[340px] flex flex-col justify-center`}
       style={{
         top: `calc(90px + ${index * 28}px)`,
         zIndex: index + 1
@@ -395,7 +395,7 @@ export default function HowItWorksSection() {
 
   return (
     <>
-      <section id="workflow" className="relative py-14 lg:py-20 [overflow-x:clip] bg-white text-slate-900">
+      <section id="workflow" className="relative md:py-2 [overflow-x:clip] bg-white text-slate-900">
         
         {/* Ambient Glows */}
         <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
