@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/react-query/hooks/useProducts";
 import { useProductsStats } from "@/lib/react-query/hooks/stats-hooks";
 import { createClient } from "@/lib/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { getCategoriesAction } from "@/app/(dashboard)/categories/actions";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +56,7 @@ import { RequireVerification } from "@/components/shared/RequireVerification";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useToast } from "@/hooks/use-toast";
 import { LimitReachedModal } from "@/components/subscription/LimitReachedModal";
+import { ManageCategoriesModal } from "@/components/products/ManageCategoriesModal";
 
 import type { Product } from "@/types";
 
@@ -65,6 +68,7 @@ export function ProductsClient() {
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const [businessName, setBusinessName] = useState<string>('ResellerPro');
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { canCreateProduct, subscription, checkLimit, limitModalProps } = usePlanLimits();
@@ -129,8 +133,20 @@ export function ProductsClient() {
     avgMargin: statsData?.avgMargin || 0,
   };
 
-  // Derive categories from products
-  const categories = Array.from(new Set(typedProducts.map(p => p.category).filter(Boolean))) as string[];
+  // Fetch categories from DB so dropdown isn't limited by current filtered products
+  const { data: categoriesResponse } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await getCategoriesAction();
+      return res.data || [];
+    }
+  });
+
+  const dbCategories = categoriesResponse?.map(c => c.name) || [];
+  const productCategories = typedProducts.map(p => p.category).filter(Boolean) as string[];
+  
+  // Combine DB categories and any legacy categories from the current products list
+  const categories = Array.from(new Set([...dbCategories, ...productCategories]));
 
   // -------------------- URL UPDATE --------------------
   const updateURL = (params: Record<string, string>) => {
@@ -165,6 +181,13 @@ export function ProductsClient() {
             businessName={businessName}
             className="w-full sm:w-auto"
           />
+          <Button 
+            variant="outline" 
+            onClick={() => setIsCategoriesModalOpen(true)}
+            className="w-full sm:w-auto"
+          >
+            Manage Categories
+          </Button>
           {canCreateProduct ? (
             <RequireVerification>
               <Button asChild className="w-full sm:w-auto">
@@ -320,6 +343,10 @@ export function ProductsClient() {
         </div>
       )}
       <LimitReachedModal {...limitModalProps} />
+      <ManageCategoriesModal 
+        open={isCategoriesModalOpen} 
+        onOpenChange={setIsCategoriesModalOpen} 
+      />
     </div>
   );
 }

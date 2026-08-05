@@ -26,7 +26,7 @@ import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
 interface StorefrontClientProps {
   profile: Profile
   products: Product[]
-  categories: string[]
+  categories: { name: string; image_url?: string }[]
   theme: ShopTheme | null
   cmsSections?: CmsSectionItem[]
 }
@@ -322,15 +322,19 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
 
             {displayCategories.map((cat) => (
               <Link
-                key={cat}
-                href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat)}`}
+                key={cat.name}
+                href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat.name)}`}
                 className="snap-start shrink-0 flex flex-col items-center justify-center w-24 h-24 rounded-full border border-slate-100 hover:border-slate-200 transition-all font-bold text-xs gap-2 bg-slate-50/50 hover:bg-slate-50 group"
               >
-                <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                  {getCategoryIcon(cat)}
+                <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden relative">
+                  {cat.image_url ? (
+                    <Image src={cat.image_url} alt={cat.name} fill className="object-cover" sizes="40px" />
+                  ) : (
+                    getCategoryIcon(cat.name)
+                  )}
                 </div>
                 <span className="text-[10px] text-slate-600 font-extrabold uppercase tracking-tight line-clamp-1 w-full px-1 text-center">
-                  {cat}
+                  {cat.name}
                 </span>
               </Link>
             ))}
