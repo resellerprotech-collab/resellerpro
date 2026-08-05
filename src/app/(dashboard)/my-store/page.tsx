@@ -20,11 +20,9 @@ export default async function MyStorePage() {
     .eq('id', user.id)
     .single()
 
-  // Self-healing fallback: Create profile if missing OR fill missing email/shop_slug if NULL
+  // Self-healing fallback: Create profile if missing OR fill missing email if NULL
   if (!profile) {
     console.warn(`[MyStorePage] Profile missing for user ${user.id}, attempting self-healing creation...`)
-
-    const defaultSlug = user.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : `user${user.id.slice(0, 6)}`
 
     const { data: newProfile, error: insertError } = await supabase
       .from('profiles')
@@ -32,7 +30,6 @@ export default async function MyStorePage() {
         id: user.id,
         email: user.email || '',
         business_name: user.user_metadata?.business_name || 'My Shop',
-        shop_slug: defaultSlug,
         shop_theme: { primaryColor: '#4f46e5', layout: 'grid' },
         updated_at: new Date().toISOString()
       })
@@ -45,14 +42,12 @@ export default async function MyStorePage() {
     } else {
       console.error('[MyStorePage] Self-healing profile insert failed:', insertError)
     }
-  } else if (!profile.email || !profile.shop_slug) {
-    // If profile exists but email or shop_slug is missing (NULL), sync them automatically
-    const defaultSlug = profile.shop_slug || (user.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : `user${user.id.slice(0, 6)}`)
+  } else if (!profile.email) {
+    // Sync email if missing
     const { data: updatedProfile } = await supabase
       .from('profiles')
       .update({
         email: profile.email || user.email || '',
-        shop_slug: defaultSlug,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.id)
