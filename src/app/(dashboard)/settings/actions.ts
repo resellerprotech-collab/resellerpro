@@ -487,27 +487,55 @@ export async function updateShopSettings(formData: FormData) {
       }
     }
 
-    const updateData: any = {
-      shop_description: shop_description?.trim() || null,
-      updated_at: new Date().toISOString(),
+    let themeObj: any = {}
+    if (shop_theme) {
+      try {
+        themeObj = JSON.parse(shop_theme)
+      } catch (e) {
+        themeObj = {}
+      }
     }
 
-    if (shop_theme) {
-      updateData.shop_theme = JSON.parse(shop_theme)
+    if (shop_logo_url !== undefined) {
+      themeObj.shop_logo_url = shop_logo_url || null
+    }
+
+    const updateData: any = {
+      shop_description: shop_description?.trim() || null,
+      shop_theme: themeObj,
+      updated_at: new Date().toISOString(),
     }
 
     if (shop_slug) {
       updateData.shop_slug = shop_slug
+      updateData.store_slug = shop_slug
     }
 
-    if (shop_logo_url !== undefined) {
-      updateData.shop_logo_url = shop_logo_url || null
-    }
-
-    const { error } = await supabase
+    // Try updating profiles table with all fields
+    let { error } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
+
+    // Fallback if store_slug column doesn't exist yet on profiles
+    if (error && error.message.includes('store_slug')) {
+      delete updateData.store_slug
+      const retry = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId)
+      error = retry.error
+    }
+
+    // Fallback if shop_logo_url column is attempted or requested directly
+    if (error && error.message.includes('shop_logo_url')) {
+      delete updateData.shop_logo_url
+      const retry = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId)
+      error = retry.error
+    }
 
     if (error) {
       console.error('Shop settings update error:', error)
