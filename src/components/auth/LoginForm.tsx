@@ -296,65 +296,58 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-48 -left-48 w-96 h-96 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-1/2 -right-48 w-96 h-96 bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute -bottom-48 left-1/3 w-96 h-96 bg-violet-400/20 dark:bg-violet-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 py-12">
-        <div className="w-full max-w-5xl">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-4xl">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
 
             {/* Left Side */}
-            <div className="hidden lg:flex flex-col justify-center items-center text-center px-4 space-y-8">
-              <div className="space-y-4">
-                <h1 className="text-3xl font-medium text-slate-600 dark:text-slate-400">
-                  {getGreeting()}!
+            <div className="hidden lg:flex flex-col justify-center items-center text-center px-2 space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-2xl font-medium text-black">
+                  {getGreeting()}
                 </h1>
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+                <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-blue-700">
                   Welcome back
                 </h2>
               </div>
 
-              <div className="max-w-md space-y-3">
-                <blockquote className="text-lg text-slate-600 dark:text-slate-400 italic leading-relaxed">
+              <div className="max-w-sm space-y-2">
+                <blockquote className="text-[12px] text-slate-700 italic leading-relaxed">
                   "{quote.text}"
                 </blockquote>
-                <p className="text-sm text-slate-500">
-                  — {quote.author}
+                <p className="text-[8px] text-slate-500">
+                  {quote.author}
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 pt-8">
-                <div className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
+              <div className="flex items-center gap-3 pt-4">
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <TrendingUp className="w-5 h-5 text-emerald-600" />
                 </div>
-                <div className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                  <Target className="w-6 h-6 text-blue-600" />
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <Target className="w-5 h-5 text-blue-600" />
                 </div>
-                <div className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                  <Rocket className="w-6 h-6 text-indigo-600" />
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                  <Rocket className="w-5 h-5 text-indigo-600" />
                 </div>
               </div>
 
-              <p className="text-sm text-slate-500">
+              <p className="text-xs text-slate-900">
                 Ready to grow your business today?
               </p>
             </div>
 
             {/* Right Side - Login Form */}
             <div className="w-full">
-              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-2xl shadow-blue-500/10 dark:shadow-none p-8 lg:p-10">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 sm:p-5">
                 {/* Header */}
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                <div className="mb-5">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-1">
                     {loginMethod === 'password' ? 'Sign in to your account' : 'Sign in with OTP'}
                   </h2>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-xs text-slate-600">
                     {loginMethod === 'password'
                       ? 'Enter your credentials to continue'
                       : "We'll send a 6-digit verification code to your email"}
@@ -362,25 +355,25 @@ export default function LoginForm() {
                 </div>
 
                 {loginMethod === 'password' ? (
-                  <div className="space-y-5">
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                       {/* Email Field */}
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-xs font-semibold text-slate-700">
                           Email
                         </Label>
                         <div className="relative">
-                          <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'email' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
+                          <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'email' ? 'text-blue-600' : 'text-slate-400'
                             }`} />
                           <Input
                             id="email"
                             name="email"
                             type="email"
                             placeholder="you@email.com"
-                            className={`pl-11 h-12 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'email'
-                              ? 'border-blue-600 ring-4 ring-blue-600/10'
-                              : 'hover:border-slate-300 dark:hover:border-slate-600'
-                              } ${formErrors.email ? 'border-rose-300 dark:border-rose-500/50' : ''}`}
+                            className={`pl-9 h-10 text-xs sm:text-sm bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 transition-all ${focusedField === 'email'
+                              ? 'border-blue-600 ring-2 ring-blue-600/10'
+                              : 'hover:border-slate-300'
+                              } ${formErrors.email ? 'border-rose-300' : ''}`}
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             onFocus={() => setFocusedField('email')}
@@ -389,41 +382,41 @@ export default function LoginForm() {
                             disabled={isLoading}
                           />
                           {touchedFields.has('email') && isFieldValid('email') && formData.email && (
-                            <Check className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
+                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
                           )}
                         </div>
                         {formErrors.email && (
-                          <p className="text-sm text-rose-500 mt-1">
+                          <p className="text-xs text-rose-500 mt-0.5">
                             {formErrors.email[0]}
                           </p>
                         )}
                       </div>
 
                       {/* Password Field */}
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
                             Password
                           </Label>
                           <Link
                             href="/forgot-password"
-                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                            className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
                           >
                             Forgot password?
                           </Link>
                         </div>
                         <div className="relative">
-                          <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'password' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
+                          <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'password' ? 'text-blue-600' : 'text-slate-400'
                             }`} />
                           <Input
                             id="password"
                             name="password"
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Enter your password"
-                            className={`pl-11 pr-11 h-12 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'password'
-                              ? 'border-blue-600 ring-4 ring-blue-600/10'
-                              : 'hover:border-slate-300 dark:hover:border-slate-600'
-                              } ${formErrors.password ? 'border-rose-300 dark:border-rose-500/50' : ''}`}
+                            className={`pl-9 pr-9 h-10 text-xs sm:text-sm bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 transition-all ${focusedField === 'password'
+                              ? 'border-blue-600 ring-2 ring-blue-600/10'
+                              : 'hover:border-slate-300'
+                              } ${formErrors.password ? 'border-rose-300' : ''}`}
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             onFocus={() => setFocusedField('password')}
@@ -435,14 +428,14 @@ export default function LoginForm() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                             tabIndex={-1}
                           >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                         {formErrors.password && (
-                          <p className="text-sm text-rose-500 mt-1">
+                          <p className="text-xs text-rose-500 mt-0.5">
                             {formErrors.password[0]}
                           </p>
                         )}
@@ -452,53 +445,53 @@ export default function LoginForm() {
                     </form>
 
                     {/* Divider */}
-                    <div className="relative">
+                    <div className="relative my-3">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                        <div className="w-full border-t border-slate-200"></div>
                       </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-4 bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400">Or continue with</span>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="px-3 bg-white text-slate-500">Or continue with</span>
                       </div>
                     </div>
 
                     {/* OTP Option */}
                     <Button
-                      variant="outline"
-                      className="w-full h-12 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all text-slate-900 dark:text-white"
+                      type="button"
+                      className="w-full h-12 text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer"
                       onClick={() => setLoginMethod('otp')}
                     >
-                      <Mail className="w-5 h-5 mr-2" />
+                      <Mail className="w-4 h-4 mr-2 text-white" />
                       Sign in with OTP
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {/* Step indicator */}
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                       <span>{otpStep === 'email' ? 'Step 1 of 2: Enter Email' : 'Step 2 of 2: Verification'}</span>
                       {otpStep === 'verify' && (
-                        <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                        <span className="text-blue-600 flex items-center gap-1">
                           <Check className="w-3.5 h-3.5 text-emerald-500" /> Code Sent
                         </span>
                       )}
                     </div>
 
                     {otpStep === 'email' ? (
-                      <form onSubmit={(e) => handleSendOtp(e)} className="space-y-5">
-                        <div className="space-y-2">
-                          <Label htmlFor="otp-email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <form onSubmit={(e) => handleSendOtp(e)} className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="otp-email" className="text-xs font-semibold text-slate-700">
                             Email Address
                           </Label>
                           <div className="relative">
-                            <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'otp-email' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
+                            <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'otp-email' ? 'text-blue-600' : 'text-slate-400'
                               }`} />
                             <Input
                               id="otp-email"
                               type="email"
                               placeholder="you@email.com"
-                              className={`pl-11 h-12 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'otp-email'
-                                ? 'border-blue-600 ring-4 ring-blue-600/10'
-                                : 'hover:border-slate-300 dark:hover:border-slate-600'
+                              className={`pl-9 h-10 text-xs sm:text-sm bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 transition-all ${focusedField === 'otp-email'
+                                ? 'border-blue-600 ring-2 ring-blue-600/10'
+                                : 'hover:border-slate-300'
                                 }`}
                               value={otpEmail}
                               onChange={(e) => setOtpEmail(e.target.value)}
@@ -508,19 +501,19 @@ export default function LoginForm() {
                               disabled={otpLoading}
                             />
                             {touchedFields.has('otp-email') && isFieldValid('otp-email') && otpEmail && (
-                              <Check className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
+                              <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
                             )}
                           </div>
                         </div>
 
                         <Button
                           type="submit"
-                          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                          className="w-full h-10 text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer"
                           disabled={otpLoading || !isOnline}
                         >
                           {otpLoading ? (
                             <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               Sending code...
                             </>
                           ) : !isOnline ? (
@@ -528,18 +521,18 @@ export default function LoginForm() {
                           ) : (
                             <>
                               Send OTP Code
-                              <ArrowRight className="w-5 h-5 ml-2" />
+                              <ArrowRight className="w-4 h-4 ml-1.5" />
                             </>
                           )}
                         </Button>
                       </form>
                     ) : (
-                      <form onSubmit={handleVerifyOtp} className="space-y-5">
-                        <div className="space-y-3">
-                          <div className="p-3 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-100 dark:border-blue-900/50 flex items-center justify-between">
-                            <div className="flex items-center gap-2.5 overflow-hidden">
-                              <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                              <span className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">{otpEmail}</span>
+                      <form onSubmit={handleVerifyOtp} className="space-y-4">
+                        <div className="space-y-2.5">
+                          <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center justify-between">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              <span className="text-xs text-slate-700 truncate font-medium">{otpEmail}</span>
                             </div>
                             <button
                               type="button"
@@ -547,15 +540,15 @@ export default function LoginForm() {
                                 setOtpStep('email')
                                 setOtpCode('')
                               }}
-                              className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0 font-medium ml-2"
+                              className="text-xs text-blue-600 hover:underline shrink-0 font-medium ml-2"
                             >
                               Change
                             </button>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-1.5">
                             <div className="flex justify-between items-center">
-                              <Label htmlFor="otp-code" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                              <Label htmlFor="otp-code" className="text-xs font-semibold text-slate-700">
                                 Enter 6-Digit OTP Code
                               </Label>
                               {resendCooldown > 0 ? (
@@ -567,22 +560,22 @@ export default function LoginForm() {
                                   type="button"
                                   onClick={() => handleSendOtp()}
                                   disabled={otpLoading}
-                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                                  className="text-xs text-blue-600 hover:underline font-semibold"
                                 >
                                   Resend Code
                                 </button>
                               )}
                             </div>
                             <div className="relative">
-                              <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${focusedField === 'otp-code' ? 'text-blue-600' : 'text-slate-400 dark:text-slate-500'
+                              <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${focusedField === 'otp-code' ? 'text-blue-600' : 'text-slate-400'
                                 }`} />
                               <Input
                                 id="otp-code"
                                 type="text"
                                 placeholder="123456"
-                                className={`pl-11 h-12 text-center tracking-[0.3em] text-xl font-mono bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all ${focusedField === 'otp-code'
-                                  ? 'border-blue-600 ring-4 ring-blue-600/10'
-                                  : 'hover:border-slate-300 dark:hover:border-slate-600'
+                                className={`pl-9 h-10 text-center tracking-[0.3em] text-lg font-mono bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 transition-all ${focusedField === 'otp-code'
+                                  ? 'border-blue-600 ring-2 ring-blue-600/10'
+                                  : 'hover:border-slate-300'
                                   }`}
                                 value={otpCode}
                                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -594,7 +587,7 @@ export default function LoginForm() {
                                 autoFocus
                               />
                             </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <p className="text-[11px] text-slate-500">
                               Check your terminal log or email inbox for the 6-digit code.
                             </p>
                           </div>
@@ -602,12 +595,12 @@ export default function LoginForm() {
 
                         <Button
                           type="submit"
-                          className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                          className="w-full h-10 text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer"
                           disabled={otpLoading || otpCode.length !== 6 || !isOnline}
                         >
                           {otpLoading ? (
                             <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               Verifying...
                             </>
                           ) : !isOnline ? (
@@ -615,7 +608,7 @@ export default function LoginForm() {
                           ) : (
                             <>
                               Verify & Sign In
-                              <ArrowRight className="w-5 h-5 ml-2" />
+                              <ArrowRight className="w-4 h-4 ml-1.5" />
                             </>
                           )}
                         </Button>
@@ -624,7 +617,7 @@ export default function LoginForm() {
 
                     <Button
                       variant="ghost"
-                      className="w-full h-12 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400"
+                      className="w-full h-9 text-xs hover:bg-slate-50 text-slate-600"
                       onClick={() => {
                         setLoginMethod('password')
                         setOtpStep('email')
@@ -632,17 +625,17 @@ export default function LoginForm() {
                         setOtpCode('')
                       }}
                     >
-                      <ArrowLeft className="w-5 h-5 mr-2" />
+                      <ArrowLeft className="w-4 h-4 mr-1.5" />
                       Back to password login
                     </Button>
                   </div>
                 )}
 
                 {/* Sign Up Link */}
-                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-                  <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+                <div className="mt-5 pt-4 border-t border-slate-200">
+                  <p className="text-center text-xs text-slate-600">
                     Don't have an account?{' '}
-                    <Link href="/signup" className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                    <Link href="/signup" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
                       Sign up for free
                     </Link>
                   </p>
@@ -650,13 +643,13 @@ export default function LoginForm() {
               </div>
 
               {/* Trust Badge */}
-              <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-500">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
+              <div className="mt-4 flex items-center justify-center gap-5 text-xs text-slate-500">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
                   <span>Secure login</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" />
                   <span>Quick access</span>
                 </div>
               </div>

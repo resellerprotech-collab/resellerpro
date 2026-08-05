@@ -1,6 +1,6 @@
-import { Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils/cn'
+import { IosSpinner } from '@/components/ui/ios-spinner'
 
+// Shared inline spinner — inherits dark/light mode from context
 export function LoadingSpinner({
   size = 'md',
   className,
@@ -8,12 +8,10 @@ export function LoadingSpinner({
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }) {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
-  }
   return (
-    <Loader2 className={cn('animate-spin text-primary', sizeClasses[size], className)} />
+    <IosSpinner
+      size={size}
+      className={className ?? 'text-blue-600 dark:text-blue-400'}
+    />
   )
 }
