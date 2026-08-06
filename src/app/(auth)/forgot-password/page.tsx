@@ -30,9 +30,7 @@ export default function ForgotPasswordPage() {
     setErrorMessage(null)
 
     try {
-      console.log('[FORGOT-PASSWORD] Sending reset instructions to:', targetEmail)
       const result = await sendResetEmail(targetEmail)
-      console.log('[FORGOT-PASSWORD] Result:', result)
 
       if (result.success) {
         

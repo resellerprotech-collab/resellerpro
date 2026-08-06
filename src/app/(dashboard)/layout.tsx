@@ -42,8 +42,6 @@ export default async function DashboardLayout({
   // SELF-HEALING: If profile or subscription is missing, ensure base initialization
   if ((!profile || !subscription) && user) {
     try {
-      console.log('Self-healing initialization for user:', user.id)
-
       // 1. Ensure Profile exists (using upsert to avoid duplicate errors)
       if (!profile) {
         const { data: newProfile, error: pError } = await supabase
