@@ -191,45 +191,37 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -15 }}
             transition={{ type: 'spring', duration: 0.25 }}
-            className="relative w-full max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[10px] shadow-2xl border border-slate-200/80 dark:border-slate-800 text-left overflow-hidden z-50 flex flex-col max-h-[85vh]"
+            className="relative w-full max-w-2xl bg-white rounded-[10px] shadow-2xl border border-slate-200 text-left overflow-hidden z-50 flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input Top Bar */}
-            <form onSubmit={handleFormSubmit} className="relative flex items-center px-4 sm:px-6 py-4 border-b border-slate-200/80 dark:border-slate-800 bg-transparent">
-              <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
+            <form onSubmit={handleFormSubmit} className="relative flex items-center px-4 py-3 border-b border-slate-200 bg-white">
+              <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2.5" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search products, categories, or tags..."
-                className="w-full text-base sm:text-lg font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 bg-transparent focus:outline-none"
+                className="w-full text-xs sm:text-sm font-normal text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
               />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="p-1 rounded-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors mr-2"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
               <button
                 type="button"
                 onClick={onClose}
-                className="px-2.5 py-1 text-xs font-semibold rounded-[10px] border border-slate-200 dark:border-slate-700 bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                className="p-1.5 rounded-[10px] text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+                aria-label="Close search"
               >
-                ESC
+                <X className="w-4 h-4" />
               </button>
             </form>
 
             {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-transparent">
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 bg-white">
               {/* 1. QUERY TYPED -> Live Search Results */}
               {query.trim() !== '' ? (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       Search Results ({searchResults.length})
                     </span>
                   </div>
@@ -247,13 +239,13 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                               saveRecentSearch(query)
                               onClose()
                             }}
-                            className="group flex items-center gap-3 p-2.5 rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all shadow-xs"
+                            className="group flex items-center gap-3 p-2.5 rounded-[10px] border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs"
                           >
-                            <div className="relative w-14 h-14 rounded-[10px] overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/50">
+                            <div className="relative w-14 h-14 rounded-[10px] overflow-hidden bg-slate-100 shrink-0 border border-slate-200/50">
                               <img src={img} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
+                              <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
                                 {product.name}
                               </h4>
                               {product.category && (
@@ -261,7 +253,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                                   {product.category}
                                 </span>
                               )}
-                              <p className="text-xs font-black text-slate-900 dark:text-slate-200 mt-1">
+                              <p className="text-xs font-black text-slate-900 mt-1">
                                 ₹{price.toLocaleString('en-IN')}
                               </p>
                             </div>
@@ -273,7 +265,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                   ) : (
                     <div className="py-8 text-center">
                       <Package className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No products found for "{query}"</p>
+                      <p className="text-sm font-bold text-slate-700">No products found for "{query}"</p>
                       <p className="text-xs text-slate-400 mt-1">Try searching with a different term or keyword</p>
                     </div>
                   )}
@@ -285,14 +277,14 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                   {recentSearches.length > 0 && (
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
-                        <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-400">
+                        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400">
                           <Clock className="w-3.5 h-3.5" />
                           Recent Searches
                         </div>
                         <button
                           type="button"
                           onClick={clearAllRecent}
-                          className="text-[11px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                          className="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-colors"
                         >
                           Clear All
                         </button>
@@ -303,7 +295,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                           <div
                             key={index}
                             onClick={() => handleExecuteSearch(term)}
-                            className="group flex items-center gap-2 px-3 py-1.5 rounded-[10px] border border-slate-200 dark:border-slate-800 bg-transparent text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                            className="group flex items-center gap-2 px-3 py-1.5 rounded-[10px] border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
                           >
                             <span>{term}</span>
                             <button
@@ -321,8 +313,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
 
                   {/* Popular Category Suggestions */}
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs font-black uppercase font-medium text-black mb-2.5">
-                   
+                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-900 mb-2.5">
                       Popular Suggestions
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -338,7 +329,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                               handleExecuteSearch(tag)
                             }
                           }}
-                          className="px-3.5 py-1.5 rounded-[10px] border border-slate-200 dark:border-slate-700 bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-slate-900 dark:hover:border-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 transition-all"
+                          className="px-3.5 py-1.5 rounded-[10px] border border-slate-200 bg-white text-xs font-semibold text-slate-800 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-xs"
                         >
                           {tag}
                         </button>
@@ -349,8 +340,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                   {/* Featured / Trending Products Preview */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1.5 text-xs font-medium font-black uppercase text-black">
-              
+                      <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-900">
                         Suggested Products
                       </div>
                       <Link
@@ -374,13 +364,13 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                               key={product.id}
                               href={`/store/${shopSlug}/p/${product.id}`}
                               onClick={onClose}
-                              className="group flex items-center gap-3 p-2.5 rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all shadow-xs"
+                              className="group flex items-center gap-3 p-2.5 rounded-[10px] border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs"
                             >
-                              <div className="relative w-14 h-14 rounded-[10px] overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200/50">
+                              <div className="relative w-14 h-14 rounded-[10px] overflow-hidden bg-slate-50 shrink-0 border border-slate-200/60">
                                 <img src={img} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 transition-colors">
+                                <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
                                   {product.name}
                                 </h4>
                                 {product.category && (
@@ -388,7 +378,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
                                     {product.category}
                                   </span>
                                 )}
-                                <p className="text-xs font-black text-slate-900 dark:text-slate-200 mt-1">
+                                <p className="text-xs font-black text-slate-900 mt-1">
                                   ₹{price.toLocaleString('en-IN')}
                                 </p>
                               </div>
@@ -407,11 +397,11 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
 
             {/* Bottom Footer Submit Bar */}
             {query.trim() !== '' && (
-              <div className="p-3 border-t border-slate-200/80 dark:border-slate-800 bg-transparent text-center">
+              <div className="p-3 border-t border-slate-200 bg-white text-center">
                 <button
                   type="button"
                   onClick={() => handleExecuteSearch(query)}
-                  className="inline-flex items-center gap-2 text-xs font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="inline-flex items-center gap-2 text-xs font-extrabold text-indigo-600 hover:underline"
                 >
                   <span>View all results for "{query}"</span>
                   <ArrowRight className="w-3.5 h-3.5" />

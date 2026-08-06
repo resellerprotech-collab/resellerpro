@@ -192,10 +192,10 @@ export function StoreHeader({
 
           {/* Right: Search bar & User interaction icons */}
           <div className="flex items-center gap-2.5">
-            {/* Small Search Icon Button */}
+            {/* Small Search Icon Button (Desktop Only) */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="p-2 transition-all rounded-[10px] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center"
+              className="hidden lg:flex p-2 transition-all rounded-[10px] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 items-center justify-center"
               style={{ color: 'var(--store-navbar-text)' }}
               aria-label="Search catalog"
               title="Search catalog"
@@ -203,10 +203,10 @@ export function StoreHeader({
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Wishlist Icon */}
+            {/* Wishlist Icon (Desktop Only) */}
             <button
               onClick={toggleWishlist}
-              className="relative p-2 transition-all rounded-full hover:bg-black/5 dark:hover:bg-white/5"
+              className="hidden lg:flex relative p-2 transition-all rounded-full hover:bg-black/5 dark:hover:bg-white/5"
               style={{ color: 'var(--store-navbar-text)' }}
               aria-label="Wishlist"
             >
@@ -221,10 +221,10 @@ export function StoreHeader({
               )}
             </button>
 
-            {/* Profile / Account Icon */}
+            {/* Profile / Account Icon (Desktop Only) */}
             <button
               onClick={() => setAccountModalOpen(true)}
-              className="p-2 transition-all rounded-full hover:bg-black/5 dark:hover:bg-white/5"
+              className="hidden lg:flex p-2 transition-all rounded-full hover:bg-black/5 dark:hover:bg-white/5"
               style={{ color: 'var(--store-navbar-text)' }}
               aria-label="Account"
               title="Track Order & Account"
@@ -232,7 +232,7 @@ export function StoreHeader({
               <User className="w-5 h-5" />
             </button>
 
-            {/* Cart Icon */}
+            {/* Cart Icon (Mobile & Desktop) */}
             <button
               onClick={toggleCart}
               className="relative p-2 transition-all rounded-full hover:bg-black/5 dark:hover:bg-white/5"
@@ -296,7 +296,7 @@ export function StoreHeader({
                 <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
               </div>
 
-              <div className="flex flex-col gap-1 py-2">
+              <div className="flex flex-col gap-1 py-1">
                 {navItems.map((item) => {
                   const isActive = activePage === item.key
                   return (
@@ -315,6 +315,38 @@ export function StoreHeader({
                     </Link>
                   )
                 })}
+              </div>
+
+              {/* Wishlist & Account inside Mobile Menu */}
+              <div className="flex items-center gap-2 pt-2 border-t border-black/5">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    toggleWishlist()
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-colors"
+                  style={{
+                    borderColor: 'rgba(0, 0, 0, 0.1)',
+                    color: 'var(--store-navbar-text)'
+                  }}
+                >
+                  <Heart className="w-4 h-4" />
+                  <span>Wishlist {wishlistCount > 0 ? `(${wishlistCount})` : ''}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    setAccountModalOpen(true)
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-colors"
+                  style={{
+                    borderColor: 'rgba(0, 0, 0, 0.1)',
+                    color: 'var(--store-navbar-text)'
+                  }}
+                >
+                  <User className="w-4 h-4" />
+                  <span>Account</span>
+                </button>
               </div>
             </motion.div>
           )}
