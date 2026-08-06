@@ -4,7 +4,7 @@ import { useScrollTrigger } from './useScrollTrigger'
 
 const STORAGE_KEY = 'resellerpro_popup_closes'
 const POPUP_REAPPEAR_DELAY = 5000 // 5 seconds
-const MAX_CLOSES = 3
+const MAX_CLOSES = 2
 
 export function usePopupController() {
     // Trigger at 50% scroll
