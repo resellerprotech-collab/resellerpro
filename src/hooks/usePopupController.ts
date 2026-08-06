@@ -4,11 +4,11 @@ import { useScrollTrigger } from './useScrollTrigger'
 
 const STORAGE_KEY = 'resellerpro_popup_closes'
 const POPUP_REAPPEAR_DELAY = 5000 // 5 seconds
-const MAX_CLOSES = 3
+const MAX_CLOSES = 2
 
 export function usePopupController() {
-    // Trigger at 50% scroll
-    const isTriggered = useScrollTrigger(0.5)
+    // Trigger when user scrolls down to the CTA banner section ("Stop Managing Your Business on a Notepad") or 72% scroll depth
+    const isTriggered = useScrollTrigger(0.72, 'cta-banner')
 
     const [isVisible, setIsVisible] = useState(false)
     const [closeCount, setCloseCount] = useState(0)

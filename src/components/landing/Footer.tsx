@@ -29,7 +29,7 @@ export default function Footer() {
   const [openCompanyMobile, setOpenCompanyMobile] = useState(false)
 
   return (
-    <footer className="w-full bg-white border-t border-slate-200 py-12 md:py-16 px-6 sm:px-12 lg:px-16 relative text-slate-900">
+    <footer className="w-full bg-white border-t border-slate-200 pt-12 pb-24 md:py-16 px-6 sm:px-12 lg:px-16 relative text-slate-900">
       <div className="w-full max-w-[1600px] mx-auto">
         {/* Main 4-Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-10 border-b border-slate-200/60">

@@ -440,7 +440,7 @@ export default function HowItWorksSection() {
           </div>
 
           {/* Bottom Wide CTA Banner */}
-          <div className="relative rounded-[10px] overflow-hidden border border-blue-200/60 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70">
+          <div id="cta-banner" className="relative rounded-[10px] overflow-hidden border border-blue-200/60 p-8 sm:p-14 text-center shadow-xl shadow-blue-500/5 bg-gradient-to-r from-blue-100/70 via-white to-blue-100/70">
             {/* Center X-Axis White Glow */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,1)_0%,rgba(239,246,255,0.75)_50%,rgba(219,234,254,0.85)_100%)] pointer-events-none -z-10" />
 

@@ -11,11 +11,12 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params)
   const supabase = await createAdminClient()
   const { data: product } = await supabase
     .from('products')
     .select('name, description, image_url')
-    .eq('id', params.productId)
+    .eq('id', resolvedParams.productId)
     .single()
 
   if (!product) return { title: 'Product Not Found' }
@@ -29,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { shopSlug, productId } = params
+  const resolvedParams = await Promise.resolve(params)
+  const { shopSlug, productId } = resolvedParams
   const supabase = await createAdminClient()
 
   // Get profile
@@ -51,14 +53,28 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) return notFound()
 
-  // Get related products (same category, exclude current)
-  const { data: related } = await supabase
+  // Get related products (same category if available, otherwise latest from store)
+  let relatedQuery = supabase
     .from('products')
     .select('*')
     .eq('user_id', profile.id)
-    .eq('category', product.category || '')
     .neq('id', productId)
-    .limit(4)
+
+  if (product.category) {
+    relatedQuery = relatedQuery.eq('category', product.category)
+  }
+
+  let { data: related } = await relatedQuery.limit(4)
+
+  if (!related || related.length === 0) {
+    const { data: fallbackRelated } = await supabase
+      .from('products')
+      .select('*')
+      .eq('user_id', profile.id)
+      .neq('id', productId)
+      .limit(4)
+    related = fallbackRelated || []
+  }
 
   const theme = profile.shop_theme as ShopTheme | null
 
