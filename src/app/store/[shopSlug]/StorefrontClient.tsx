@@ -133,7 +133,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
   const waLink = waClean ? `https://wa.me/91${waClean}?text=${encodeURIComponent('Hi! I wanted to inquire about a product.')}` : null
 
   return (
-    <div className="min-h-screen bg-white pb-8">
+    <div className="min-h-screen bg-white">
       {/* Custom CSS overrides */}
       {theme?.customCss && <style dangerouslySetInnerHTML={{ __html: theme.customCss }} />}
 

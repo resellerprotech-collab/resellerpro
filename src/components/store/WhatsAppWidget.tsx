@@ -3,14 +3,20 @@
 import { MessageCircle } from 'lucide-react'
 import type { ShopTheme, Profile } from '@/types'
 
+import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
+
 interface WhatsAppWidgetProps {
   profile: Profile
   theme?: ShopTheme | null
 }
 
 export function WhatsAppWidget({ profile, theme }: WhatsAppWidgetProps) {
-  // If explicitly disabled in settings, do not render
-  if (theme?.chatWidgetEnabled === false) {
+  const isCartOpen = useCartStore((s) => s.isOpen)
+  const isWishlistOpen = useWishlistStore((s) => s.isOpen)
+
+  // If cart drawer or wishlist drawer is open, or explicitly disabled in settings, do not render
+  if (isCartOpen || isWishlistOpen || theme?.chatWidgetEnabled === false) {
     return null
   }
 
