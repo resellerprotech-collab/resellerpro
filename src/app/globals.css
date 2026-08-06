@@ -138,4 +138,8 @@
 
 .animate-ios-spinner {
   animation: ios-spinner 1s linear infinite;
+}
+
+body[data-popup-open="true"] .mobile-bottom-cta {
+  display: none !important;
 }
