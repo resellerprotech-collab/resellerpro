@@ -62,7 +62,7 @@ export default function EnquiryPopup() {
                                 Have questions?
                             </h3>
                             <p className="text-[11px] sm:text-[11.5px] text-slate-500 font-normal leading-snug mt-0.5">
-                                We're here to help! Fill out the form and we'll get back to you on WhatsApp.
+                                We're here to help! Fill out the form and we'll get back to you soon.
                             </p>
                         </div>
                     </div>
