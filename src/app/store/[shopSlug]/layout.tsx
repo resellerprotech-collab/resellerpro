@@ -116,7 +116,7 @@ export default async function StoreLayout({ params, children }: Props) {
             <span className="text-3xl">🔒</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 mb-2">
-            {profile.shop_name || profile.business_name}
+            {profile.business_name || profile.shop_name}
           </h1>
           <p className="text-slate-500">This store is currently closed. Please check back later.</p>
         </div>
@@ -134,7 +134,7 @@ export default async function StoreLayout({ params, children }: Props) {
         <div className="text-center max-w-md mx-auto">
           <div className="w-24 h-24 bg-amber-200 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🏝️</div>
           <h1 className="text-2xl font-black text-slate-900 mb-2">
-            {profile.shop_name || profile.business_name} is on vacation
+            {profile.business_name || profile.shop_name} is on vacation
           </h1>
           <p className="text-slate-600 mb-6">
             {theme?.vacationMessage || "We're taking a short break. We'll be back soon!"}

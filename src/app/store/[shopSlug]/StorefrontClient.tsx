@@ -127,7 +127,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
     return displayProducts.slice(0, 4)
   }, [displayProducts])
 
-  const storeName = profile.shop_name || profile.business_name || 'Rashid Store'
+  const storeName = profile.business_name || profile.shop_name || 'Rashid Store'
   const waNum = theme?.socialWhatsApp || profile.whatsapp_number || profile.business_phone
   const waClean = waNum?.replace(/\D/g, '')
   const waLink = waClean ? `https://wa.me/91${waClean}?text=${encodeURIComponent('Hi! I wanted to inquire about a product.')}` : null

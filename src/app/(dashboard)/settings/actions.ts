@@ -240,11 +240,8 @@ export async function updateBusinessInfo(formData: FormData) {
     let shopSlug = currentProfile?.shop_slug
     const oldBusinessName = currentProfile?.business_name
 
-    // If no slug exists or business name changed significantly, generate a new one
-    // (We only auto-generate if it's currently null or if the user hasn't manually overridden it yet,
-    // but the prompt says "if second abc store create then display like baseurl/abcstore1"
-    // which implies auto-generation is important)
-    if (!shopSlug || (business_name && business_name.trim() !== oldBusinessName)) {
+    // Only generate shop slug if user doesn't have one yet (keep existing store URL unchanged)
+    if (!shopSlug) {
       const { generateUniqueShopSlug } = await import('@/utils/slugify')
       shopSlug = await generateUniqueShopSlug(supabase, business_name.trim(), userId)
     }
@@ -254,6 +251,7 @@ export async function updateBusinessInfo(formData: FormData) {
       .from('profiles')
       .update({
         business_name: business_name.trim() || null,
+        shop_name: business_name.trim() || null,
         gstin: gstin.trim().toUpperCase() || null,
         business_address: business_address.trim() || null,
         business_phone: business_phone.trim() || null,
@@ -278,6 +276,17 @@ export async function updateBusinessInfo(formData: FormData) {
     revalidatePath('/settings/profile')
     revalidatePath('/settings')
     revalidatePath('/(dashboard)', 'layout')
+    // Revalidate store pages so the navbar business name updates immediately
+    if (currentProfile?.shop_slug) {
+      revalidatePath(`/store/${currentProfile.shop_slug}`, 'layout')
+      revalidatePath(`/store/${currentProfile.shop_slug}`)
+      revalidatePath(`/store/${currentProfile.shop_slug}/shop`)
+    }
+    if (shopSlug && shopSlug !== currentProfile?.shop_slug) {
+      revalidatePath(`/store/${shopSlug}`, 'layout')
+      revalidatePath(`/store/${shopSlug}`)
+      revalidatePath(`/store/${shopSlug}/shop`)
+    }
 
     return { success: true, message: 'Business information updated successfully' }
   } catch (error: any) {

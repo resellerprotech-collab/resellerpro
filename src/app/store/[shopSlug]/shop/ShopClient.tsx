@@ -40,7 +40,7 @@ export function ShopClient({
   const setShopSlug = useCartStore((s) => s.setShopSlug)
 
   const shopSlug = profile.shop_slug!
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
 
   useEffect(() => {
     setShopSlug(shopSlug)
@@ -75,7 +75,7 @@ export function ShopClient({
   const visibleProducts = processedProducts.slice(0, visibleCount)
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white">
       <StoreHeader
         shopSlug={shopSlug}
         shopName={storeName}

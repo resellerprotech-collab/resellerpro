@@ -89,22 +89,15 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
   const handleShare = async () => {
     const shareUrl = window.location.href
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product.name,
-          text: `Check out ${product.name} on ${profile.shop_name || 'Store'}!`,
-          url: shareUrl,
-        })
-      } catch (err) {
-        // User cancelled share
-      }
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} on ${profile.business_name || profile.shop_name || 'Store'}!`,
+        url: window.location.href,
+      }).catch(() => {})
     } else {
-      navigator.clipboard.writeText(shareUrl)
+      navigator.clipboard.writeText(window.location.href)
       setCopied(true)
-      toast({
-        title: 'Link copied! 📋',
-        description: 'Product link has been copied to your clipboard.',
-      })
+      toast({ title: 'Link copied!', description: 'Product link copied to clipboard' })
       setTimeout(() => setCopied(false), 2500)
     }
   }
@@ -116,7 +109,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
     const cleanPhone = phone.replace(/\D/g, '')
     const productUrl = typeof window !== 'undefined' ? window.location.href : `https://resellerpro.in/store/${shopSlug}/p/${product.id}`
     const text = encodeURIComponent(
-      `Hi ${profile.shop_name || profile.business_name || 'Store'}, I want to inquire about "${product.name}" (Price: ₹${price.toLocaleString('en-IN')}).\nProduct Link: ${productUrl}`
+      `Hi ${profile.business_name || profile.shop_name || 'Store'}, I want to inquire about "${product.name}" (Price: ₹${price.toLocaleString('en-IN')}).\nProduct Link: ${productUrl}`
     )
     return `https://wa.me/91${cleanPhone}?text=${text}`
   }, [profile, product, price, shopSlug])
@@ -125,7 +118,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <StoreHeader
         shopSlug={shopSlug}
-        shopName={profile.shop_name || profile.business_name || 'Store'}
+        shopName={profile.business_name || profile.shop_name || 'Store'}
         logoUrl={profile.shop_logo_url || profile.avatar_url}
         announcement={profile.shop_announcement}
         theme={theme}

@@ -10,6 +10,7 @@ import { useWishlistStore } from '@/store/useWishlistStore'
 import { CartDrawer } from './CartDrawer'
 import { WishlistDrawer } from './WishlistDrawer'
 import { AccountModal } from './AccountModal'
+import { SearchModal } from './SearchModal'
 import type { ShopTheme } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -41,6 +42,7 @@ export function StoreHeader({
   const [query, setQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [accountModalOpen, setAccountModalOpen] = useState(false)
+  const [searchModalOpen, setSearchModalOpen] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(0)
 
   // Sync cart count on client only (hydration safe)
@@ -153,7 +155,7 @@ export function StoreHeader({
             )}
             {(!logoUrl || !theme?.logoIncludesName) && (
               <span 
-                className="font-black text-base tracking-tight uppercase group-hover:opacity-80 transition-opacity"
+                className="font-semibold text-base tracking-tight uppercase group-hover:opacity-80 transition-opacity"
                 style={{ color: 'var(--store-navbar-text)' }}
               >
                 {shopName}
@@ -169,7 +171,7 @@ export function StoreHeader({
                 <Link
                   key={item.key}
                   href={item.href}
-                  className="text-xs font-extrabold tracking-wider uppercase transition-all relative py-1 hover:opacity-100"
+                  className="text-xs font-medium tracking-wider uppercase transition-all relative py-1 hover:opacity-100"
                   style={{
                     color: 'var(--store-navbar-text)',
                     opacity: isActive ? 1 : 0.65
@@ -190,29 +192,13 @@ export function StoreHeader({
 
           {/* Right: Search bar & User interaction icons */}
           <div className="flex items-center gap-2.5">
-            {/* Search Input Box */}
-            <form onSubmit={handleSearchSubmit} className="relative hidden md:block w-48 lg:w-60">
-              <input
-                type="text"
-                placeholder="Search catalog..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-4 rounded-full text-xs placeholder-slate-400 focus:outline-none transition-all font-medium border"
-                style={{
-                  backgroundColor: theme?.navbarBgColor === '#ffffff' || !theme?.navbarBgColor ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.1)',
-                  borderColor: theme?.navbarBgColor === '#ffffff' || !theme?.navbarBgColor ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.15)',
-                  color: 'var(--store-navbar-text)'
-                }}
-              />
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-            </form>
-
-            {/* Mobile Search Button */}
+            {/* Small Search Icon Button */}
             <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="p-2 md:hidden transition-opacity hover:opacity-70"
+              onClick={() => setSearchModalOpen(true)}
+              className="p-2 transition-all rounded-[10px] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center"
               style={{ color: 'var(--store-navbar-text)' }}
-              aria-label="Search"
+              aria-label="Search catalog"
+              title="Search catalog"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -290,21 +276,25 @@ export function StoreHeader({
               }}
             >
               {/* Mobile Search */}
-              <form onSubmit={handleSearchSubmit} className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full h-10 pl-10 pr-4 rounded-xl text-xs font-medium focus:outline-none border"
+              <div 
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  setSearchModalOpen(true)
+                }}
+                className="relative w-full cursor-pointer"
+              >
+                <div
+                  className="w-full h-10 pl-10 pr-4 rounded-xl text-xs font-medium border flex items-center"
                   style={{
                     backgroundColor: theme?.navbarBgColor === '#ffffff' || !theme?.navbarBgColor ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.1)',
                     borderColor: theme?.navbarBgColor === '#ffffff' || !theme?.navbarBgColor ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.15)',
                     color: 'var(--store-navbar-text)'
                   }}
-                />
+                >
+                  <span className="opacity-60">Search catalog...</span>
+                </div>
                 <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-              </form>
+              </div>
 
               <div className="flex flex-col gap-1 py-2">
                 {navItems.map((item) => {
@@ -314,7 +304,7 @@ export function StoreHeader({
                       key={item.key}
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="text-sm font-black uppercase px-3 py-2.5 rounded-xl transition-colors"
+                      className="text-sm font-medium uppercase px-3 py-2.5 rounded-xl transition-colors"
                       style={
                         isActive 
                           ? { backgroundColor: 'var(--store-primary)', color: '#ffffff' } 
@@ -343,6 +333,14 @@ export function StoreHeader({
         onClose={() => setAccountModalOpen(false)}
         shopSlug={shopSlug}
         shopName={shopName}
+      />
+
+      {/* Center Popup Search Modal */}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        shopSlug={shopSlug}
+        onSearchSubmit={onSearch}
       />
     </>
   )

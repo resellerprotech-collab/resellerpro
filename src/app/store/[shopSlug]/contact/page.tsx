@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('shop_slug', params.shopSlug)
     .single()
 
-  const storeName = profile?.shop_name || profile?.business_name || 'Store'
+  const storeName = profile?.business_name || profile?.shop_name || 'Store'
   return {
     title: `Contact Us | ${storeName}`,
     description: `Get in touch with ${storeName}. WhatsApp support, email, business address, and business hours.`,
@@ -37,7 +37,7 @@ export default async function ContactPage({ params }: Props) {
 
   if (!profile) return notFound()
 
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
   const theme = profile.shop_theme as ShopTheme | null
 
   const waNum = theme?.socialWhatsApp || profile.whatsapp_number || profile.business_phone
@@ -49,7 +49,7 @@ export default async function ContactPage({ params }: Props) {
   const phone = theme?.footerPhone || profile.business_phone || profile.whatsapp_number
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white">
       <StoreHeader
         shopSlug={shopSlug}
         shopName={storeName}
