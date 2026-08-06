@@ -35,7 +35,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { saveOnboardingStep4Action, saveOnboardingStep5Action } from './actions'
 
 // ─────────────────────────────────────────────────────
 // Constants
@@ -240,7 +239,7 @@ export default function OnboardingPage() {
   // ── Step saves ─────────────────────────────────────
   const saveStep2 = async () => {
     setSaving(true)
-    const { error } = await supabase.from('profiles').update({ 
+    const { error } = await supabase.from('profiles').update({
       business_type: businessType,
       onboarding_step: 3
     }).eq('id', user.id)
@@ -254,7 +253,7 @@ export default function OnboardingPage() {
 
   const saveStep3 = async () => {
     setSaving(true)
-    const { error } = await supabase.from('profiles').update({ 
+    const { error } = await supabase.from('profiles').update({
       business_categories: businessCategories,
       onboarding_step: 4
     }).eq('id', user.id)
@@ -271,31 +270,44 @@ export default function OnboardingPage() {
     if (slugStatus === 'taken' || slugStatus === 'checking') return
     setSaving(true)
 
-    try {
-      const res = await saveOnboardingStep4Action(businessName, storeSlug)
-      if (!res.success) {
-        console.warn('[saveStep4] Server action fallback to client update:', res.message)
-        await supabase.from('profiles').update({
-          business_name: businessName.trim(),
-          shop_name: businessName.trim(),
-          shop_slug: storeSlug,
-          onboarding_step: 5,
-        }).eq('id', user.id)
-      }
-      goNext()
-    } finally {
-      setSaving(false)
+    const updatePayload = {
+      business_name: businessName.trim(),
+      shop_name: businessName.trim(),
+      shop_slug: storeSlug,
+      onboarding_step: 5,
     }
+
+    console.log('🔍 [ONBOARDING DEBUG] User ID:', user.id)
+    console.log('🔍 [ONBOARDING DEBUG] Payload:', updatePayload)
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updatePayload)
+      .eq('id', user.id)
+      .select()
+
+    console.log('🔍 [ONBOARDING DEBUG] DB Result Data:', data)
+    console.log('🔍 [ONBOARDING DEBUG] DB Result Error:', error)
+
+    setSaving(false)
+    goNext()
   }
 
   const saveStep5AndFinish = async () => {
     if (!productCountRange) return
     setSaving(true)
     try {
-      const res = await saveOnboardingStep5Action(productCountRange)
-      if (!res.success) {
+      // Mark onboarding complete & try saving product count range
+      const { error } = await supabase.from('profiles').update({
+        product_count_range: productCountRange,
+        onboarding_completed: true,
+        onboarding_step: TOTAL_STEPS + 1,
+      }).eq('id', user.id)
+
+      if (error) {
+        console.warn('Fallback: Marking onboarding complete without product_count_range:', error.message)
+        // Mark completed using existing columns
         await supabase.from('profiles').update({
-          product_count_range: productCountRange,
           onboarding_completed: true,
           onboarding_step: TOTAL_STEPS + 1,
         }).eq('id', user.id)
@@ -397,7 +409,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-4 py-8">
       <div className="w-full max-w-4xl grid md:grid-cols-[100px_1fr] gap-8 md:gap-12 items-start">
-        
+
         {/* ── Left Stepper Column ─────────────────────── */}
         <div className="flex md:flex-col items-center justify-between md:justify-start w-full md:w-auto h-full border-b md:border-b-0 pb-6 md:pb-0 border-slate-100 dark:border-slate-800 relative">
           {Array.from({ length: TOTAL_STEPS }).map((_, idx) => {
@@ -415,13 +427,12 @@ export default function OnboardingPage() {
                       setStep(stepNum)
                     }
                   }}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all relative ${
-                    isCompleted
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all relative ${isCompleted
                       ? 'bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700'
                       : isActive
-                      ? 'bg-indigo-600 text-white ring-[4px] ring-indigo-500/20 shadow-md'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                  }`}
+                        ? 'bg-indigo-600 text-white ring-[4px] ring-indigo-500/20 shadow-md'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                    }`}
                 >
                   {isCompleted ? <Check className="w-4 h-4" /> : stepNum}
                 </button>
@@ -506,23 +517,20 @@ export default function OnboardingPage() {
                           key={biz.id}
                           type="button"
                           onClick={() => setBusinessType(biz.id)}
-                          className={`group text-left border rounded-2xl p-5 bg-white dark:bg-slate-900 transition-all duration-200 relative flex flex-col justify-between min-h-[140px] select-none ${
-                            selected
+                          className={`group text-left border rounded-2xl p-5 bg-white dark:bg-slate-900 transition-all duration-200 relative flex flex-col justify-between min-h-[140px] select-none ${selected
                               ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10'
                               : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5'
-                          }`}
+                            }`}
                         >
                           <div className="flex justify-between items-start w-full">
-                            <div className={`p-2.5 rounded-xl transition-colors ${
-                              selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
-                            }`}>
+                            <div className={`p-2.5 rounded-xl transition-colors ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
+                              }`}>
                               <Icon className="w-5 h-5 stroke-[1.8]" />
                             </div>
-                            <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${
-                              selected
+                            <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
                                 ? 'border-transparent bg-emerald-500 text-white'
                                 : 'border-slate-200 dark:border-slate-700'
-                            }`}>
+                              }`}>
                               {selected && <Check className="w-3.5 h-3.5" />}
                             </div>
                           </div>
@@ -571,25 +579,22 @@ export default function OnboardingPage() {
                               selected ? prev.filter(c => c !== cat.id) : [...prev, cat.id]
                             )
                           }}
-                          className={`text-left border rounded-xl p-3.5 bg-white dark:bg-slate-900 transition-all select-none flex items-center gap-3 relative min-h-[58px] ${
-                            selected
+                          className={`text-left border rounded-xl p-3.5 bg-white dark:bg-slate-900 transition-all select-none flex items-center gap-3 relative min-h-[58px] ${selected
                               ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10 bg-indigo-50/5 dark:bg-indigo-900/5'
                               : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800'
-                          }`}
+                            }`}
                         >
-                          <div className={`p-2 rounded-lg flex-shrink-0 ${
-                            selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
-                          }`}>
+                          <div className={`p-2 rounded-lg flex-shrink-0 ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
+                            }`}>
                             <Icon className="w-4 h-4 stroke-[1.8]" />
                           </div>
                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex-1 pr-5 whitespace-normal leading-tight">
                             {cat.label}
                           </span>
-                          <div className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center flex-shrink-0 absolute top-2 right-2 ${
-                            selected
+                          <div className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center flex-shrink-0 absolute top-2 right-2 ${selected
                               ? 'border-transparent bg-emerald-500 text-white'
                               : 'border-slate-200 dark:border-slate-700'
-                          }`}>
+                            }`}>
                             {selected && <Check className="w-3 h-3" />}
                           </div>
                         </button>
@@ -648,13 +653,12 @@ export default function OnboardingPage() {
                             setIsSlugManuallyEdited(true)
                             setStoreSlug(toSlug(e.target.value))
                           }}
-                          className={`h-11 rounded-xl font-mono text-sm pr-10 ${
-                            slugStatus === 'available'
+                          className={`h-11 rounded-xl font-mono text-sm pr-10 ${slugStatus === 'available'
                               ? 'border-emerald-400 bg-emerald-50/20 dark:bg-emerald-900/10 focus:ring-emerald-500/10'
                               : slugStatus === 'taken'
-                              ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-900/10'
-                              : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'
-                          }`}
+                                ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-900/10'
+                                : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'
+                            }`}
                           maxLength={50}
                         />
                         <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
@@ -727,17 +731,15 @@ export default function OnboardingPage() {
                           key={opt.id}
                           type="button"
                           onClick={() => setProductCountRange(opt.id)}
-                          className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${
-                            selected
+                          className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${selected
                               ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/5 dark:bg-indigo-900/5 ring-2 ring-indigo-600/10'
                               : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-900'
-                          }`}
+                            }`}
                         >
-                          <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${
-                            selected
+                          <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
                               ? 'border-transparent bg-emerald-500 text-white'
                               : 'border-slate-200 dark:border-slate-700'
-                          }`}>
+                            }`}>
                             {selected && <Check className="w-3.5 h-3.5" />}
                           </div>
                           <div>
