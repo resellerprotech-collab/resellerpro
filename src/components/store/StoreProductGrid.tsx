@@ -8,6 +8,7 @@ interface StoreProductGridProps {
   storeUserId: string
   theme: ShopTheme | null
   layout?: 'grid' | 'list'
+  shopSlug?: string
 }
 
 function SkeletonCard() {
@@ -23,7 +24,7 @@ function SkeletonCard() {
   )
 }
 
-export function StoreProductGrid({ products, storeUserId, theme, layout = 'grid' }: StoreProductGridProps) {
+export function StoreProductGrid({ products, storeUserId, theme, layout = 'grid', shopSlug }: StoreProductGridProps) {
   const activeLayout = theme?.layout || layout
 
   if (products.length === 0) {
@@ -48,6 +49,7 @@ export function StoreProductGrid({ products, storeUserId, theme, layout = 'grid'
             key={product.id}
             product={product}
             storeUserId={storeUserId}
+            shopSlug={shopSlug}
             layout="list"
             theme={theme ? { buttonStyle: theme.buttonStyle, showPrices: theme.showPrices } : undefined}
           />
@@ -63,6 +65,7 @@ export function StoreProductGrid({ products, storeUserId, theme, layout = 'grid'
           key={product.id}
           product={product}
           storeUserId={storeUserId}
+          shopSlug={shopSlug}
           layout="grid"
           theme={theme ? { buttonStyle: theme.buttonStyle, showPrices: theme.showPrices } : undefined}
         />

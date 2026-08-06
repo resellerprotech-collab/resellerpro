@@ -424,6 +424,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
                 key={product.id}
                 product={product}
                 storeUserId={profile.id}
+                shopSlug={shopSlug}
                 theme={theme ? { buttonStyle: theme.buttonStyle, showPrices: theme.showPrices } : undefined}
               />
             ))}
@@ -456,6 +457,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
                 key={product.id}
                 product={product}
                 storeUserId={profile.id}
+                shopSlug={shopSlug}
                 theme={theme ? { buttonStyle: theme.buttonStyle, showPrices: theme.showPrices } : undefined}
               />
             ))}
