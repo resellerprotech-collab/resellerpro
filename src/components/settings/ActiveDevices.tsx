@@ -154,7 +154,6 @@ export default function ActiveDevices() {
                             currentName.toLowerCase().includes('google chrome')
           
           if (deviceName && isGeneric && deviceName !== currentSession.browser) {
-            console.log('[SECURITY] Upgrading generic label to:', deviceName)
             await fetch('/api/security/track-session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

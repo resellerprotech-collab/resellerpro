@@ -125,9 +125,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                   if (isDev) {
                     registration.unregister();
-                    console.log('[ResellerPro] Unregistered stale Service Worker for development stability.');
-                  } else {
-                    console.log('[ResellerPro] Optimizing Service Worker...');
                   }
                 }
               });
