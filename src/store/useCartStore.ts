@@ -6,7 +6,7 @@ interface CartStore {
   items: CartItem[]
   shopSlug: string | null
   isOpen: boolean
-  addItem: (item: CartItem) => void
+  addItem: (item: CartItem, options?: { openDrawer?: boolean }) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -25,7 +25,8 @@ export const useCartStore = create<CartStore>()(
       shopSlug: null,
       isOpen: false,
 
-      addItem: (newItem) => {
+      addItem: (newItem, options = { openDrawer: true }) => {
+        const shouldOpen = options?.openDrawer ?? true
         set((state) => {
           const existingIndex = state.items.findIndex(
             (item) => item.productId === newItem.productId
@@ -40,9 +41,9 @@ export const useCartStore = create<CartStore>()(
               ...existing,
               quantity: Math.min(newQty, maxQty),
             }
-            return { items: updatedItems, isOpen: true }
+            return { items: updatedItems, ...(shouldOpen ? { isOpen: true } : {}) }
           }
-          return { items: [...state.items, newItem], isOpen: true }
+          return { items: [...state.items, newItem], ...(shouldOpen ? { isOpen: true } : {}) }
         })
       },
 
