@@ -131,9 +131,10 @@ export async function signup(
 
   if (adminError) {
     console.error('❌ ADMIN CREATE USER ERROR:', adminError.message)
+    const errText = typeof adminError.message === 'string' ? adminError.message : String(adminError.message || 'User creation failed')
     return {
       success: false,
-      message: adminError.message,
+      message: errText,
     }
   }
 
@@ -146,7 +147,7 @@ export async function signup(
 
   // Guaranteed Profile Creation / Self-Healing Upsert
   try {
-    await adminSupabase
+    const { error: upsertErr } = await adminSupabase
       .from('profiles')
       .upsert({
         id: adminUser.user.id,
@@ -156,8 +157,12 @@ export async function signup(
         phone: phone || null,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id', ignoreDuplicates: true })
-  } catch (e) {
-    console.warn('⚠️ Explicit profile upsert failed during signup:', e)
+
+    if (upsertErr) {
+      console.warn('⚠️ Profile upsert warning during signup:', upsertErr.message)
+    }
+  } catch (e: any) {
+    console.warn('⚠️ Explicit profile upsert failed during signup:', e?.message || e)
   }
 
   // ---------------------------------------------------------
