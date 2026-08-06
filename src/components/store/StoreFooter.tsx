@@ -46,7 +46,7 @@ function formatSocialUrl(platform: 'instagram' | 'facebook' | 'twitter' | 'whats
 }
 
 export function StoreFooter({ profile, theme }: StoreFooterProps) {
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
   const waNum = theme?.socialWhatsApp || profile.whatsapp_number || profile.business_phone
   const waLink = formatSocialUrl('whatsapp', waNum)
   const instaLink = formatSocialUrl('instagram', theme?.socialInstagram)

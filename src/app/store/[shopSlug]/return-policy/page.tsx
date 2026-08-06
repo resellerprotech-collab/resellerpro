@@ -13,7 +13,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createAdminClient()
   const { data: profile } = await supabase.from('profiles').select('shop_name, business_name').eq('shop_slug', params.shopSlug).single()
-  const storeName = profile?.shop_name || profile?.business_name || 'Store'
+  const storeName = profile?.business_name || profile?.shop_name || 'Store'
   return { title: `Return & Refund Policy | ${storeName}` }
 }
 
@@ -36,12 +36,12 @@ export default async function ReturnPolicyPage({ params }: Props) {
   const { data: profile } = await supabase.from('profiles').select('*').eq('shop_slug', shopSlug).single()
   if (!profile) return notFound()
 
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
   const theme = profile.shop_theme as ShopTheme | null
   const returnBlocks = theme?.policyBlocks?.returns
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white">
       <StoreHeader shopSlug={shopSlug} shopName={storeName} logoUrl={profile.shop_logo_url || profile.avatar_url} theme={theme} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
