@@ -53,7 +53,7 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex items-start justify-center px-4 py-10">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-start justify-center px-4 py-10">
       <div className="w-full max-w-md">
 
         {/* Success Animation */}

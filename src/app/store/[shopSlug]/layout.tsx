@@ -24,24 +24,27 @@ function getThemeCSSVars(theme: ShopTheme | null): string {
     '12px'
 
   const fontFamilyMap: Record<string, string> = {
+    jakarta: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
     inter: "'Inter', system-ui, sans-serif",
     poppins: "'Poppins', system-ui, sans-serif",
     playfair: "'Playfair Display', Georgia, serif",
     roboto: "'Roboto', system-ui, sans-serif",
     outfit: "'Outfit', system-ui, sans-serif",
-    default: "system-ui, sans-serif",
+    default: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
   }
   const fontFamily = fontFamilyMap[theme?.fontFamily || 'default'] || fontFamilyMap.default
 
   const googleFontUrls: Record<string, string> = {
-    inter: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap',
-    poppins: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap',
+    jakarta: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap',
+    inter: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
+    poppins: 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap',
     playfair: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap',
-    roboto: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap',
-    outfit: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap',
+    roboto: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap',
+    outfit: 'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap',
+    default: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap',
   }
-  const fontUrl = googleFontUrls[theme?.fontFamily || ''] || null
-  const fontImport = fontUrl ? `@import url('${fontUrl}');` : ''
+  const fontUrl = googleFontUrls[theme?.fontFamily || 'default'] || googleFontUrls.default
+  const fontImport = `@import url('${fontUrl}');`
 
   return `
     ${fontImport}
