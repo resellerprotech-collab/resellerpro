@@ -15,7 +15,7 @@ interface OrderSuccessClientProps {
 }
 
 export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuccessClientProps) {
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
   const waNum = profile.whatsapp_number || profile.business_phone
   const waClean = waNum?.replace(/\D/g, '')
 

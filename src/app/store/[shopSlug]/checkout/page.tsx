@@ -526,7 +526,7 @@ export default function CheckoutPage() {
           setStoreData({
             id: data.id,
             upi_id: data.upi_id,
-            shop_name: data.shop_name || data.business_name,
+            shop_name: data.business_name || data.shop_name,
             logo_url: data.shop_logo_url || data.avatar_url || null,
             announcement: data.shop_announcement || null,
             theme: (data.shop_theme as ShopTheme) || null,

@@ -22,7 +22,7 @@ export function StoreLiveBanner({ shopProfile }: StoreLiveBannerProps) {
   if (!shopProfile) return null
 
   const { shop_slug, shop_name, business_name, whatsapp_number, onboarding_completed } = shopProfile
-  const storeName = shop_name || business_name || 'Your Store'
+  const storeName = business_name || shop_name || 'Your Store'
 
   // If no slug set yet — show setup prompt
   if (!shop_slug) {

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!profile) return { title: 'Store Not Found | ResellerPro' }
   const theme = profile.shop_theme as ShopTheme | null
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
 
   return {
     title: theme?.seoTitle || `${storeName} | Shop Online`,

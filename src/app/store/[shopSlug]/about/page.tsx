@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('shop_slug', params.shopSlug)
     .single()
 
-  const storeName = profile?.shop_name || profile?.business_name || 'Store'
+  const storeName = profile?.business_name || profile?.shop_name || 'Store'
   return {
     title: `About Us | ${storeName}`,
     description: `Learn more about ${storeName}, our mission, values, and quality promise.`,
@@ -39,12 +39,12 @@ export default async function AboutPage({ params }: Props) {
 
   if (!profile) return notFound()
 
-  const storeName = profile.shop_name || profile.business_name || 'Store'
+  const storeName = profile.business_name || profile.shop_name || 'Store'
   const theme = profile.shop_theme as ShopTheme | null
   const primaryColor = theme?.primaryColor || '#6366f1'
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white">
       <StoreHeader
         shopSlug={shopSlug}
         shopName={storeName}
