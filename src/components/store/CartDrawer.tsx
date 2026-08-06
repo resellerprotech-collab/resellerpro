@@ -55,7 +55,7 @@ export function CartDrawer() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:rounded-l-3xl lg:max-h-full"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:max-h-full border-l border-slate-200"
           >
             {/* Handle bar (mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
@@ -63,7 +63,7 @@ export function CartDrawer() {
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-5 h-5 text-slate-700" />
                 <h2 className="font-bold text-lg text-slate-900">
@@ -80,7 +80,7 @@ export function CartDrawer() {
               </div>
               <button
                 onClick={closeCart}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
                 aria-label="Close cart"
               >
                 <X className="w-4 h-4" />
@@ -104,9 +104,9 @@ export function CartDrawer() {
                 </div>
               ) : (
                 items.map((item) => (
-                  <div key={item.productId} className="flex gap-3 bg-slate-50 rounded-2xl p-3">
+                  <div key={item.productId} className="flex gap-3.5 bg-slate-50 rounded-2xl p-3.5 border border-slate-100 items-center">
                     {/* Image */}
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0 border border-slate-200/60">
                       {item.image ? (
                         <Image
                           src={item.image}
@@ -123,29 +123,35 @@ export function CartDrawer() {
                     </div>
 
                     {/* Details */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-slate-900 truncate">{item.name}</p>
-                      {item.variantName && (
-                        <p className="text-xs text-slate-500">{item.variantName}</p>
-                      )}
-                      <p className="font-bold text-sm mt-1" style={{ color: 'var(--store-primary, #6366f1)' }}>
-                        ₹{item.price.toLocaleString('en-IN')}
-                      </p>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm text-slate-900 truncate">{item.name}</p>
+                          {item.variantName && (
+                            <p className="text-xs text-slate-500">{item.variantName}</p>
+                          )}
+                          <p className="font-bold text-xs mt-0.5" style={{ color: 'var(--store-primary, #6366f1)' }}>
+                            ₹{item.price.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
 
-                      <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center justify-between mt-2.5 pt-0.5">
                         {/* Quantity */}
-                        <div className="flex items-center gap-1 bg-white rounded-xl border">
+                        <div className="flex items-center gap-0.5 bg-white rounded-xl border border-slate-200 shadow-sm px-1 py-0.5">
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
                             aria-label="Decrease quantity"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="w-6 text-center text-sm font-bold">{item.quantity}</span>
+                          <span className="w-7 text-center text-xs font-bold text-slate-900 select-none">
+                            {item.quantity}
+                          </span>
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
+                            className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
                             aria-label="Increase quantity"
                           >
                             <Plus className="w-3 h-3" />
@@ -153,13 +159,13 @@ export function CartDrawer() {
                         </div>
 
                         {/* Subtotal + Remove */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-slate-900">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-sm font-extrabold text-slate-900">
                             ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                           </span>
                           <button
                             onClick={() => removeItem(item.productId)}
-                            className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
+                            className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             aria-label="Remove item"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -174,29 +180,29 @@ export function CartDrawer() {
 
             {/* Footer */}
             {items.length > 0 && (
-              <div className="border-t px-5 py-5 space-y-3 bg-white">
-                <div className="flex justify-between text-sm text-slate-600">
+              <div className="border-t border-slate-100 px-5 py-5 space-y-3 bg-white">
+                <div className="flex justify-between text-sm text-slate-600 font-medium">
                   <span>Subtotal</span>
-                  <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                  <span className="text-slate-900 font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-sm text-slate-600">
+                <div className="flex justify-between text-sm text-slate-600 font-medium">
                   <span>Shipping</span>
-                  <span className={shippingFee === 0 ? 'text-green-600 font-semibold' : ''}>
+                  <span className={shippingFee === 0 ? 'text-green-600 font-bold' : 'text-slate-900 font-semibold'}>
                     {shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}
                   </span>
                 </div>
                 {shippingFee > 0 && (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 font-medium">
                     Add ₹{(500 - subtotal).toLocaleString('en-IN')} more for free shipping
                   </p>
                 )}
-                <div className="flex justify-between font-bold text-base pt-1 border-t">
-                  <span>Total</span>
-                  <span>₹{total.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between font-bold text-base pt-2.5 border-t border-slate-100 text-slate-900">
+                  <span className="text-slate-900">Total</span>
+                  <span className="text-slate-900">₹{total.toLocaleString('en-IN')}</span>
                 </div>
                 <button
                   onClick={handleCheckout}
-                  className="w-full h-12 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
+                  className="w-full h-12 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-md"
                   style={{ backgroundColor: 'var(--store-primary, #6366f1)' }}
                 >
                   Proceed to Checkout
@@ -204,7 +210,7 @@ export function CartDrawer() {
                 </button>
                 <button
                   onClick={closeCart}
-                  className="w-full text-center text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                  className="w-full text-center text-sm text-slate-500 hover:text-slate-700 transition-colors pt-1"
                 >
                   ← Continue Shopping
                 </button>

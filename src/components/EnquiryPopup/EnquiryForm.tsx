@@ -60,7 +60,7 @@ export default function EnquiryForm() {
             <div className="py-6 px-3 text-center flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2" />
                 <h3 className="text-base font-bold text-slate-900">Thank you!</h3>
-                <p className="text-xs text-slate-500 mt-0.5">We'll contact you shortly on WhatsApp.</p>
+                <p className="text-xs text-slate-500 mt-0.5">We've received your inquiry. Our team will contact you shortly</p>
             </div>
         )
     }
@@ -173,7 +173,7 @@ export default function EnquiryForm() {
                             </svg>
                         </div>
                         <span className="text-[13.5px] font-bold text-white tracking-wide">
-                            Start Chat on WhatsApp
+                            Submit
                         </span>
                         <ArrowRight className="w-4.5 h-4.5 text-white" />
                     </>

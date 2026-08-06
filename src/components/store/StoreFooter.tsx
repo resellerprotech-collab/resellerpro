@@ -230,7 +230,7 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
           <div className="flex flex-col sm:items-start gap-1">
             <p className="text-xs text-slate-500">© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
             <p className="text-[10px] text-slate-600 flex items-center gap-1 font-semibold">
-              Powered by <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" /> ResellerPro
+              Powered by ResellerPro
             </p>
           </div>
 
