@@ -226,22 +226,11 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
         </div>
 
         {/* Bottom Panel */}
-        <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col sm:items-start gap-1">
-            <p className="text-xs text-slate-500">© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
-            <p className="text-[10px] text-slate-600 flex items-center gap-1 font-semibold">
-              Powered by <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" /> ResellerPro
-            </p>
-          </div>
-
-          {/* We Accept Payment Icons */}
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            <span className="text-[10px] font-bold text-slate-500 mr-1">Accepted Payments:</span>
-            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">UPI</span>
-            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">COD</span>
-            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">VISA</span>
-            <span className="bg-slate-900 px-2 py-1 rounded text-[9px] font-black text-slate-300 border border-slate-800 tracking-wider">MASTERCARD</span>
-          </div>
+        <div className="pt-8 border-t border-slate-900 flex flex-col items-center justify-center text-center gap-1">
+          <p className="text-xs text-slate-500">© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
+          <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1 font-semibold">
+            Powered by ResellerPro
+          </p>
         </div>
       </div>
     </footer>

@@ -277,17 +277,15 @@ export default function OnboardingPage() {
       onboarding_step: 5,
     }
 
-    console.log('🔍 [ONBOARDING DEBUG] User ID:', user.id)
-    console.log('🔍 [ONBOARDING DEBUG] Payload:', updatePayload)
-
     const { data, error } = await supabase
       .from('profiles')
       .update(updatePayload)
       .eq('id', user.id)
       .select()
 
-    console.log('🔍 [ONBOARDING DEBUG] DB Result Data:', data)
-    console.log('🔍 [ONBOARDING DEBUG] DB Result Error:', error)
+    if (error) {
+      console.error('Error updating profile step 4:', error.message)
+    }
 
     setSaving(false)
     goNext()
@@ -322,16 +320,7 @@ export default function OnboardingPage() {
 
   // ── Loading screen ─────────────────────────────────
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-white animate-spin" />
-          </div>
-          <p className="text-slate-500 font-medium">Setting up your workspace…</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   // ── Completion Screen ──────────────────────────────
