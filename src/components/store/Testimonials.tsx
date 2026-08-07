@@ -18,14 +18,19 @@ export interface Testimonial {
 interface TestimonialsProps {
   primaryColor?: string
   customReviews?: Testimonial[] | any[]
+  heading?: string
+  subheading?: string
 }
 
-export function Testimonials({ primaryColor = '#6366f1', customReviews }: TestimonialsProps) {
+export function Testimonials({ primaryColor = '#6366f1', customReviews, heading, subheading }: TestimonialsProps) {
   const reviews = (customReviews || []).filter(r => r && (r.name || r.text || r.comment))
 
   if (reviews.length === 0) {
     return null
   }
+
+  const sectionHeading = heading !== undefined && heading !== '' ? heading : 'What Our Customers Say'
+  const sectionSubheading = subheading !== undefined ? subheading : 'Trusted by 5,000+ businesses and individuals worldwide'
 
   // Ensure enough cards for a full screen width loop
   const displayList = reviews.length < 4
@@ -34,6 +39,7 @@ export function Testimonials({ primaryColor = '#6366f1', customReviews }: Testim
 
   const renderReviewCard = (rev: any, idx: number, prefix: string) => {
     const initials = rev.name ? rev.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'U'
+    const avatar = rev.avatarUrl || rev.imageUrl || rev.image || rev.avatar
     return (
       <div
         key={`${prefix}_${rev.id || idx}_${idx}`}
@@ -42,8 +48,8 @@ export function Testimonials({ primaryColor = '#6366f1', customReviews }: Testim
         {/* Card Header: Avatar & Quote Icon */}
         <div className="flex items-center justify-between mb-2 sm:mb-3">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center font-bold text-slate-700 text-xs sm:text-base shadow-inner shrink-0">
-            {rev.avatarUrl ? (
-              <img src={rev.avatarUrl} alt={rev.name} className="w-full h-full object-cover" />
+            {avatar ? (
+              <img src={avatar} alt={rev.name} className="w-full h-full object-cover" />
             ) : (
               <span>{initials}</span>
             )}
@@ -93,11 +99,13 @@ export function Testimonials({ primaryColor = '#6366f1', customReviews }: Testim
     <section className="py-8 md:py-14 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-10 text-center">
         <h2 className="text-xl sm:text-3xl lg:text-4xl text-black font-medium tracking-tight">
-          What Our Customers Say
+          {sectionHeading}
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
-          Trusted by 5,000+ businesses and individuals worldwide
-        </p>
+        {sectionSubheading ? (
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
+            {sectionSubheading}
+          </p>
+        ) : null}
       </div>
 
       {/* Truly Infinite Seamless Marquee Container using pure Tailwind CSS classes */}
