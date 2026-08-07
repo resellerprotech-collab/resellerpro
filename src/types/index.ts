@@ -124,6 +124,20 @@ export interface ShopTheme {
   ctaLink?: string
   ctaBtnText?: string
   footerAbout?: string
+  aboutStoryEnabled?: boolean
+  aboutStoryTag?: string
+  aboutStoryTitle?: string
+  aboutStoryImage?: string
+  aboutSignatureText?: string
+  aboutPara1?: string
+  aboutPara2?: string
+  aboutStatsEnabled?: boolean
+  aboutStats?: Array<{
+    id?: string
+    iconName?: string
+    value: string
+    label: string
+  }>
   footerEmail?: string
   footerPhone?: string
   footerAddress?: string

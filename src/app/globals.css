@@ -161,4 +161,13 @@ select:-webkit-autofill:active {
   -webkit-text-fill-color: #0f172a !important;
   transition: background-color 50000s ease-in-out 0s !important;
   caret-color: #0f172a !important;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(calc(-100% - 1.5rem));
+  }
 }
