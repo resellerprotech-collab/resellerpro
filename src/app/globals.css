@@ -170,4 +170,15 @@ select:-webkit-autofill:active {
   100% {
     transform: translateX(calc(-100% - 1.5rem));
   }
-}
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
