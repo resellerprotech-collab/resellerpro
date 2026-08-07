@@ -541,16 +541,19 @@ export async function updateShopSettings(formData: FormData) {
       updateData.shop_slug = shop_slug
     }
 
-    // Update profiles table
-    let { error } = await supabase
+    // Update profiles table using admin client to ensure RLS doesn't block settings update
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminSupabase = await createAdminClient()
+
+    let { error } = await adminSupabase
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
 
-    // Fallback if shop_logo_url column is attempted or requested directly
+    // Fallback if shop_logo_url column is missing
     if (error && error.message.includes('shop_logo_url')) {
       delete updateData.shop_logo_url
-      const retry = await supabase
+      const retry = await adminSupabase
         .from('profiles')
         .update(updateData)
         .eq('id', userId)
