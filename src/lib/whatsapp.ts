@@ -7,6 +7,11 @@ export function generateOrderConfirmationMessage(
   profile: Profile
 ): string {
   const storeName = profile.shop_name || profile.business_name || 'Our Store'
+  const isUPI = order.payment_method_v2 === 'upi'
+  const totalAmount = order.total_amount ?? order.total ?? 0
+  const subtotal = order.subtotal ?? totalAmount
+  const shippingFee = order.shipping_fee ?? 0
+  const customerName = order.customer_name ?? order.shipping_name ?? 'Customer'
 
   const items =
     order.order_items
@@ -16,29 +21,42 @@ export function generateOrderConfirmationMessage(
       )
       .join('\n') ?? '  (items not available)'
 
-  const paymentSection =
-    order.payment_method_v2 === 'upi'
-      ? [
-          `💳 *Payment:* UPI Transfer`,
-          `📱 UPI ID: *${profile.upi_id ?? 'Contact seller'}*`,
-          `💰 Amount: *₹${(order.total_amount ?? order.total ?? 0).toLocaleString('en-IN')}*`,
-          ``,
-          `Please transfer and send payment screenshot to confirm order.`,
-        ].join('\n')
-      : [
-          `💵 *Payment:* Cash on Delivery`,
-          `Please keep exact change ready at the time of delivery.`,
-        ].join('\n')
+  if (isUPI) {
+    const upiId = profile.upi_id ?? 'Contact seller for UPI ID'
+    const upiName = profile.upi_name ? ` (${profile.upi_name})` : ''
 
-  const totalAmount = order.total_amount ?? order.total ?? 0
-  const subtotal = order.subtotal ?? totalAmount
-  const shippingFee = order.shipping_fee ?? 0
+    return [
+      `📦 *Order Received — Payment Required*`,
+      ``,
+      `Hi ${customerName}! 👋`,
+      `Your order from *${storeName}* has been received!`,
+      ``,
+      `📦 *Order #${order.order_number}*`,
+      items,
+      ``,
+      `─────────────────`,
+      `💰 Total Amount: *₹${totalAmount.toLocaleString('en-IN')}*`,
+      `─────────────────`,
+      ``,
+      `💳 *UPI / GPay Payment Details:*`,
+      `  • UPI ID / GPay Number: *${upiId}*${upiName}`,
+      `  • Amount: *₹${totalAmount.toLocaleString('en-IN')}*`,
+      profile.upi_instructions ? `  • Note: ${profile.upi_instructions}` : null,
+      ``,
+      `📸 *Next Step:* Please transfer ₹${totalAmount.toLocaleString('en-IN')} and reply here with a screenshot of your payment receipt to confirm your order!`,
+      ``,
+      `Thank you for shopping with us! 🙏`,
+    ]
+      .filter((line): line is string => line !== null)
+      .join('\n')
+  }
 
-  const message = [
+  // Cash on Delivery (COD) Flow
+  return [
     `🎉 *Order Confirmed!*`,
     ``,
-    `Hi ${order.customer_name ?? order.shipping_name ?? 'Customer'}! 👋`,
-    `Your order from *${storeName}* has been confirmed.`,
+    `Hi ${customerName}! 👋`,
+    `Your order from *${storeName}* is *CONFIRMED*!`,
     ``,
     `📦 *Order #${order.order_number}*`,
     items,
@@ -46,26 +64,22 @@ export function generateOrderConfirmationMessage(
     `─────────────────`,
     `💰 Subtotal: ₹${subtotal.toLocaleString('en-IN')}`,
     `🚚 Shipping: ${shippingFee === 0 ? 'FREE' : `₹${shippingFee.toLocaleString('en-IN')}`}`,
-    `💳 *Total: ₹${totalAmount.toLocaleString('en-IN')}*`,
+    `💳 *Total: ₹${totalAmount.toLocaleString('en-IN')}* (Cash on Delivery)`,
     `─────────────────`,
     ``,
     `📍 *Delivery Address:*`,
-    order.shipping_name ?? order.customer_name,
+    order.shipping_name ?? customerName,
     order.shipping_line1,
     order.shipping_line2 ? order.shipping_line2 : null,
     `${order.shipping_city}, ${order.shipping_state} - ${order.shipping_pincode}`,
     ``,
-    paymentSection,
-    ``,
+    `🚚 *Order Status:* Confirmed. We will notify you with live tracking as soon as your package is shipped!`,
     `⏱ Expected Delivery: 3–5 working days`,
     ``,
     `Thank you for shopping with us! 🙏`,
-    `Reply here for any queries.`,
   ]
     .filter((line): line is string => line !== null)
     .join('\n')
-
-  return message
 }
 
 export function generateShippingUpdateMessage(

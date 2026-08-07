@@ -18,6 +18,9 @@ export async function updateProfile(formData: FormData) {
     const userId = formData.get('userId') as string
     const full_name = formData.get('full_name') as string
     const phone = formData.get('phone') as string
+    const upi_id = formData.get('upi_id') as string | null
+    const upi_name = formData.get('upi_name') as string | null
+    const upi_instructions = formData.get('upi_instructions') as string | null
 
     // Verify user is updating their own profile
     if (userId !== user.id) {
@@ -29,14 +32,20 @@ export async function updateProfile(formData: FormData) {
       return { success: false, message: 'Full name must be at least 2 characters' }
     }
 
-    // Update profile in database (only personal info)
+    const updatePayload: any = {
+      full_name: full_name.trim(),
+      phone: phone?.trim() || null,
+      updated_at: new Date().toISOString(),
+    }
+
+    if (upi_id !== null && upi_id !== undefined) updatePayload.upi_id = upi_id.trim() || null
+    if (upi_name !== null && upi_name !== undefined) updatePayload.upi_name = upi_name.trim() || null
+    if (upi_instructions !== null && upi_instructions !== undefined) updatePayload.upi_instructions = upi_instructions.trim() || null
+
+    // Update profile in database
     const { error } = await supabase
       .from('profiles')
-      .update({
-        full_name: full_name.trim(),
-        phone: phone.trim() || null,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', userId)
 
     if (error) {
@@ -470,6 +479,9 @@ export async function updateShopSettings(formData: FormData) {
     const shop_theme = formData.get('shop_theme') as string // JSON string
     const shop_slug = formData.get('shop_slug') as string
     const shop_logo_url = formData.get('shop_logo_url') as string
+    const upi_id = formData.get('upi_id') as string | null
+    const upi_name = formData.get('upi_name') as string | null
+    const upi_instructions = formData.get('upi_instructions') as string | null
 
     // Verify user
     if (userId !== user.id) {
@@ -513,6 +525,16 @@ export async function updateShopSettings(formData: FormData) {
       shop_description: shop_description?.trim() || null,
       shop_theme: themeObj,
       updated_at: new Date().toISOString(),
+    }
+
+    if (upi_id !== null && upi_id !== undefined) {
+      updateData.upi_id = upi_id.trim() || null
+    }
+    if (upi_name !== null && upi_name !== undefined) {
+      updateData.upi_name = upi_name.trim() || null
+    }
+    if (upi_instructions !== null && upi_instructions !== undefined) {
+      updateData.upi_instructions = upi_instructions.trim() || null
     }
 
     if (shop_slug) {

@@ -35,6 +35,9 @@ interface ShopSettingsFormProps {
     business_name?: string
     avatar_url?: string
     shop_logo_url?: string
+    upi_id?: string | null
+    upi_name?: string | null
+    upi_instructions?: string | null
   }
   isEligible?: boolean
   planName?: string
@@ -86,6 +89,9 @@ export default function ShopSettingsForm({
     shop_slug: profile.shop_slug || '',
     shop_description: profile.shop_description || '',
     shop_logo_url: theme.shop_logo_url || profile.shop_logo_url || '',
+    upi_id: profile.upi_id || '',
+    upi_name: profile.upi_name || '',
+    upi_instructions: profile.upi_instructions || '',
     // Appearance
     primaryColor: theme.primaryColor || '#4f46e5',
     secondaryColor: theme.secondaryColor || '#f97316',
@@ -905,9 +911,12 @@ export default function ShopSettingsForm({
       data.append('shop_slug', formData.shop_slug)
       data.append('shop_description', formData.shop_description)
       data.append('shop_logo_url', formData.shop_logo_url)
+      data.append('upi_id', formData.upi_id)
+      data.append('upi_name', formData.upi_name)
+      data.append('upi_instructions', formData.upi_instructions)
       
       // Pack everything else into shop_theme JSON
-      const { shop_slug, shop_description, shop_logo_url, ...themeData } = formData
+      const { shop_slug, shop_description, shop_logo_url, upi_id, upi_name, upi_instructions, ...themeData } = formData
       data.append('shop_theme', JSON.stringify(themeData))
 
       const result = await updateShopSettings(data)
@@ -1068,6 +1077,56 @@ export default function ShopSettingsForm({
             <Section icon={Info} title="Store Description">
               <Textarea name="shop_description" value={formData.shop_description} onChange={handleChange}
                 placeholder="Tell customers about your business..." rows={3} disabled={isPending} />
+            </Section>
+
+            <Section icon={Smartphone} title="GPay / UPI Payment Details">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    UPI ID / GPay Mobile Number
+                  </Label>
+                  <Input
+                    name="upi_id"
+                    value={formData.upi_id || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. 9876543210@okbizaxis or 9876543210"
+                    className="mt-1 text-xs sm:text-sm font-mono"
+                    disabled={isPending}
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    This UPI ID / GPay number is automatically sent to buyers when they choose "Pay via UPI" at checkout.
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Account Holder / GPay Name
+                  </Label>
+                  <Input
+                    name="upi_name"
+                    value={formData.upi_name || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. Royal Fashion Store"
+                    className="mt-1 text-xs sm:text-sm"
+                    disabled={isPending}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Payment Instructions / Custom Note (Optional)
+                  </Label>
+                  <Textarea
+                    name="upi_instructions"
+                    value={formData.upi_instructions || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. Accepting GPay, PhonePe, Paytm transfers..."
+                    rows={2}
+                    className="mt-1 text-xs"
+                    disabled={isPending}
+                  />
+                </div>
+              </div>
             </Section>
 
             <Section icon={ImageIcon} title="Store Logo">

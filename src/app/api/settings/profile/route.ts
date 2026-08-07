@@ -44,6 +44,9 @@ export async function GET() {
         phone: profile?.phone || '',
         avatar_url: profile?.avatar_url || '',
         business_name: profile?.business_name || '',
+        upi_id: profile?.upi_id || '',
+        upi_name: profile?.upi_name || '',
+        upi_instructions: profile?.upi_instructions || '',
         created_at: user.created_at,
     }
 

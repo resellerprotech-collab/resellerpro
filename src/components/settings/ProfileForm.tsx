@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Upload, User, Mail, Phone, Building } from 'lucide-react'
+import { Loader2, Upload, User, Mail, Phone, Building, Smartphone } from 'lucide-react'
 import { updateProfile, uploadAvatar } from '@/app/(dashboard)/settings/actions'
 import { ImageCropper } from '../shared/ImageCropper'
 import { useEffect } from 'react'
@@ -20,6 +20,9 @@ type UserData = {
   phone: string
   avatar_url: string
   business_name: string
+  upi_id?: string | null
+  upi_name?: string | null
+  upi_instructions?: string | null
   created_at: string
 }
 
@@ -34,6 +37,9 @@ export default function ProfileForm({ user }: { user: UserData }) {
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     phone: user?.phone || '',
+    upi_id: user?.upi_id || '',
+    upi_name: user?.upi_name || '',
+    upi_instructions: user?.upi_instructions || '',
   })
 
   // Sync formData when React Query invalidates and fetches new user data
@@ -42,13 +48,16 @@ export default function ProfileForm({ user }: { user: UserData }) {
       setFormData(prev => ({
         full_name: user.full_name || prev.full_name,
         phone: user.phone || prev.phone,
+        upi_id: user.upi_id || prev.upi_id,
+        upi_name: user.upi_name || prev.upi_name,
+        upi_instructions: user.upi_instructions || prev.upi_instructions,
       }))
     }
   }, [user])
 
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '')
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target
     let { value } = e.target
 
@@ -146,6 +155,9 @@ export default function ProfileForm({ user }: { user: UserData }) {
       data.append('userId', user.id)
       data.append('full_name', formData.full_name)
       data.append('phone', formData.phone)
+      data.append('upi_id', formData.upi_id)
+      data.append('upi_name', formData.upi_name)
+      data.append('upi_instructions', formData.upi_instructions)
 
       const result = await updateProfile(data)
 
@@ -327,6 +339,65 @@ export default function ProfileForm({ user }: { user: UserData }) {
         <p className="text-xs text-muted-foreground">
           Business name can be edited from business settings.
         </p>
+      </div>
+
+      {/* GPay / UPI Payment Details */}
+      <div className="pt-4 border-t space-y-4">
+        <h3 className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+          <Smartphone className="h-4 w-4 text-emerald-600" />
+          GPay / UPI Payment Settings
+        </h3>
+        
+        <div className="space-y-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="space-y-1.5">
+            <Label htmlFor="upi_id" className="text-xs font-semibold">
+              UPI ID / GPay Mobile Number
+            </Label>
+            <Input
+              id="upi_id"
+              name="upi_id"
+              value={formData.upi_id}
+              onChange={handleInputChange}
+              placeholder="e.g. 9048571147@okbizaxis or 9048571147"
+              className="bg-white dark:bg-slate-950 font-mono text-xs sm:text-sm"
+              disabled={isPending}
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Automatically sent to customers on WhatsApp when they choose "Pay via UPI" at checkout.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="upi_name" className="text-xs font-semibold">
+              GPay / Account Holder Name
+            </Label>
+            <Input
+              id="upi_name"
+              name="upi_name"
+              value={formData.upi_name}
+              onChange={handleInputChange}
+              placeholder="e.g. Royal Fashion Store"
+              className="bg-white dark:bg-slate-950 text-xs sm:text-sm"
+              disabled={isPending}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="upi_instructions" className="text-xs font-semibold">
+              Payment Instructions / Custom Note (Optional)
+            </Label>
+            <textarea
+              id="upi_instructions"
+              name="upi_instructions"
+              value={formData.upi_instructions}
+              onChange={handleInputChange}
+              placeholder="e.g. Accepting GPay, PhonePe, Paytm transfers..."
+              rows={2}
+              className="w-full px-3 py-2 text-xs rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950/10"
+              disabled={isPending}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Account Info */}

@@ -494,6 +494,8 @@ export default function CheckoutPage() {
   const [storeData, setStoreData] = useState<{
     id: string
     upi_id: string | null
+    upi_name: string | null
+    upi_instructions: string | null
     shop_name: string | null
     logo_url: string | null
     announcement: string | null
@@ -513,7 +515,7 @@ export default function CheckoutPage() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, upi_id, shop_name, business_name, shop_logo_url, avatar_url, shop_announcement, shop_theme')
+          .select('id, upi_id, upi_name, upi_instructions, shop_name, business_name, shop_logo_url, avatar_url, shop_announcement, shop_theme')
           .eq('shop_slug', shopSlug)
           .single()
 
@@ -526,6 +528,8 @@ export default function CheckoutPage() {
           setStoreData({
             id: data.id,
             upi_id: data.upi_id,
+            upi_name: data.upi_name || null,
+            upi_instructions: data.upi_instructions || null,
             shop_name: data.business_name || data.shop_name,
             logo_url: data.shop_logo_url || data.avatar_url || null,
             announcement: data.shop_announcement || null,
