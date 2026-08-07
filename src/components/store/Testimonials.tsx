@@ -37,7 +37,7 @@ export function Testimonials({ primaryColor = '#6366f1', customReviews }: Testim
     return (
       <div
         key={`${prefix}_${rev.id || idx}_${idx}`}
-        className="shrink-0 w-[230px] sm:w-[300px] md:w-[340px] p-4 sm:p-5 shadow-md border border-slate-100  relative flex flex-col justify-between transition-all duration-300 group"
+        className="shrink-0 w-[230px] sm:w-[300px] md:w-[340px] p-4 sm:p-5 shadow-md border border-slate-100 rounded-[10px]  relative flex flex-col justify-between transition-all duration-300 group"
       >
         {/* Card Header: Avatar & Quote Icon */}
         <div className="flex items-center justify-between mb-2 sm:mb-3">
