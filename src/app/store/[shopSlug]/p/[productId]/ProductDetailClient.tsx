@@ -126,36 +126,37 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center justify-between gap-2 mb-6 text-xs text-slate-500 flex-wrap">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Link href={`/store/${shopSlug}`} className="hover:text-slate-900 transition-colors">
+        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6 text-xs text-slate-500">
+          <div className="min-w-0 flex-1 flex items-center gap-1 sm:gap-1.5 font-medium whitespace-nowrap overflow-hidden">
+            <Link href={`/store/${shopSlug}`} className="hover:text-slate-900 transition-colors shrink-0 hidden xs:inline">
               Home
             </Link>
-            <span>/</span>
-            <Link href={`/store/${shopSlug}/shop`} className="hover:text-slate-900 transition-colors">
+            <span className="hidden xs:inline text-slate-300">/</span>
+            <Link href={`/store/${shopSlug}/shop`} className="hover:text-slate-900 transition-colors shrink-0">
               Shop
             </Link>
             {product.category && (
               <>
-                <span>/</span>
+                <span className="text-slate-300">/</span>
                 <Link
                   href={`/store/${shopSlug}/shop?category=${encodeURIComponent(product.category)}`}
-                  className="hover:text-slate-900 transition-colors"
+                  className="hover:text-slate-900 transition-colors truncate max-w-[85px] sm:max-w-none"
                 >
                   {product.category}
                 </Link>
               </>
             )}
-            <span>/</span>
-            <span className="text-slate-900 font-bold truncate max-w-[200px]">{product.name}</span>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-900 font-bold truncate max-w-[110px] sm:max-w-[250px]">{product.name}</span>
           </div>
 
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-            {copied ? 'Link Copied' : 'Share Product'}
+            <span className="hidden xs:inline">{copied ? 'Link Copied' : 'Share Product'}</span>
+            <span className="xs:hidden">{copied ? 'Copied' : 'Share'}</span>
           </button>
         </div>
 
@@ -357,25 +358,25 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
               )}
 
               {/* Action Buttons (Add to Cart & Buy Now) */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4 mt-auto">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-3 sm:mb-4 mt-auto">
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`flex-1 h-12 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider border-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
+                  className={`w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider border-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
                   style={{ borderColor: primaryColor, color: primaryColor }}
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  {added ? '✓ Added to Cart!' : 'Add to Cart'}
+                  <ShoppingCart className="w-4 h-4 shrink-0" />
+                  <span>{added ? '✓ Added to Cart!' : 'Add to Cart'}</span>
                 </button>
 
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
-                  className={`flex-1 h-12 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider text-white transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
+                  className={`w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider text-white transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
                   style={{ backgroundColor: primaryColor }}
                 >
-                  <Zap className="w-4 h-4" />
-                  Buy Now
+                  <Zap className="w-4 h-4 shrink-0" />
+                  <span>Buy Now</span>
                 </button>
               </div>
 
@@ -385,9 +386,9 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                   href={waInquiryLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full h-11 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 mb-6"
+                  className={`w-full h-12 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold transition-all shadow-sm active:scale-95 mb-6 ${btnRadius}`}
                 >
-                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <MessageCircle className="w-4 h-4 fill-white shrink-0" />
                   Inquire via WhatsApp
                 </a>
               )}
