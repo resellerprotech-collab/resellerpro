@@ -114,7 +114,7 @@ export default async function AboutPage({ params }: Props) {
         <StoreStatsBanner theme={theme} stats={dynamicStoreStats} className="py-0" />
 
         {/* Customer Reviews */}
-        <Testimonials primaryColor={primaryColor} customReviews={theme?.testimonials} />
+        <Testimonials primaryColor={primaryColor} customReviews={theme?.testimonials} heading={theme?.testimonialsHeading} subheading={theme?.testimonialsSubheading} />
 
         {/* Why Choose Us Trust Section */}
         <WhyChooseUs primaryColor={primaryColor} theme={theme} />
