@@ -87,14 +87,15 @@ export function WhyChooseUs({ primaryColor = '#6366f1', theme }: WhyChooseUsProp
 
   return (
     <section className="py-12 bg-slate-50/70 border-y border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs font-black tracking-widest uppercase text-slate-500 mb-1 block">
-            Why Shop With Us
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+       
+          <h2 className="text-xl md:text-3xl lg:text-4xl  text-black font-medium">
             Built for Your Peace of Mind
           </h2>
+           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
+          Trusted by 5,000+ businesses and individuals worldwide
+        </p>
         </div>
 
         <div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6">

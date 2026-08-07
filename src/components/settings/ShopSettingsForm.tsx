@@ -16,7 +16,7 @@ import {
   Star, MapPin, Mail, Phone, Clock, Zap,
   Monitor, Smartphone, PanelTop, Quote, Shield, Sun, Moon,
   Truck, RotateCcw, HeartHandshake, ChevronRight, Upload,
-  Plus, Trash2, ListPlus, FileText,
+  Plus, Trash2, ListPlus, FileText, BookOpen, BarChart3,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { updateShopSettings } from '@/app/(dashboard)/settings/actions'
@@ -210,6 +210,21 @@ export default function ShopSettingsForm({
     trustBadgeItems: theme.trustBadgeItems || {},
     // Custom CSS
     customCss: theme.customCss || '',
+    // About Page Sections & Stats
+    aboutStoryEnabled: theme.aboutStoryEnabled !== false,
+    aboutStoryTag: theme.aboutStoryTag || 'OUR STORY',
+    aboutStoryTitle: theme.aboutStoryTitle || 'Built With Passion,\nDriven By You',
+    aboutStoryImage: theme.aboutStoryImage || '/images/store-about-story.png',
+    aboutSignatureText: theme.aboutSignatureText || 'Thank you for being part of our journey.',
+    aboutPara1: theme.aboutPara1 || '',
+    aboutPara2: theme.aboutPara2 || '',
+    aboutStatsEnabled: theme.aboutStatsEnabled !== false,
+    aboutStats: theme.aboutStats || [
+      { id: 'customers', iconName: 'users', value: '50K+', label: 'Happy Customers' },
+      { id: 'products', iconName: 'shopping-bag', value: '10K+', label: 'Products Sold' },
+      { id: 'countries', iconName: 'globe', value: '25+', label: 'Countries Delivered' },
+      { id: 'feedback', iconName: 'award', value: '99%', label: 'Positive Feedback' },
+    ],
   })
 
   const [selectedBadgeId, setSelectedBadgeId] = useState<string>('secure_payment')
@@ -2603,6 +2618,213 @@ export default function ShopSettingsForm({
                       </div>
                     )
                   })()}
+                </div>
+              )}
+            </Section>
+
+            {/* ─── ABOUT PAGE STORY SECTION ─── */}
+            <Section icon={BookOpen} title="About Us Page - Story Section" pro={!isEligible}>
+              <ToggleRow
+                label="Enable Brand Story Section"
+                description="Display your story, background tagline, paragraphs, and handwriting signature on your store About Us page"
+                checked={formData.aboutStoryEnabled}
+                onChange={v => handleToggle('aboutStoryEnabled', v)}
+                disabled={!isEligible}
+              />
+
+              {formData.aboutStoryEnabled && (
+                <div className="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Pre-heading Tag</Label>
+                      <Input
+                        name="aboutStoryTag"
+                        value={formData.aboutStoryTag}
+                        onChange={handleChange}
+                        placeholder="OUR STORY"
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label>Cursive Signature Text</Label>
+                      <Input
+                        name="aboutSignatureText"
+                        value={formData.aboutSignatureText}
+                        onChange={handleChange}
+                        placeholder="Thank you for being part of our journey."
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Main Headline</Label>
+                    <Input
+                      name="aboutStoryTitle"
+                      value={formData.aboutStoryTitle}
+                      onChange={handleChange}
+                      placeholder="Built With Passion, Driven By You"
+                      disabled={isPending || !isEligible}
+                      className="mt-1.5"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Paragraph 1 (First Narrative)</Label>
+                      <Textarea
+                        name="aboutPara1"
+                        value={formData.aboutPara1}
+                        onChange={handleChange}
+                        placeholder="YourStore was born out of a simple idea..."
+                        rows={3}
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label>Paragraph 2 (Second Narrative)</Label>
+                      <Textarea
+                        name="aboutPara2"
+                        value={formData.aboutPara2}
+                        onChange={handleChange}
+                        placeholder="From the products we choose to the service we provide..."
+                        rows={3}
+                        disabled={isPending || !isEligible}
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Story Image Upload */}
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Story Banner Image</Label>
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 relative">
+                        {formData.aboutStoryImage ? (
+                          <img src={formData.aboutStoryImage} alt="Story Image" className="w-full h-full object-cover" />
+                        ) : (
+                          <Layout className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <label
+                        htmlFor="about_story_image_file"
+                        className={cn(
+                          "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors",
+                          (!isEligible || uploadingField !== null) && "opacity-50 pointer-events-none"
+                        )}
+                      >
+                        {uploadingField === 'aboutStoryImage' ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        Upload Story Image
+                      </label>
+                      <input
+                        id="about_story_image_file"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'aboutStoryImage')}
+                        className="hidden"
+                        disabled={!isEligible || uploadingField !== null}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Section>
+
+            {/* ─── ABOUT PAGE STATS BANNER SECTION ─── */}
+            <Section icon={BarChart3} title="About Us Page - Store Statistics Banner" pro={!isEligible}>
+              <ToggleRow
+                label="Enable Store Statistics Banner"
+                description="Display key trust metrics (Customers, Products, Countries, Feedback) on your About Us page"
+                checked={formData.aboutStatsEnabled}
+                onChange={v => handleToggle('aboutStatsEnabled', v)}
+                disabled={!isEligible}
+              />
+
+              {formData.aboutStatsEnabled && (
+                <div className="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    Customize the 4 key metrics displayed on the stats bar:
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(formData.aboutStats || []).map((st: any, idx: number) => (
+                      <div key={st.id || idx} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                          Metric #{idx + 1}
+                        </span>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-[11px]">Big Value (Number)</Label>
+                            <Input
+                              value={st.value}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                setFormData(prev => {
+                                  const updated = [...(prev.aboutStats || [])]
+                                  updated[idx] = { ...updated[idx], value: val }
+                                  return { ...prev, aboutStats: updated }
+                                })
+                              }}
+                              placeholder="50K+"
+                              disabled={isPending || !isEligible}
+                              className="mt-1 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px]">Icon Style</Label>
+                            <select
+                              value={st.iconName || 'users'}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                setFormData(prev => {
+                                  const updated = [...(prev.aboutStats || [])]
+                                  updated[idx] = { ...updated[idx], iconName: val }
+                                  return { ...prev, aboutStats: updated }
+                                })
+                              }}
+                              disabled={isPending || !isEligible}
+                              className="mt-1 w-full h-9 px-3 rounded-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-medium focus:outline-none"
+                            >
+                              <option value="users">Users / Customers</option>
+                              <option value="shopping-bag">Shopping Bag / Products</option>
+                              <option value="globe">Globe / International</option>
+                              <option value="award">Award / Star Feedback</option>
+                              <option value="shield-check">Shield / Trust</option>
+                              <option value="heart">Heart / Satisfaction</option>
+                              <option value="truck">Truck / Shipping</option>
+                              <option value="smile">Smile / Reviews</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-[11px]">Metric Label</Label>
+                          <Input
+                            value={st.label}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              setFormData(prev => {
+                                const updated = [...(prev.aboutStats || [])]
+                                updated[idx] = { ...updated[idx], label: val }
+                                return { ...prev, aboutStats: updated }
+                              })
+                            }}
+                            placeholder="Happy Customers"
+                            disabled={isPending || !isEligible}
+                            className="mt-1 text-xs"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </Section>
