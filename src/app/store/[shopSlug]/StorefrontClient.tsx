@@ -485,7 +485,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
 
         {/* 7. Customer Reviews / Testimonials */}
         {theme?.testimonialsEnabled && theme?.testimonials && theme.testimonials.length > 0 && (
-          <Testimonials primaryColor={primaryColor} customReviews={theme.testimonials} />
+          <Testimonials primaryColor={primaryColor} customReviews={theme.testimonials} heading={theme?.testimonialsHeading} subheading={theme?.testimonialsSubheading} />
         )}
 
         {/* 8. Newsletter Signup */}
