@@ -13,7 +13,6 @@ import { StoreProductCard } from '@/components/store/StoreProductCard'
 import { PromotionalSection } from '@/components/store/PromotionalSection'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import { WhyChooseUs } from '@/components/store/WhyChooseUs'
-import { Testimonials } from '@/components/store/Testimonials'
 import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
@@ -22,6 +21,7 @@ import type { Product, Profile, ShopTheme } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
+import Testimonials from '@/components/store/Testimonials'
 
 interface StorefrontClientProps {
   profile: Profile
@@ -315,11 +315,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         {/* 2. Shop by Categories */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-black text-slate-900 tracking-wider uppercase">Shop by Categories</h2>
-            <Link href={`/store/${shopSlug}/shop`} className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1">
-              <span>View Catalog</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <h2 className="text-md sm:text-2xl font-black font-bold text-slate-900 tracking-wider uppercase">Shop by Categories</h2>
           </div>
           <div className="relative group/slider">
             {/* Left Scroll Button */}
@@ -404,16 +400,12 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         {/* 3. Featured Products */}
         <section className="mb-14">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
-            <div>
-              <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block">Handpicked Selections</span>
-              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Featured Products</h2>
-            </div>
+            <h2 className="text-md sm:text-2xl font-bold text-slate-900 uppercase tracking-tight leading-none">Featured Products</h2>
             <Link
               href={`/store/${shopSlug}/shop`}
-              className="text-xs font-extrabold text-white px-4 py-2 transition-colors flex items-center gap-1.5 hover:opacity-90"
-              style={{ backgroundColor: 'var(--store-secondary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
+              className="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0 leading-none"
             >
-              <span>View All Products</span>
+              <span>View More</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -437,16 +429,12 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         {/* 4. Best Sellers */}
         <section className="mb-14">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
-            <div>
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Customer Favorites</span>
-              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Best Sellers</h2>
-            </div>
+            <h2 className="text-md sm:text-2xl font-bold text-slate-900 uppercase tracking-tight leading-none">Best Sellers</h2>
             <Link
               href={`/store/${shopSlug}/shop`}
-              className="text-xs font-extrabold text-white px-4 py-2 transition-colors flex items-center gap-1.5 hover:opacity-90"
-              style={{ backgroundColor: 'var(--store-secondary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
+              className="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0 leading-none"
             >
-              <span>Explore All</span>
+              <span>View More</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
