@@ -19,7 +19,9 @@ export function ProfileClient({ initialData }: { initialData?: any }) {
         await logout()
     }
 
-    if (isLoading) {
+    const currentProfile = user || initialData
+
+    if (isLoading && !currentProfile) {
         return (
             <div className="flex items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -27,7 +29,7 @@ export function ProfileClient({ initialData }: { initialData?: any }) {
         )
     }
 
-    if (error || (!isLoading && !user)) {
+    if (!currentProfile) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive gap-4">
                 <p>Error loading profile data. Please refresh the page.</p>
@@ -55,7 +57,7 @@ export function ProfileClient({ initialData }: { initialData?: any }) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ProfileForm user={user} />
+                    <ProfileForm user={currentProfile} />
                 </CardContent>
             </Card>
 

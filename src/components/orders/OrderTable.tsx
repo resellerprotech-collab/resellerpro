@@ -14,10 +14,11 @@ import { Badge } from '@/components/ui/badge'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { BulkActionBar } from './BulkActionBar'
 import { generateStatusMessage } from '@/utils/whatsapp-helper'
+import { createClient } from '@/lib/supabase/client'
 
 type Order = {
   id: string
@@ -25,8 +26,10 @@ type Order = {
   created_at: string
   status: string
   payment_status: string
+  payment_method?: string | null
   total_amount: number
   total_profit: number
+  order_items?: Array<{ product_name: string; quantity: number }> | null
   customers?: {
     id: string
     name: string
@@ -37,8 +40,34 @@ type Order = {
 }
 
 export function OrdersTable({ orders }: { orders: Order[] }) {
-  // React hooks must be at the top, before any early returns
+  const supabase = createClient()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [merchantProfile, setMerchantProfile] = useState<{
+    shop_name?: string | null
+    business_name?: string | null
+    full_name?: string | null
+    upi_id?: string | null
+    upi_name?: string | null
+    upi_instructions?: string | null
+  } | null>(null)
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase
+          .from('profiles')
+          .select('shop_name, business_name, full_name, upi_id, upi_name, upi_instructions')
+          .eq('id', user.id)
+          .single()
+        if (data) setMerchantProfile(data)
+      } catch (err) {
+        console.error('Error fetching merchant profile:', err)
+      }
+    }
+    loadProfile()
+  }, [])
 
   if (orders.length === 0) {
     return (
@@ -50,7 +79,6 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
       </div>
     )
   }
-
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -66,7 +94,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
   const getPaymentColor = (status: string) => {
     const colors: Record<string, string> = {
       paid: 'bg-green-500',
-      pending: 'bg-yellow-500', // ✅ Changed from 'unpaid' to 'pending'
+      pending: 'bg-yellow-500',
       cod: 'bg-orange-500',
       refunded: 'bg-red-500',
     }
@@ -78,18 +106,23 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
     if (!phone) return
 
     const customerName = order.customers?.name || order.customer_name || 'Customer'
+    const storeName = merchantProfile?.business_name || merchantProfile?.shop_name || merchantProfile?.full_name || 'Store'
 
     const message = generateStatusMessage(
       customerName,
       order.order_number.toString(),
       order.status,
-      undefined, // Tracking - list view doesn't have it easily
-      undefined, // Courier - list view doesn't have it easily
+      undefined, // Tracking
+      undefined, // Courier
       {
-        products: [], // We don't have items here, utility handles gracefully
-        totalAmount: order.total_amount
+        products: order.order_items?.map(i => `${i.product_name} × ${i.quantity}`) || [],
+        totalAmount: order.total_amount,
+        paymentMethod: order.payment_method || 'cod',
+        upiId: merchantProfile?.upi_id,
+        upiName: merchantProfile?.upi_name,
+        upiInstructions: merchantProfile?.upi_instructions,
       },
-      'Our Store' // Optional business name
+      storeName
     )
 
     window.open(

@@ -7,25 +7,86 @@ export function generateStatusMessage(
     status: string,
     trackingNumber?: string,
     courierName?: string,
-    orderDetails?: { products: string[]; totalAmount: number } | null,
-    shopName: string = 'Our Store'
+    orderDetails?: { products: string[]; totalAmount: number; paymentMethod?: string; upiId?: string | null; upiName?: string | null; upiInstructions?: string | null } | null,
+    shopName: string = 'Store'
 ): string {
+    const displayShopName = (shopName && shopName.trim() && shopName !== 'Our Store') ? shopName.trim() : 'Store'
     const productList = orderDetails?.products?.length
         ? `\n\n*YOUR ORDER INCLUDES:*\n${orderDetails.products.map(p => `   • ${p}`).join('\n')}`
         : ''
 
-    const amount = orderDetails?.totalAmount
-        ? `\n\n*Order Total:* ₹${orderDetails.totalAmount.toFixed(2)}`
-        : ''
+    const amountVal = orderDetails?.totalAmount ?? 0
+    const amountStr = amountVal ? `\n\n*Order Total:* ₹${amountVal.toLocaleString('en-IN')}` : ''
+    const isUPI = orderDetails?.paymentMethod?.toLowerCase() === 'upi'
+    const hasUPIConfig = Boolean(orderDetails?.upiId && orderDetails.upiId.trim().length > 0)
+
+    const upiMessage = hasUPIConfig
+      ? `Hi ${customerName},
+
+Your order from *${displayShopName}* has been received!
+
+━━━━━━━━━━━━━━━━━━━━━
+*ORDER RECEIVED — PAYMENT REQUIRED*
+Order ID: #${orderNumber}${productList}${amountStr}
+━━━━━━━━━━━━━━━━━━━━━
+
+💳 *UPI / GPAY PAYMENT DETAILS:*
+  • UPI ID / GPay Number: *${orderDetails?.upiId}*${orderDetails?.upiName ? ` (${orderDetails.upiName})` : ''}
+  • Amount Due: *₹${amountVal.toLocaleString('en-IN')}*
+${orderDetails?.upiInstructions ? `  • Note: ${orderDetails.upiInstructions}\n` : ''}
+📸 *NEXT STEP:* Please transfer ₹${amountVal.toLocaleString('en-IN')} and reply here with a screenshot of your payment receipt to confirm dispatch!
+
+Thank you for shopping with us! 🙏
+
+Warm regards,
+*${displayShopName}*`
+      : `Hi ${customerName},
+
+Your order from *${displayShopName}* has been received!
+
+━━━━━━━━━━━━━━━━━━━━━
+*ORDER RECEIVED — AWAITING PAYMENT*
+Order ID: #${orderNumber}${productList}${amountStr}
+━━━━━━━━━━━━━━━━━━━━━
+
+💳 *Payment Method:* Pay via UPI
+
+💬 Please reply to this message to receive our payment/UPI details and confirm your order dispatch!
+
+Thank you for shopping with us! 🙏
+
+Warm regards,
+*${displayShopName}*`
+
+    const codMessage = `Hi ${customerName},
+
+🎉 Great news about your order from *${displayShopName}*!
+
+━━━━━━━━━━━━━━━━━━━━━
+*ORDER CONFIRMED (COD)*
+Order ID: #${orderNumber}${productList}${amountStr}
+━━━━━━━━━━━━━━━━━━━━━
+
+*CURRENT STATUS:* ✅ Confirmed & Preparing for Dispatch
+
+Your Cash on Delivery (COD) order is confirmed! We will notify you with live tracking as soon as your package is shipped.
+
+Thank you for shopping with us! 🙏
+
+Warm regards,
+*${displayShopName}*`
 
     const statusMessages: Record<string, string> = {
+        pending: isUPI ? upiMessage : codMessage,
+        received: isUPI ? upiMessage : codMessage,
+
         processing: `Hi ${customerName},
 
-Exciting news about your order from *${shopName}*!
+Exciting news about your order from *${displayShopName}*!
 
 ━━━━━━━━━━━━━━━━━━━━━
 *ORDER IN PROGRESS*
-Order ID: #${orderNumber}${productList}${amount}
+Order ID: #${orderNumber}${productList}${amountStr}
 ━━━━━━━━━━━━━━━━━━━━━
 
 *CURRENT STATUS:* 🔄 Processing
@@ -38,15 +99,15 @@ We'll notify you immediately once your order is shipped with complete tracking d
 Thank you for your patience!
 
 Warm regards,
-*${shopName}* Team`,
+*${displayShopName}*`,
 
         shipped: `Hi ${customerName},
 
-Your order from *${shopName}* is on its way to you!
+Your order from *${displayShopName}* is on its way to you!
 
 ━━━━━━━━━━━━━━━━━━━━━
 *ORDER SHIPPED*
-Order ID: #${orderNumber}${productList}${amount}
+Order ID: #${orderNumber}${productList}${amountStr}
 ━━━━━━━━━━━━━━━━━━━━━
 
 *CURRENT STATUS:* 🚚 In Transit
@@ -61,15 +122,15 @@ ${trackingNumber ? '\n_You can track your shipment in real-time using the tracki
 We hope you're as excited as we are!
 
 Warm regards,
-*${shopName}* Team`,
+*${displayShopName}*`,
 
         delivered: `Hi ${customerName},
 
-Your order from *${shopName}* has been successfully delivered!
+Your order from *${displayShopName}* has been successfully delivered!
 
 ━━━━━━━━━━━━━━━━━━━━━
 *DELIVERY COMPLETE*
-Order ID: #${orderNumber}${productList}${amount}
+Order ID: #${orderNumber}${productList}${amountStr}
 ━━━━━━━━━━━━━━━━━━━━━
 
 *CURRENT STATUS:* ✅ Delivered
@@ -84,19 +145,19 @@ _Any concerns? Our support team is here to help - just reply to this message._
 Thank you for being an amazing customer!
 
 With gratitude,
-*${shopName}* Team`,
+*${displayShopName}*`,
 
         cancelled: `Hi ${customerName},
 
-We're writing to inform you about your order cancellation from *${shopName}*.
+We're writing to inform you about your order cancellation from *${displayShopName}*.
 
 ━━━━━━━━━━━━━━━━━━━━━
 *ORDER CANCELLED*
-Order ID: #${orderNumber}${productList}${amount}
+Order ID: #${orderNumber}${productList}${amountStr}
 ━━━━━━━━━━━━━━━━━━━━━
 
 *CURRENT STATUS:* ❌ Cancelled
-${orderDetails?.totalAmount ? `\nIf you've already made a payment of ₹${orderDetails.totalAmount.toFixed(2)}, it will be refunded to your original payment method within 5-7 business days.` : ''}
+${amountVal ? `\nIf you've already made a payment of ₹${amountVal.toLocaleString('en-IN')}, it will be refunded to your original payment method within 5-7 business days.` : ''}
 
 *WE'RE HERE TO HELP*
 • Did you request this cancellation? No action needed.
@@ -108,8 +169,8 @@ We truly appreciate your understanding and hope to serve you again soon.
 _Questions? Reply to this message anytime._
 
 Sincerely,
-*${shopName}* Team`
+*${displayShopName}*`
     }
 
-    return statusMessages[status] || `Hi ${customerName}, your order #${orderNumber} is now ${status}.`
+    return statusMessages[status] || `Hi ${customerName}, your order #${orderNumber} is confirmed with ${displayShopName}.`
 }

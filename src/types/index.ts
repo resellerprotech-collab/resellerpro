@@ -149,6 +149,8 @@ export interface Profile {
   shop_banner_url: string | null
   whatsapp_number: string | null
   upi_id: string | null
+  upi_name?: string | null
+  upi_instructions?: string | null
   shop_announcement: string | null
   onboarding_completed: boolean
   onboarding_step: number
