@@ -1,5 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { Instagram, Facebook, Twitter, MessageCircle, Youtube, Heart, MapPin, Mail, Phone, Clock } from 'lucide-react'
+import { Instagram, Facebook, Twitter, MessageCircle, Youtube, MapPin, Mail, Phone, Clock, ChevronDown } from 'lucide-react'
 import type { Profile, ShopTheme } from '@/types'
 
 interface StoreFooterProps {
@@ -46,6 +49,9 @@ function formatSocialUrl(platform: 'instagram' | 'facebook' | 'twitter' | 'whats
 }
 
 export function StoreFooter({ profile, theme }: StoreFooterProps) {
+  const [openNav, setOpenNav] = useState(false)
+  const [openPolicies, setOpenPolicies] = useState(false)
+
   const storeName = profile.business_name || profile.shop_name || 'Store'
   const waNum = theme?.socialWhatsApp || profile.whatsapp_number || profile.business_phone
   const waLink = formatSocialUrl('whatsapp', waNum)
@@ -59,11 +65,11 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
   const phone = theme?.footerPhone || profile.business_phone || profile.whatsapp_number
 
   return (
-    <footer className="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-900 mt-20">
+    <footer className="bg-slate-950 text-slate-400 pt-16 pb-8 border-t border-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10 mb-12">
           {/* Column 1: Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-white font-black text-xl tracking-tight uppercase">{storeName}</h3>
@@ -151,10 +157,17 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
             </div>
           </div>
 
-          {/* Column 2: Quick Links */}
-          <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Navigation</h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm font-semibold">
+          {/* Column 2: Quick Links (Accordion on mobile) */}
+          <div className="border-b border-slate-900/80 md:border-none pb-4 md:pb-0 space-y-3 md:space-y-4">
+            <button
+              type="button"
+              onClick={() => setOpenNav(!openNav)}
+              className="w-full flex items-center justify-between text-left text-white font-bold text-xs uppercase tracking-wider md:cursor-default md:pointer-events-none"
+            >
+              <span>Navigation</span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 md:hidden ${openNav ? 'rotate-180' : ''}`} />
+            </button>
+            <ul className={`space-y-2.5 text-xs sm:text-sm font-semibold transition-all ${openNav ? 'block pt-1' : 'hidden md:block'}`}>
               <li>
                 <Link href={`/store/${profile.shop_slug}`} className="hover:text-white transition-colors">
                   Home
@@ -178,10 +191,17 @@ export function StoreFooter({ profile, theme }: StoreFooterProps) {
             </ul>
           </div>
 
-          {/* Column 3: Trust & Policies */}
-          <div className="space-y-4">
-            <h4 className="text-white font-bold text-xs uppercase tracking-wider">Customer Policies</h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm font-semibold">
+          {/* Column 3: Trust & Policies (Accordion on mobile) */}
+          <div className="border-b border-slate-900/80 md:border-none pb-4 md:pb-0 space-y-3 md:space-y-4">
+            <button
+              type="button"
+              onClick={() => setOpenPolicies(!openPolicies)}
+              className="w-full flex items-center justify-between text-left text-white font-bold text-xs uppercase tracking-wider md:cursor-default md:pointer-events-none"
+            >
+              <span>Customer Policies</span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 md:hidden ${openPolicies ? 'rotate-180' : ''}`} />
+            </button>
+            <ul className={`space-y-2.5 text-xs sm:text-sm font-semibold transition-all ${openPolicies ? 'block pt-1' : 'hidden md:block'}`}>
               <li>
                 <Link href={`/store/${profile.shop_slug}/shipping-policy`} className="hover:text-white transition-colors">
                   Shipping & Delivery
