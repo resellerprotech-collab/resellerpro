@@ -54,6 +54,8 @@ export function ShopClient({
   const shopSlug = profile.shop_slug!
   const storeName = profile.business_name || profile.shop_name || 'Store'
 
+  const primaryColor = theme?.primaryColor || '#6366f1'
+
   useEffect(() => {
     setShopSlug(shopSlug)
     trackEvent({ userId: profile.id, eventType: 'store_view' })
@@ -138,9 +140,10 @@ export function ShopClient({
                 onClick={() => setSortBy(o.value)}
                 className={`px-3.5 py-2 rounded-full text-[11px] font-bold tracking-wide transition-all border ${
                   sortBy === o.value
-                    ? 'bg-slate-950 text-white border-slate-950 shadow-sm'
+                    ? 'text-white shadow-sm'
                     : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 hover:text-slate-700'
                 }`}
+                style={sortBy === o.value ? { backgroundColor: primaryColor, borderColor: primaryColor } : undefined}
               >
                 {o.label}
               </button>
@@ -164,7 +167,7 @@ export function ShopClient({
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filter</span>
             {hasFilters && (
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-800 ml-0.5" />
+              <span className="w-1.5 h-1.5 rounded-full ml-0.5" style={{ backgroundColor: primaryColor }} />
             )}
           </button>
         </div>
@@ -204,9 +207,10 @@ export function ShopClient({
           <button
             onClick={() => setActiveCategory(null)}
             className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shrink-0 ${activeCategory === null
-              ? 'bg-slate-950 text-white'
+              ? 'text-white'
               : 'bg-slate-100 text-slate-600'
               }`}
+            style={activeCategory === null ? { backgroundColor: primaryColor } : undefined}
           >
             All
           </button>
@@ -217,9 +221,10 @@ export function ShopClient({
                 key={cat}
                 onClick={() => setActiveCategory(isActive ? null : cat)}
                 className={`px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 ${isActive
-                  ? 'bg-slate-950 text-white font-black'
+                  ? 'text-white font-black'
                   : 'bg-slate-100 text-slate-600'
                   }`}
+                style={isActive ? { backgroundColor: primaryColor } : undefined}
               >
                 {cat}
               </button>
@@ -246,7 +251,8 @@ export function ShopClient({
               <div className="text-center pt-4 pb-8">
                 <button
                   onClick={() => setVisibleCount((prev) => prev + 12)}
-                  className="px-8 py-3.5 bg-slate-950 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+                  className="px-8 py-3.5 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
                 >
                   Load More Products ({processedProducts.length - visibleCount} Remaining)
                 </button>
@@ -264,7 +270,8 @@ export function ShopClient({
             </p>
             <button
               onClick={() => { setActiveCategory(null); setSearchQuery('') }}
-              className="px-6 py-3 bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+              className="px-6 py-3 text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:opacity-90"
+              style={{ backgroundColor: primaryColor }}
             >
               Browse All Categories
             </button>
@@ -304,12 +311,13 @@ export function ShopClient({
                   key={o.value}
                   onClick={() => setTempSort(o.value)}
                   className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${tempSort === o.value
-                    ? 'bg-slate-950 text-white'
+                    ? 'text-white'
                     : 'bg-slate-100 text-slate-700'
                     }`}
+                  style={tempSort === o.value ? { backgroundColor: primaryColor } : undefined}
                 >
                   <span>{o.label}</span>
-                  {tempSort === o.value && <Check className="w-4 h-4" />}
+                  {tempSort === o.value && <Check className="w-4 h-4 text-white" />}
                 </button>
               ))}
             </div>
@@ -322,9 +330,10 @@ export function ShopClient({
                   <button
                     onClick={() => setTempCategory(null)}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${tempCategory === null
-                      ? 'bg-slate-950 text-white'
+                      ? 'text-white'
                       : 'bg-slate-100 text-slate-600'
                       }`}
+                    style={tempCategory === null ? { backgroundColor: primaryColor } : undefined}
                   >
                     All
                   </button>
@@ -333,9 +342,10 @@ export function ShopClient({
                       key={cat}
                       onClick={() => setTempCategory(tempCategory?.toLowerCase() === cat.toLowerCase() ? null : cat)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${tempCategory?.toLowerCase() === cat.toLowerCase()
-                        ? 'bg-slate-950 text-white'
+                        ? 'text-white'
                         : 'bg-slate-100 text-slate-600'
                         }`}
+                      style={tempCategory?.toLowerCase() === cat.toLowerCase() ? { backgroundColor: primaryColor } : undefined}
                     >
                       {cat}
                     </button>
@@ -354,7 +364,8 @@ export function ShopClient({
               </button>
               <button
                 onClick={applyBottomSheet}
-                className="flex-2 flex-grow-[2] py-3 rounded-xl bg-slate-950 text-white text-sm font-bold transition-colors"
+                className="flex-2 flex-grow-[2] py-3 rounded-xl text-white text-sm font-bold transition-all hover:opacity-90 shadow-md active:scale-95"
+                style={{ backgroundColor: primaryColor }}
               >
                 Apply
               </button>

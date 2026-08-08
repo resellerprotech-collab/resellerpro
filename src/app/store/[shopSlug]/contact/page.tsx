@@ -61,11 +61,8 @@ export default async function ContactPage({ params }: Props) {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="text-xs font-black tracking-widest uppercase text-slate-400 block mb-1">
-            We Are Here To Help
-          </span>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Contact {storeName}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-2">
+          <h1 className="text-xl sm:text-3xl font-medium font-black text-black">Contact {storeName}</h1>
+          <p className="text-xs sm:text-sm text-slate-900 font-medium mt-2">
             Have questions about an order, shipping, or products? Reach out directly via WhatsApp or email.
           </p>
         </div>
@@ -155,7 +152,7 @@ export default async function ContactPage({ params }: Props) {
                   type="text"
                   placeholder="e.g. Rahul Sharma"
                   required
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
+                  className="w-full h-11 px-4 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
                 />
               </div>
 
@@ -165,7 +162,7 @@ export default async function ContactPage({ params }: Props) {
                   type="text"
                   placeholder="e.g. rahul@example.com or 9876543210"
                   required
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
+                  className="w-full h-11 px-4 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
                 />
               </div>
 
@@ -174,7 +171,7 @@ export default async function ContactPage({ params }: Props) {
                 <input
                   type="text"
                   placeholder="e.g. ORD-1092"
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
+                  className="w-full h-11 px-4 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900"
                 />
               </div>
 
@@ -184,7 +181,7 @@ export default async function ContactPage({ params }: Props) {
                   rows={4}
                   placeholder="How can we help you today?"
                   required
-                  className="w-full p-4 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900 resize-none"
+                  className="w-full p-4 bg-white text-slate-900 placeholder:text-slate-400 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-900 resize-none"
                 />
               </div>
 

@@ -48,14 +48,25 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
   const { toast } = useToast()
   
   const categorySliderRef = useRef<HTMLDivElement>(null)
+  const isCategoryHoveredRef = useRef(false)
+  const activeCatIndexRef = useRef(0)
 
   const scrollCategories = (direction: 'left' | 'right') => {
     if (categorySliderRef.current) {
-      const scrollAmount = 400
-      categorySliderRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      })
+      const container = categorySliderRef.current
+      const totalItems = sliderCategoriesToRender.length || 1
+      if (direction === 'right') {
+        activeCatIndexRef.current = (activeCatIndexRef.current + 1) % totalItems
+      } else {
+        activeCatIndexRef.current = (activeCatIndexRef.current - 1 + totalItems) % totalItems
+      }
+      const targetChild = container.children[activeCatIndexRef.current] as HTMLElement
+      if (targetChild) {
+        container.scrollTo({
+          left: targetChild.offsetLeft - container.offsetLeft,
+          behavior: 'smooth'
+        })
+      }
     }
   }
 
@@ -113,9 +124,79 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
     return () => clearInterval(interval)
   }, [heroBanners.length])
 
-  // Products to render (strictly fetched from DB)
+  // Products and categories to render
   const displayProducts = products
   const displayCategories = categories
+
+  const [isCategoryOverflowing, setIsCategoryOverflowing] = useState(false)
+
+  // Dynamically measure if category cards overflow the visible screen display
+  useEffect(() => {
+    const checkOverflow = () => {
+      const el = categorySliderRef.current
+      if (el) {
+        setIsCategoryOverflowing(el.scrollWidth > el.clientWidth)
+      }
+    }
+
+    checkOverflow()
+    const timer = setTimeout(checkOverflow, 150)
+    window.addEventListener('resize', checkOverflow)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', checkOverflow)
+    }
+  }, [categories])
+
+  // Duplicated category array for seamless infinite forward loop (only when categories overflow display)
+  const sliderCategoriesToRender = useMemo(() => {
+    if (!categories || categories.length === 0) return []
+    if (!isCategoryOverflowing) return categories
+    const count = categories.length
+    const repeatCount = count < 4 ? 6 : 4
+    return Array(repeatCount).fill(categories).flat()
+  }, [categories, isCategoryOverflowing])
+
+  // Step auto-slide effect for Category Slider (active ONLY when categories overflow the display)
+  useEffect(() => {
+    const container = categorySliderRef.current
+    if (!container || !isCategoryOverflowing || categories.length <= 1) return
+
+    const interval = setInterval(() => {
+      if (!isCategoryHoveredRef.current && categorySliderRef.current) {
+        const el = categorySliderRef.current
+        const n = categories.length
+
+        activeCatIndexRef.current = (activeCatIndexRef.current + 1) % (sliderCategoriesToRender.length || 1)
+
+        const targetChild = el.children[activeCatIndexRef.current] as HTMLElement
+        if (targetChild) {
+          el.scrollTo({
+            left: targetChild.offsetLeft - el.offsetLeft,
+            behavior: 'smooth'
+          })
+        }
+
+        // Seamless infinite loop reset when items are duplicated
+        if (n >= 2 && activeCatIndexRef.current >= n * 2) {
+          setTimeout(() => {
+            activeCatIndexRef.current -= n
+            if (categorySliderRef.current) {
+              const resetChild = categorySliderRef.current.children[activeCatIndexRef.current] as HTMLElement
+              if (resetChild) {
+                categorySliderRef.current.scrollTo({
+                  left: resetChild.offsetLeft - categorySliderRef.current.offsetLeft,
+                  behavior: 'auto'
+                })
+              }
+            }
+          }, 500)
+        }
+      }
+    }, 2500)
+
+    return () => clearInterval(interval)
+  }, [isCategoryOverflowing, categories.length, sliderCategoriesToRender.length])
 
   // Featured Products (Curated subset of products for Homepage)
   const featuredProducts = useMemo(() => {
@@ -317,9 +398,15 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-md sm:text-2xl font-black font-bold text-slate-900 tracking-wider uppercase">Shop by Categories</h2>
           </div>
-          <div className="relative group/slider">
+          <div 
+            className="relative group/slider"
+            onMouseEnter={() => { isCategoryHoveredRef.current = true }}
+            onMouseLeave={() => { isCategoryHoveredRef.current = false }}
+            onTouchStart={() => { isCategoryHoveredRef.current = true }}
+            onTouchEnd={() => { isCategoryHoveredRef.current = false }}
+          >
             {/* Left Scroll Button */}
-            {displayCategories.length >= 5 && (
+            {isCategoryOverflowing && (
               <button
                 type="button"
                 onClick={() => scrollCategories('left')}
@@ -333,17 +420,18 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
             {/* Scrollable category list */}
             <div 
               ref={categorySliderRef}
-              className={`flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x scroll-smooth ${
-                displayCategories.length < 5 ? 'justify-start md:justify-center' : 'justify-start'
+              className={`flex gap-2.5 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory scroll-smooth w-full ${
+                isCategoryOverflowing ? 'justify-start' : 'justify-center'
               }`}
             >
-              {displayCategories.map((cat) => {
+              {sliderCategoriesToRender.map((cat, idx) => {
                 const hasImage = !!cat.image_url
+                const catDisplayName = cat.name.includes(' > ') ? cat.name.split(' > ').pop()?.trim() || cat.name : cat.name
                 return (
                   <Link
-                    key={cat.name}
+                    key={`${cat.name}-${idx}`}
                     href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat.name)}`}
-                    className={`snap-start shrink-0 flex flex-col justify-end p-3.5 w-52 sm:w-60 aspect-[1.8/1] rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md group relative overflow-hidden ${
+                    className={`snap-start shrink-0 flex flex-col justify-end p-2.5 sm:p-3.5 w-36 sm:w-60 aspect-[1.6/1] sm:aspect-[1.8/1] rounded-xl sm:rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md group relative overflow-hidden ${
                       hasImage 
                         ? "border-transparent text-white" 
                         : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-700 hover:border-slate-200"
@@ -354,27 +442,27 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
                         {/* Category Image Background */}
                         <Image 
                           src={cat.image_url!} 
-                          alt={cat.name} 
+                          alt={catDisplayName} 
                           fill 
                           className="object-cover absolute inset-0 group-hover:scale-115 transition-transform duration-500" 
-                          sizes="(max-width: 640px) 224px, 256px" 
+                          sizes="(max-width: 640px) 144px, 240px" 
                         />
                         {/* Dark Overlay for Readability */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10" />
-                        <span className="relative z-20 text-[11px] sm:text-xs font-black uppercase tracking-wider text-center w-full line-clamp-2">
-                          {cat.name}
+                        <span className="relative z-20 text-[10px] sm:text-xs font-bold sm:font-black uppercase tracking-wider text-center w-full line-clamp-2">
+                          {catDisplayName}
                         </span>
                       </>
                     ) : (
                       <>
                         {/* Fallback Icon Style */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pb-8">
-                          <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                            {getCategoryIcon(cat.name)}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pb-6 sm:pb-8">
+                          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                            {getCategoryIcon(catDisplayName)}
                           </div>
                         </div>
-                        <span className="relative z-10 text-[11px] sm:text-xs font-black uppercase tracking-wider text-center w-full line-clamp-2">
-                          {cat.name}
+                        <span className="relative z-10 text-[10px] sm:text-xs font-bold sm:font-black uppercase tracking-wider text-center w-full line-clamp-2">
+                          {catDisplayName}
                         </span>
                       </>
                     )}
@@ -384,7 +472,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
             </div>
 
             {/* Right Scroll Button */}
-            {displayCategories.length >= 5 && (
+            {isCategoryOverflowing && (
               <button
                 type="button"
                 onClick={() => scrollCategories('right')}
@@ -411,7 +499,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {featuredProducts.map((product) => (
+            {featuredProducts.map((product: Product) => (
               <StoreProductCard
                 key={product.id}
                 product={product}
@@ -440,7 +528,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {bestSellers.map((product) => (
+            {bestSellers.map((product: Product) => (
               <StoreProductCard
                 key={product.id}
                 product={product}
@@ -455,12 +543,15 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         {/* 5. Offers / Promotion Banner Strip */}
         {theme?.offerBannerEnabled !== false && (
           <section className="mb-14">
-            <div className="relative rounded-2xl overflow-hidden text-white p-8 md:p-10 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
-              <div className="space-y-2 text-center md:text-left">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            <div
+              className="relative rounded-3xl md:rounded-2xl overflow-hidden text-white p-6 md:p-10 border border-slate-800/80 shadow-xl flex flex-col md:flex-row items-center justify-center md:justify-between text-center md:text-left gap-5 md:gap-6"
+              style={{ backgroundColor: 'var(--store-neutral-dark, #161618)' }}
+            >
+              <div className="space-y-3 md:space-y-2 text-center md:text-left flex flex-col items-center md:items-start max-w-xl md:max-w-none mx-auto md:mx-0">
+                <span className="inline-flex items-center justify-center px-4 py-1.5 md:px-3 md:py-1 rounded-full text-[10px] font-bold md:font-black uppercase tracking-wider md:tracking-widest bg-amber-500/10 md:bg-amber-400/20 text-amber-400 md:text-amber-300 border border-amber-500/30 md:border-amber-400/30">
                   {theme?.offerBannerBadge || '⚡ Special Promotion'}
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold md:font-black text-white tracking-tight leading-tight">
                   {theme?.offerBannerTitle || theme?.bannerText || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
                 </h3>
                 <p className="text-xs text-slate-400 font-medium">
@@ -471,8 +562,8 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
               </div>
               <Link
                 href={`/store/${shopSlug}/shop`}
-                className="px-8 py-3.5 text-white font-black text-xs uppercase transition-all shadow-md shrink-0 active:scale-95 hover:opacity-90"
-                style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
+                className="w-full md:w-auto px-8 py-3.5 text-white font-black text-xs uppercase tracking-wider md:tracking-normal transition-all shadow-lg shrink-0 active:scale-95 hover:opacity-90 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 9999px)' }}
               >
                 {theme?.offerBannerBtnText || 'Claim Offer Now'}
               </Link>
