@@ -276,7 +276,10 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
           {/* Testimonials Section */}
           {testimonialsEnabled && theme.testimonials?.filter((t:any) => t.name && t.text).length > 0 && !searchQuery && (
             <div className="my-20">
-              <h2 className="text-3xl font-black text-slate-900 mb-12 text-center">What Our Customers Say</h2>
+              <h2 className="text-3xl font-black text-slate-900 text-center">{theme.testimonialsHeading || 'What Our Customers Say'}</h2>
+              {(theme.testimonialsSubheading !== '' && (theme.testimonialsSubheading || 'Trusted by 5,000+ businesses and individuals worldwide')) && (
+                <p className="text-sm text-slate-500 font-medium mt-2 mb-12 text-center max-w-xl mx-auto">{theme.testimonialsSubheading ?? 'Trusted by 5,000+ businesses and individuals worldwide'}</p>
+              )}
               <div className="grid md:grid-cols-3 gap-8">
                 {theme.testimonials.filter((t:any) => t.name && t.text).map((t: any, i: number) => (
                   <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-lg shadow-slate-200/50 relative hover:-translate-y-1 transition-all duration-300">
@@ -289,8 +292,13 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
                       ))}
                     </div>
                     <p className="text-slate-600 mb-6 italic text-sm md:text-base leading-relaxed tracking-wide">&quot;{t.text}&quot;</p>
-                    <div className="pt-4 border-t border-slate-100">
-                      <p className="font-black text-slate-900 text-sm">{t.name}</p>
+                    <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
+                      {(t.avatarUrl || t.imageUrl) && (
+                        <img src={t.avatarUrl || t.imageUrl} alt={t.name} className="w-9 h-9 rounded-full object-cover border border-slate-200" />
+                      )}
+                      <div>
+                        <p className="font-black text-slate-900 text-sm">{t.name}</p>
+                      </div>
                     </div>
                   </div>
                 ))}

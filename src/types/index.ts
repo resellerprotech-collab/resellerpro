@@ -95,7 +95,9 @@ export interface ShopTheme {
   announcementEnabled?: boolean
   announcementText?: string
   testimonialsEnabled?: boolean
-  testimonials?: Array<{ name: string; text: string; rating: number }>
+  testimonialsHeading?: string
+  testimonialsSubheading?: string
+  testimonials?: Array<{ name: string; text: string; rating: number; avatarUrl?: string; imageUrl?: string; role?: string }>
   trustBadgesEnabled?: boolean
   trustBadges?: string[]
   trustBadgeItems?: Record<string, { id?: string; title?: string; description?: string; iconUrl?: string }>
