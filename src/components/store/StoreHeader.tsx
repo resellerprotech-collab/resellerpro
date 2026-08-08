@@ -357,7 +357,7 @@ export function StoreHeader({
       <CartDrawer />
 
       {/* Wishlist Drawer */}
-      <WishlistDrawer />
+      <WishlistDrawer theme={theme} />
 
       {/* Account / Order Lookup Modal */}
       <AccountModal
@@ -365,6 +365,7 @@ export function StoreHeader({
         onClose={() => setAccountModalOpen(false)}
         shopSlug={shopSlug}
         shopName={shopName}
+        theme={theme}
       />
 
       {/* Center Popup Search Modal */}
