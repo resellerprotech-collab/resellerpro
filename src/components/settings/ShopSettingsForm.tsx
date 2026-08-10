@@ -73,6 +73,45 @@ export default function ShopSettingsForm({
 
   const supabase = createClient()
 
+  const [categoryList, setCategoryList] = useState<string[]>(categories || [])
+  const [productList, setProductList] = useState<{ id: string; name: string }[]>(products || [])
+
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      setCategoryList(prev => Array.from(new Set([...prev, ...categories])))
+    }
+  }, [categories])
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setProductList(products)
+    }
+  }, [products])
+
+  useEffect(() => {
+    const fetchStoreCategoriesAndProducts = async () => {
+      try {
+        const [catsRes, prodsRes] = await Promise.all([
+          supabase.from('categories').select('name').eq('user_id', profile.id),
+          supabase.from('products').select('id, name, category').eq('user_id', profile.id)
+        ])
+
+        const dbCats = (catsRes.data || []).map(c => c.name).filter((name): name is string => typeof name === 'string' && name.trim().length > 0)
+        const prodCats = (prodsRes.data || []).map(p => p.category).filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+        const combinedCategories = Array.from(new Set([...(categories || []), ...dbCats, ...prodCats]))
+
+        setCategoryList(combinedCategories)
+
+        if (prodsRes.data && prodsRes.data.length > 0) {
+          setProductList(prodsRes.data.map(p => ({ id: p.id, name: p.name })))
+        }
+      } catch (err) {
+        console.error('[ShopSettingsForm] Failed to fetch live categories/products:', err)
+      }
+    }
+    fetchStoreCategoriesAndProducts()
+  }, [profile.id])
+
   const theme = profile.shop_theme || {}
 
   const initialBanners: HeroBannerItem[] = (theme.heroBanners && Array.isArray(theme.heroBanners) && theme.heroBanners.length > 0)
@@ -113,9 +152,28 @@ export default function ShopSettingsForm({
     heroSubtitle: theme.heroSubtitle || '',
     heroCtaText: theme.heroCtaText || 'Shop Now',
     heroCtaLink: theme.heroCtaLink || '#products',
+    heroClickAction: theme.heroClickAction || (theme.heroCtaLink === '#collections' ? 'collections' : theme.heroCtaLink?.includes('?category=') ? 'category' : theme.heroCtaLink?.includes('p/') ? 'product' : theme.heroCtaLink && theme.heroCtaLink !== '#products' ? 'custom_url' : 'shop'),
+    heroMobileCtaLink: theme.heroMobileCtaLink || theme.heroCtaLink || '#products',
+    heroMobileClickAction: theme.heroMobileClickAction || (theme.heroMobileCtaLink === '#collections' ? 'collections' : theme.heroMobileCtaLink?.includes('?category=') ? 'category' : theme.heroMobileCtaLink?.includes('p/') ? 'product' : theme.heroMobileCtaLink && theme.heroMobileCtaLink !== '#products' ? 'custom_url' : 'shop'),
     heroBgColor: theme.heroBgColor || '#4f46e5',
     heroPattern: theme.heroPattern || 'none',
     heroImageUrl: theme.heroImageUrl || '',
+    heroMobileImageUrl: theme.heroMobileImageUrl || '',
+    heroMobileImages: theme.heroMobileImages || (theme.heroMobileImageUrl ? [theme.heroMobileImageUrl] : []),
+    heroMobileBanners: (theme.heroMobileBanners && Array.isArray(theme.heroMobileBanners) && theme.heroMobileBanners.length > 0)
+      ? theme.heroMobileBanners
+      : (theme.heroMobileImages || (theme.heroMobileImageUrl ? [theme.heroMobileImageUrl] : [])).map((img: string) => ({
+          imageUrl: img,
+          link: theme.heroMobileCtaLink || '#products',
+          clickAction: theme.heroMobileClickAction || 'shop'
+        })),
+    heroShowcaseBanners: (theme.heroShowcaseBanners && Array.isArray(theme.heroShowcaseBanners) && theme.heroShowcaseBanners.length > 0)
+      ? theme.heroShowcaseBanners
+      : (theme.heroImages || (theme.heroImageUrl ? [theme.heroImageUrl] : [])).map((img: string) => ({
+          imageUrl: img,
+          link: theme.heroCtaLink || '#products',
+          clickAction: theme.heroClickAction || 'shop'
+        })),
     heroTemplate: theme.heroTemplate || 'split',
     heroBadge: theme.heroBadge || 'New Arrival',
     heroSecondaryCtaText: theme.heroSecondaryCtaText || 'Explore Now',
@@ -603,8 +661,8 @@ export default function ShopSettingsForm({
 
       setFormData(prev => {
         const currentBanners = [...(prev.heroBanners || [])]
-        const defaultAction = prev.heroBannerClickAction || 'shop'
-        const defaultLink = prev.heroCtaLink || (defaultAction === 'shop' ? '#products' : defaultAction === 'collections' ? '#collections' : '')
+        const defaultAction = 'shop'
+        const defaultLink = '#products'
 
         if (replaceIndex !== undefined && currentBanners[replaceIndex]) {
           currentBanners[replaceIndex] = {
@@ -676,6 +734,113 @@ export default function ShopSettingsForm({
     })
   }
 
+  const updateMobileBannerItem = (index: number, updates: Partial<HeroBannerItem>) => {
+    setFormData(prev => {
+      const currentList: HeroBannerItem[] = prev.heroMobileBanners || (prev.heroMobileImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+      const updatedList = [...currentList]
+      if (updatedList[index]) {
+        updatedList[index] = { ...updatedList[index], ...updates }
+      }
+      return {
+        ...prev,
+        heroMobileBanners: updatedList,
+        heroMobileImages: updatedList.map(b => b.imageUrl),
+        heroMobileImageUrl: updatedList[0]?.imageUrl || ''
+      }
+    })
+  }
+
+  const updateShowcaseBannerItem = (index: number, updates: Partial<HeroBannerItem>) => {
+    setFormData(prev => {
+      const currentList: HeroBannerItem[] = prev.heroShowcaseBanners || (prev.heroImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+      const updatedList = [...currentList]
+      if (updatedList[index]) {
+        updatedList[index] = { ...updatedList[index], ...updates }
+      }
+      return {
+        ...prev,
+        heroShowcaseBanners: updatedList,
+        heroImages: updatedList.map(b => b.imageUrl)
+      }
+    })
+  }
+
+  const handleMultipleMobileImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Image must be less than 5MB',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUploadingField('heroMobileImages')
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `heroMobileImages-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${profile.id}/${fileName}`
+
+      const { error } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (error) {
+        throw error
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath)
+
+      const uploadedUrl = urlData.publicUrl
+
+      setFormData(prev => {
+        const currentList: HeroBannerItem[] = prev.heroMobileBanners || (prev.heroMobileImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+        const newItem: HeroBannerItem = { imageUrl: uploadedUrl, link: '#products', clickAction: 'shop' }
+        const updatedList = [...currentList, newItem].slice(0, 4)
+        return {
+          ...prev,
+          heroMobileBanners: updatedList,
+          heroMobileImages: updatedList.map(b => b.imageUrl),
+          heroMobileImageUrl: updatedList[0]?.imageUrl || ''
+        }
+      })
+      toast({
+        title: 'Mobile Banner Added! 🎉',
+        description: 'New mobile banner uploaded successfully.',
+      })
+    } catch (err: any) {
+      console.error('Upload error:', err)
+      toast({
+        title: 'Upload Failed',
+        description: err.message || 'Failed to upload image.',
+        variant: 'destructive',
+      })
+    } finally {
+      setUploadingField(null)
+    }
+  }
+
+  const removeMobileHeroImage = (index: number) => {
+    setFormData(prev => {
+      const currentList: HeroBannerItem[] = prev.heroMobileBanners || (prev.heroMobileImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+      const updatedList = currentList.filter((_: any, i: number) => i !== index)
+      return {
+        ...prev,
+        heroMobileBanners: updatedList,
+        heroMobileImages: updatedList.map(b => b.imageUrl),
+        heroMobileImageUrl: updatedList[0]?.imageUrl || ''
+      }
+    })
+  }
+
   const handleMultipleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -712,10 +877,16 @@ export default function ShopSettingsForm({
 
       const uploadedUrl = urlData.publicUrl
 
-      setFormData(prev => ({
-        ...prev,
-        heroImages: [...(prev.heroImages || []), uploadedUrl]
-      }))
+      setFormData(prev => {
+        const currentList: HeroBannerItem[] = prev.heroShowcaseBanners || (prev.heroImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+        const newItem: HeroBannerItem = { imageUrl: uploadedUrl, link: '#products', clickAction: 'shop' }
+        const updatedList = [...currentList, newItem].slice(0, 5)
+        return {
+          ...prev,
+          heroShowcaseBanners: updatedList,
+          heroImages: updatedList.map(b => b.imageUrl)
+        }
+      })
       toast({
         title: 'Image Added! 🎉',
         description: 'New product showcase image uploaded successfully.',
@@ -733,10 +904,15 @@ export default function ShopSettingsForm({
   }
 
   const removeHeroImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      heroImages: (prev.heroImages || []).filter((_: string, i: number) => i !== index)
-    }))
+    setFormData(prev => {
+      const currentList: HeroBannerItem[] = prev.heroShowcaseBanners || (prev.heroImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
+      const updatedList = currentList.filter((_: any, i: number) => i !== index)
+      return {
+        ...prev,
+        heroShowcaseBanners: updatedList,
+        heroImages: updatedList.map(b => b.imageUrl)
+      }
+    })
   }
 
   const handlePromoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'promoFullBanner' | 'promoCard1' | 'promoCard2') => {
@@ -834,14 +1010,14 @@ export default function ShopSettingsForm({
         {item?.clickAction === 'category' && (
           <div>
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select Destination Category</Label>
-            {categories.length > 0 ? (
+            {categoryList.length > 0 ? (
               <select
                 value={item?.clickTarget || ''}
                 onChange={(e) => updatePromoItem(targetField, { clickTarget: e.target.value })}
                 className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">-- Choose Category --</option>
-                {categories.map((cat) => (
+                {categoryList.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
@@ -856,14 +1032,14 @@ export default function ShopSettingsForm({
         {item?.clickAction === 'product' && (
           <div>
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Select Destination Product</Label>
-            {products.length > 0 ? (
+            {productList.length > 0 ? (
               <select
                 value={item?.clickTarget || ''}
                 onChange={(e) => updatePromoItem(targetField, { clickTarget: e.target.value })}
                 className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">-- Choose Product --</option>
-                {products.map((p) => (
+                {productList.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -993,11 +1169,10 @@ export default function ShopSettingsForm({
     { id: 'seo', label: 'SEO', icon: Search },
     { id: 'footer', label: 'Footer', icon: MapPin },
     { id: 'headless', label: 'Headless Settings', icon: Zap },
-    { id: 'advanced', label: 'Advanced', icon: Zap },
   ]
 
   const tabs = isHeadlessMode
-    ? allTabs.filter(t => ['general', 'headless', 'seo', 'advanced'].includes(t.id))
+    ? allTabs.filter(t => ['general', 'headless', 'seo'].includes(t.id))
     : allTabs
 
   return (
@@ -1066,42 +1241,107 @@ export default function ShopSettingsForm({
         </div>
       )}
 
-      {/* ═══════════════ LIVE STATUS ═══════════════ */}
+      {/* ═══════════════ LIVE STATUS BANNER ═══════════════ */}
       {isEligible && formData.shop_slug && (
-        <div className={cn("flex items-center gap-4 p-4 rounded-2xl border",
-          formData.storeStatus === 'open' ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-950/50 dark:bg-emerald-950/20' :
-          formData.storeStatus === 'vacation' ? 'border-amber-200 bg-amber-50 dark:border-amber-950/50 dark:bg-amber-950/20' : 'border-red-200 bg-red-50 dark:border-red-950/50 dark:bg-red-950/20')}>
-          <div className={cn("p-2 rounded-xl",
-            formData.storeStatus === 'open' ? 'bg-emerald-100 dark:bg-emerald-900/30' : formData.storeStatus === 'vacation' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-red-100 dark:bg-red-900/30')}>
-            {formData.storeStatus === 'open' ? <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /> :
-             formData.storeStatus === 'vacation' ? <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" /> :
-             <Lock className="h-5 w-5 text-red-600 dark:text-red-400" />}
+        <div className={cn(
+          "relative overflow-hidden rounded-2xl border p-4 sm:p-5 transition-all shadow-sm",
+          formData.storeStatus === 'open' 
+            ? 'border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-slate-900/40 dark:from-emerald-950/40 dark:via-slate-900/60 dark:to-slate-900/80' 
+            : formData.storeStatus === 'vacation' 
+            ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-900/40 dark:from-amber-950/40 dark:via-slate-900/60 dark:to-slate-900/80' 
+            : 'border-rose-500/30 bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-slate-900/40 dark:from-rose-950/40 dark:via-slate-900/60 dark:to-slate-900/80'
+        )}>
+          {/* Subtle background glow effect */}
+          <div className={cn(
+            "absolute -right-10 -bottom-10 w-36 h-36 rounded-full blur-3xl opacity-20 pointer-events-none",
+            formData.storeStatus === 'open' ? 'bg-emerald-500' : formData.storeStatus === 'vacation' ? 'bg-amber-500' : 'bg-rose-500'
+          )} />
+
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className={cn(
+                "p-2.5 rounded-xl border flex items-center justify-center shrink-0 shadow-sm",
+                formData.storeStatus === 'open' 
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                  : formData.storeStatus === 'vacation' 
+                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' 
+                  : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+              )}>
+                {formData.storeStatus === 'open' ? <Globe className="h-5 w-5" /> :
+                 formData.storeStatus === 'vacation' ? <Clock className="h-5 w-5" /> :
+                 <Lock className="h-5 w-5" />}
+              </div>
+
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
+                    {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? 'Vacation Mode' : 'Store Closed'}
+                  </h4>
+                  {formData.storeStatus === 'open' && (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      </span>
+                      Online
+                    </span>
+                  )}
+                  {formData.storeStatus === 'vacation' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0">
+                      Pause
+                    </span>
+                  )}
+                  {formData.storeStatus === 'closed' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 shrink-0">
+                      Offline
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium flex-wrap min-w-0">
+                  <span className="font-mono text-slate-700 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-300/50 dark:border-slate-700/50 text-[11px] truncate max-w-full">
+                    {storeUrlPrefix}{formData.shop_slug}
+                  </span>
+                  <span className="text-slate-400 hidden sm:inline">•</span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                    {productCount} {productCount === 1 ? 'product' : 'products'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
+              <a
+                href={`/store/${formData.shop_slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 text-xs font-bold px-4 py-2.5 sm:py-2 rounded-xl transition-all shadow-sm active:scale-95 w-full sm:w-auto",
+                  formData.storeStatus === 'open'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                    : formData.storeStatus === 'vacation'
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/20'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                )}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Visit Store</span>
+                <ExternalLink className="w-3 h-3 opacity-80" />
+              </a>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className={cn("text-sm font-bold",
-              formData.storeStatus === 'open' ? 'text-emerald-800 dark:text-emerald-300' : formData.storeStatus === 'vacation' ? 'text-amber-800 dark:text-amber-300' : 'text-red-800 dark:text-red-300')}>
-              {formData.storeStatus === 'open' ? 'Store is LIVE' : formData.storeStatus === 'vacation' ? '🟡 Vacation Mode' : '🔴 Store Closed'}
-            </p>
-            <p className={cn("text-xs", formData.storeStatus === 'open' ? 'text-emerald-600 dark:text-emerald-400' : formData.storeStatus === 'vacation' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400')}>
-              {storeUrlPrefix}{formData.shop_slug} · {productCount} products
-            </p>
-          </div>
-          <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-bold bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
-            <Eye className="w-3.5 h-3.5" /> Visit <ExternalLink className="w-3 h-3" />
-          </a>
         </div>
       )}
 
       {/* ═══════════════ TAB NAVIGATION ═══════════════ */}
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+      <div className="overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4">
         <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 min-w-max">
           {tabs.map(tab => {
             const Icon = tab.icon
             return (
               <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); sessionStorage.setItem('resellerpro_shop_tab', tab.id); }}
-                className={cn("inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap",
-                  activeTab === tab.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300')}>
+                className={cn("inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all whitespace-nowrap",
+                  activeTab === tab.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300')}>
                 <Icon className="w-3.5 h-3.5" />{tab.label}
               </button>
             )
@@ -1267,10 +1507,15 @@ export default function ShopSettingsForm({
           <div className="space-y-6">
             {/* Branding & Theme Colors */}
             <Section icon={Palette} title="Store Colors & Theme">
-              <div className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Customize the visual colors for your storefront elements. Click a color box or select a preset palette below.
+                </p>
+
+                <div className="grid sm:grid-cols-2 gap-4">
                   <ColorPicker
-                    label="Primary (Buttons, links, active states)"
+                    label="Primary Brand Color"
+                    description="Main action buttons (Buy Now, Add to Cart), links & active tabs."
                     name="primaryColor"
                     value={formData.primaryColor}
                     onChange={handleChange}
@@ -1278,7 +1523,8 @@ export default function ShopSettingsForm({
                     presets={['#4f46e5', '#059669', '#dc2626', '#ea580c', '#7c3aed', '#0891b2']}
                   />
                   <ColorPicker
-                    label="Secondary (Hover states, headers, navigation)"
+                    label="Secondary Hover Color"
+                    description="Navigation hover highlights, sub-headers & secondary buttons."
                     name="secondaryColor"
                     value={formData.secondaryColor}
                     onChange={handleChange}
@@ -1286,7 +1532,8 @@ export default function ShopSettingsForm({
                     presets={['#4338ca', '#047857', '#b91c1c', '#c2410c', '#6d28d9', '#0369a1']}
                   />
                   <ColorPicker
-                    label="Third/Accent (Highlights, badges, info)"
+                    label="Accent & Promo Highlight"
+                    description="Sale tags, discount badges, offer banners & notification badges."
                     name="accentColor"
                     value={formData.accentColor}
                     onChange={handleChange}
@@ -1294,7 +1541,8 @@ export default function ShopSettingsForm({
                     presets={['#f97316', '#eab308', '#ec4899', '#14b8a6', '#8b5cf6', '#f43f5e']}
                   />
                   <ColorPicker
-                    label="Fourth/Neutral Dark (Text, sidebar, titles)"
+                    label="Dark Background & Titles"
+                    description="Dark sections, footer backdrop, main titles & hero text."
                     name="neutralDarkColor"
                     value={formData.neutralDarkColor}
                     onChange={handleChange}
@@ -1302,7 +1550,8 @@ export default function ShopSettingsForm({
                     presets={['#0f172a', '#1e293b', '#334155', '#18181b', '#27272a', '#171717']}
                   />
                   <ColorPicker
-                    label="Navbar Background Color"
+                    label="Top Header Background"
+                    description="Background color of your store's top navigation bar."
                     name="navbarBgColor"
                     value={formData.navbarBgColor}
                     onChange={handleChange}
@@ -1310,7 +1559,8 @@ export default function ShopSettingsForm({
                     presets={['#ffffff', '#f8fafc', '#0f172a', '#1e293b', '#4f46e5', '#059669']}
                   />
                   <ColorPicker
-                    label="Navbar Text & Icon Color"
+                    label="Header Text & Icons"
+                    description="Color for header menu items, search bar icon & cart icon."
                     name="navbarTextColor"
                     value={formData.navbarTextColor}
                     onChange={handleChange}
@@ -1318,8 +1568,6 @@ export default function ShopSettingsForm({
                     presets={['#0f172a', '#334155', '#ffffff', '#e2e8f0', '#4f46e5', '#ffffff']}
                   />
                 </div>
-
-
               </div>
             </Section>
 
@@ -1501,18 +1749,170 @@ export default function ShopSettingsForm({
                     </div>
                   </div>
 
+                  {/* ── Common Setting: Mobile Banner ──────────── */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <Label className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
+                          <span className="text-sm font-black">Mobile Banner</span>
+                        </Label>
+                        <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+                          Upload up to 4 dedicated mobile banner images optimized specifically for mobile screens (&lt; 1024px). Displays regardless of chosen hero layout.
+                        </p>
+                      </div>
+                      {(formData.heroMobileImages || (formData.heroMobileImageUrl ? [formData.heroMobileImageUrl] : [])).length < 4 && (
+                        <label
+                          htmlFor="hero_mobile_images_file"
+                          className={cn(
+                            "cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shrink-0 shadow-sm",
+                            (!isEligible || uploadingField !== null) && "opacity-50 pointer-events-none"
+                          )}
+                        >
+                          {uploadingField === 'heroMobileImages' ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="w-3.5 h-3.5" />
+                          )}
+                          Add Mobile Banner
+                        </label>
+                      )}
+                      <input
+                        id="hero_mobile_images_file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMultipleMobileImagesUpload}
+                        className="hidden"
+                        disabled={!isEligible || uploadingField !== null}
+                      />
+                    </div>
+
+                    {(formData.heroMobileBanners || []).length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-center bg-white/50 dark:bg-slate-950/50">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">No mobile banners uploaded yet</p>
+                        <p className="text-[10px] text-slate-400">Upload up to 4 mobile banner images — configure distinct destination links for each.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {(formData.heroMobileBanners || []).map((banner: HeroBannerItem, idx: number) => {
+                          const actionType = banner.clickAction || 'shop';
+                          return (
+                            <div key={idx} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3 shadow-2xs">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                  <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 flex items-center justify-center text-[10px] font-black">
+                                    {idx + 1}
+                                  </span>
+                                  Mobile Banner {idx + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeMobileHeroImage(idx)}
+                                  className="text-[10px] font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                {/* Thumbnail */}
+                                <div className="md:col-span-4 flex items-center gap-3">
+                                  <div className="w-20 h-20 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 shrink-0">
+                                    <img src={banner.imageUrl} alt={`Mobile Banner ${idx + 1}`} className="w-full h-full object-contain p-1" />
+                                  </div>
+                                  <p className="text-[9px] text-slate-400">Mobile Banner {idx + 1}</p>
+                                </div>
+
+                                {/* Click Action Destination */}
+                                <div className="md:col-span-8 space-y-2">
+                                  <Label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Click Action Destination</Label>
+                                  <div className="grid grid-cols-3 gap-1">
+                                    {[
+                                      { value: 'shop', label: '🛍️ Shop' },
+                                      { value: 'category', label: '🗂️ Cat.' },
+                                      { value: 'product', label: '📱 Prod.' },
+                                    ].map(opt => (
+                                      <button
+                                        key={opt.value}
+                                        type="button"
+                                        onClick={() => updateMobileBannerItem(idx, {
+                                          clickAction: opt.value as any,
+                                          link: opt.value === 'shop' ? '#products' : opt.value === 'collections' ? '#collections' : banner.link
+                                        })}
+                                        disabled={!isEligible}
+                                        className={cn(
+                                          "py-1.5 px-1 text-[10px] font-bold rounded-lg border transition-all text-center",
+                                          actionType === opt.value
+                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
+                                            : 'border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-400'
+                                        )}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {actionType === 'category' && (
+                                    <select
+                                      value={banner.link || ''}
+                                      onChange={(e) => updateMobileBannerItem(idx, { link: e.target.value })}
+                                      disabled={!isEligible}
+                                      className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 text-xs bg-white dark:bg-slate-900 dark:text-slate-100"
+                                    >
+                                      <option value="">Select Category…</option>
+                                      {categoryList.map(cat => (
+                                        <option key={cat} value={`?category=${encodeURIComponent(cat)}`}>{cat}</option>
+                                      ))}
+                                      {categoryList.length === 0 && <option value="" disabled>No categories yet</option>}
+                                    </select>
+                                  )}
+
+                                  {actionType === 'product' && (
+                                    <select
+                                      value={banner.link || ''}
+                                      onChange={(e) => updateMobileBannerItem(idx, { link: e.target.value })}
+                                      disabled={!isEligible}
+                                      className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 text-xs bg-white dark:bg-slate-900 dark:text-slate-100"
+                                    >
+                                      <option value="">Select Product…</option>
+                                      {productList.map(p => (
+                                        <option key={p.id} value={`p/${p.id}`}>{p.name}</option>
+                                      ))}
+                                      {productList.length === 0 && <option value="" disabled>No products yet</option>}
+                                    </select>
+                                  )}
+
+                                  {actionType === 'custom_url' && (
+                                    <Input
+                                      value={banner.link || ''}
+                                      onChange={(e) => updateMobileBannerItem(idx, { link: e.target.value })}
+                                      placeholder="https://your-custom-link.com"
+                                      className="w-full h-8 text-xs bg-white dark:bg-slate-900"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   {/* ── Settings for Product Showcase Hero ──────────── */}
                   {formData.heroTemplate === 'split' && (
-                    <div className="space-y-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="space-y-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 px-2">Product Showcase Settings</span>
-                        <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
+                          Product Showcase Hero Settings
+                        </span>
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                       </div>
 
-                      {/* Background Color */}
+                      {/* 1. Background Color */}
                       <ColorPicker
                         label="Hero Background Color"
+                        description="Select a dark or rich background color for your desktop hero card."
                         name="heroBgColor"
                         value={formData.heroBgColor}
                         onChange={handleChange}
@@ -1520,62 +1920,100 @@ export default function ShopSettingsForm({
                         presets={['#0f172a', '#1e1b4b', '#0c0a09', '#052e16', '#450a0a', '#1e3a5f', '#18181b', '#0d1117']}
                       />
 
-                      {/* Headline & Subtitle */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Headline</Label>
-                          <Input name="heroTitle" value={formData.heroTitle} onChange={handleChange}
-                            placeholder="Premium Quality. Timeless Style." disabled={isPending || !isEligible} className="mt-1.5" />
+                      {/* 2. Text Content & Highlight Badge */}
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-4">
+                        <div className="border-b border-slate-200/60 dark:border-slate-800 pb-2">
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span className="text-indigo-600">📝</span> Hero Headline &amp; Subtitle
+                          </h4>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">Configure the top badge tag, main title, and subtext for desktop view.</p>
                         </div>
-                        <div>
-                          <Label>Subtitle</Label>
-                          <Input name="heroSubtitle" value={formData.heroSubtitle} onChange={handleChange}
-                            placeholder="Discover premium products at the best prices" disabled={isPending || !isEligible} className="mt-1.5" />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold">Top Highlight Tag (Mini Badge)</Label>
+                            <Input name="heroBadge" value={formData.heroBadge} onChange={handleChange}
+                              placeholder="e.g. New Arrival" disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                            <p className="text-[9px] text-slate-400 mt-1">Tag shown above main title</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold">Main Headline</Label>
+                            <Input name="heroTitle" value={formData.heroTitle} onChange={handleChange}
+                              placeholder="e.g. Premium Quality. Timeless Style." disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                            <p className="text-[9px] text-slate-400 mt-1">Main banner heading title</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold">Subtitle</Label>
+                            <Input name="heroSubtitle" value={formData.heroSubtitle} onChange={handleChange}
+                              placeholder="e.g. Discover premium products at best prices" disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                            <p className="text-[9px] text-slate-400 mt-1">Short tagline under headline</p>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Buttons */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Primary Button Text</Label>
-                          <Input name="heroCtaText" value={formData.heroCtaText} onChange={handleChange}
-                            placeholder="Shop Now" disabled={isPending || !isEligible} className="mt-1.5" />
+                      {/* 3. Action Buttons (CTA) */}
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-4">
+                        <div className="border-b border-slate-200/60 dark:border-slate-800 pb-2">
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span className="text-indigo-600">🔘</span> Action Button (CTA)
+                          </h4>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">Button displayed on the hero banner (defaults to your shop page).</p>
                         </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                         <div>
-                          <Label>Secondary Button Text</Label>
-                          <Input name="heroSecondaryCtaText" value={formData.heroSecondaryCtaText} onChange={handleChange}
-                            placeholder="Explore Now" disabled={isPending || !isEligible} className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label>Secondary Button Link</Label>
-                          <Input name="heroSecondaryCtaLink" value={formData.heroSecondaryCtaLink} onChange={handleChange}
-                            placeholder="#collections" disabled={isPending || !isEligible} className="mt-1.5" />
+                          <Label className="text-xs font-bold block mb-1.5">Select Primary Button Label</Label>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {['Shop Now', 'Explore Now'].map(preset => {
+                              const isSelected = (formData.heroCtaText || 'Shop Now') === preset
+                              return (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => setFormData(p => ({ ...p, heroCtaText: preset }))}
+                                  className={cn(
+                                    "px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 shadow-2xs",
+                                    isSelected
+                                      ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-600/20"
+                                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700"
+                                  )}
+                                >
+                                  {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                                  {preset}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
+                            Selected button label: <strong className="text-slate-900 dark:text-white">{formData.heroCtaText || 'Shop Now'}</strong> (links directly to shop page).
+                          </p>
                         </div>
                       </div>
 
-                      {/* Mini badge + Trust Labels */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                          <Label>Mini Badge</Label>
-                          <Input name="heroBadge" value={formData.heroBadge} onChange={handleChange}
-                            placeholder="New Arrival" disabled={isPending || !isEligible} className="mt-1.5" />
+                      {/* 4. Trust Badges & Guarantee Labels */}
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-4">
+                        <div className="border-b border-slate-200/60 dark:border-slate-800 pb-2">
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span className="text-indigo-600">🛡</span> Trust &amp; Guarantee Badges
+                          </h4>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">3 trust signals displayed below action buttons to build customer confidence.</p>
                         </div>
-                        <div>
-                          <Label>Trust Label 1</Label>
-                          <Input name="heroBadge1" value={formData.heroBadge1} onChange={handleChange}
-                            placeholder="Free Shipping" disabled={isPending || !isEligible} className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label>Trust Label 2</Label>
-                          <Input name="heroBadge2" value={formData.heroBadge2} onChange={handleChange}
-                            placeholder="Easy Returns" disabled={isPending || !isEligible} className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label>Trust Label 3</Label>
-                          <Input name="heroBadge3" value={formData.heroBadge3} onChange={handleChange}
-                            placeholder="COD Available" disabled={isPending || !isEligible} className="mt-1.5" />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div>
+                            <Label className="text-xs font-bold">Trust Badge 1</Label>
+                            <Input name="heroBadge1" value={formData.heroBadge1} onChange={handleChange}
+                              placeholder="e.g. Free Shipping" disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold">Trust Badge 2</Label>
+                            <Input name="heroBadge2" value={formData.heroBadge2} onChange={handleChange}
+                              placeholder="e.g. Easy Returns" disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-bold">Trust Badge 3</Label>
+                            <Input name="heroBadge3" value={formData.heroBadge3} onChange={handleChange}
+                              placeholder="e.g. COD Available" disabled={isPending || !isEligible} className="mt-1 text-xs h-9" />
+                          </div>
                         </div>
                       </div>
 
@@ -1617,30 +2055,117 @@ export default function ShopSettingsForm({
                           />
                         </div>
 
-                        {(formData.heroImages || []).length === 0 ? (
-                          <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 text-center">
+                        {(formData.heroShowcaseBanners || []).length === 0 ? (
+                          <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 text-center bg-white/50 dark:bg-slate-950/50">
                             <ImageIcon className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No images added yet</p>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500">Upload up to 5 product images — they will auto-slide on your storefront.</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500">Upload up to 5 product showcase images — configure distinct click targets for each.</p>
                           </div>
                         ) : (
-                          <div className="flex gap-3 flex-wrap">
-                            {(formData.heroImages || []).map((imgUrl: string, idx: number) => (
-                              <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shrink-0">
-                                <img src={imgUrl} alt={`Hero image ${idx + 1}`} className="w-full h-full object-contain p-1" />
-                                <button
-                                  type="button"
-                                  onClick={() => removeHeroImage(idx)}
-                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px] font-black"
-                                >
-                                  Remove
-                                </button>
-                                <span className="absolute bottom-1 right-1 text-[8px] font-black text-white bg-black/60 rounded px-1">{idx + 1}</span>
-                              </div>
-                            ))}
+                          <div className="space-y-3">
+                            {(formData.heroShowcaseBanners || []).map((banner: HeroBannerItem, idx: number) => {
+                              const actionType = banner.clickAction || 'shop';
+                              return (
+                                <div key={idx} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-3 shadow-2xs">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 flex items-center justify-center text-[10px] font-black">
+                                        {idx + 1}
+                                      </span>
+                                      Showcase Image {idx + 1}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeHeroImage(idx)}
+                                      className="text-[10px] font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                    {/* Thumbnail */}
+                                    <div className="md:col-span-4 flex items-center gap-3">
+                                      <div className="w-20 h-20 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 shrink-0">
+                                        <img src={banner.imageUrl} alt={`Showcase Image ${idx + 1}`} className="w-full h-full object-contain p-1" />
+                                      </div>
+                                      <p className="text-[9px] text-slate-400">Showcase Image {idx + 1}</p>
+                                    </div>
+
+                                    {/* Click Action Destination */}
+                                    <div className="md:col-span-8 space-y-2">
+                                      <Label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Click Action Destination</Label>
+                                      <div className="grid grid-cols-3 gap-1">
+                                        {[
+                                          { value: 'shop', label: '🛍️ Shop' },
+                                          { value: 'category', label: '🗂️ Cat.' },
+                                          { value: 'product', label: '📱 Prod.' },
+                                        ].map(opt => (
+                                          <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => updateShowcaseBannerItem(idx, {
+                                              clickAction: opt.value as any,
+                                              link: opt.value === 'shop' ? '#products' : opt.value === 'collections' ? '#collections' : banner.link
+                                            })}
+                                            disabled={!isEligible}
+                                            className={cn(
+                                              "py-1.5 px-1 text-[10px] font-bold rounded-lg border transition-all text-center",
+                                              actionType === opt.value
+                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
+                                                : 'border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-400'
+                                            )}
+                                          >
+                                            {opt.label}
+                                          </button>
+                                        ))}
+                                      </div>
+
+                                      {actionType === 'category' && (
+                                        <select
+                                          value={banner.link || ''}
+                                          onChange={(e) => updateShowcaseBannerItem(idx, { link: e.target.value })}
+                                          disabled={!isEligible}
+                                          className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 text-xs bg-white dark:bg-slate-900 dark:text-slate-100"
+                                        >
+                                          <option value="">Select Category…</option>
+                                          {categoryList.map(cat => (
+                                            <option key={cat} value={`?category=${encodeURIComponent(cat)}`}>{cat}</option>
+                                          ))}
+                                          {categoryList.length === 0 && <option value="" disabled>No categories yet</option>}
+                                        </select>
+                                      )}
+
+                                      {actionType === 'product' && (
+                                        <select
+                                          value={banner.link || ''}
+                                          onChange={(e) => updateShowcaseBannerItem(idx, { link: e.target.value })}
+                                          disabled={!isEligible}
+                                          className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 text-xs bg-white dark:bg-slate-900 dark:text-slate-100"
+                                        >
+                                          <option value="">Select Product…</option>
+                                          {productList.map(p => (
+                                            <option key={p.id} value={`p/${p.id}`}>{p.name}</option>
+                                          ))}
+                                          {products.length === 0 && <option value="" disabled>No products yet</option>}
+                                        </select>
+                                      )}
+
+                                      {actionType === 'custom_url' && (
+                                        <Input
+                                          value={banner.link || ''}
+                                          onChange={(e) => updateShowcaseBannerItem(idx, { link: e.target.value })}
+                                          placeholder="https://your-custom-link.com"
+                                          className="w-full h-8 text-xs bg-white dark:bg-slate-900"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">Square or transparent PNG (800×800 px) recommended. Max 5MB each.</p>
                       </div>
 
                       {/* Live Preview */}
@@ -1656,8 +2181,7 @@ export default function ShopSettingsForm({
                             <h2 className="text-base font-black tracking-tight leading-tight text-white">{formData.heroTitle || 'Premium Quality. Timeless Style.'}</h2>
                             <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">{formData.heroSubtitle || 'Discover our new collection of premium products.'}</p>
                             <div className="flex flex-wrap gap-1.5 pt-0.5">
-                              <span className="px-2.5 py-1.5 bg-white text-slate-950 font-black text-[9px] rounded-md shadow-sm">{formData.heroCtaText || 'Shop Collection'}</span>
-                              <span className="px-2.5 py-1.5 border border-white/20 text-white font-black text-[9px] rounded-md">{formData.heroSecondaryCtaText || 'Explore Now'}</span>
+                              <span className="px-3 py-1.5 bg-white text-slate-950 font-black text-[10px] rounded-lg shadow-sm">{formData.heroCtaText || 'Shop Now'}</span>
                             </div>
                             <div className="flex items-center gap-3 pt-2 border-t border-white/10 text-slate-400 text-[8px] font-bold">
                               <span>✓ {formData.heroBadge1 || 'Free Shipping'}</span>
@@ -1666,12 +2190,12 @@ export default function ShopSettingsForm({
                             </div>
                           </div>
                           <div className="col-span-4 flex justify-center">
-                            {/* Card style box: increased height, narrower width, overflow hidden, image fits inside */}
-                            <div className="relative w-20 h-28 sm:w-24 sm:h-32 rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-2xl flex items-center justify-center p-2">
+                            {/* Showcase image rendered directly without background card */}
+                            <div className="relative w-full max-w-[110px] h-20 sm:h-24 rounded-xl overflow-hidden shadow-xl flex items-center justify-center">
                               {(formData.heroImages || []).length > 0 ? (
-                                <img src={formData.heroImages[0]} className="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(255,255,255,0.08)]" alt="Mockup" />
+                                <img src={formData.heroImages[0]} className="w-full h-full object-cover" alt="Mockup" />
                               ) : (
-                                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300&auto=format&fit=crop" className="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(255,255,255,0.08)]" alt="Default Watch" />
+                                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300&auto=format&fit=crop" className="w-full h-full object-cover" alt="Default Product" />
                               )}
                             </div>
                           </div>
@@ -1689,45 +2213,11 @@ export default function ShopSettingsForm({
                         <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                       </div>
 
-                      {/* Default Destination Preference for New Banners */}
-                      <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <Label className="mb-1 block font-bold text-xs text-slate-900 dark:text-white">Default Destination for New Banners</Label>
-                        <p className="text-[11px] text-slate-500 mb-2.5">When you upload a new promotional banner, it will automatically inherit this default link destination (which you can customize per banner).</p>
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                          {[
-                            { value: 'shop', label: '🛍️ Shop' },
-                            { value: 'collections', label: '📦 Collections' },
-                            { value: 'category', label: '🗂️ Category' },
-                            { value: 'product', label: '📱 Product' },
-                            { value: 'custom_url', label: '🔗 Custom URL' },
-                          ].map(opt => (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => setFormData(prev => ({
-                                ...prev,
-                                heroBannerClickAction: opt.value as any,
-                                heroCtaLink: opt.value === 'shop' ? '#products' : opt.value === 'collections' ? '#collections' : prev.heroCtaLink
-                              }))}
-                              disabled={!isEligible}
-                              className={cn(
-                                "py-2 px-2 text-[11px] font-bold rounded-xl border-2 transition-all text-center",
-                                formData.heroBannerClickAction === opt.value
-                                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
-                                  : 'border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
-                              )}
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
                       {/* Banner List */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Promotional Banners List</Label>
+                            <Label className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Desktop Banners</Label>
                             <p className="text-[11px] text-slate-500">Upload single or multiple promo banners — they will auto-slide on your storefront carousel.</p>
                             <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
                               <span className="inline-flex items-center gap-1 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full font-mono font-semibold text-[9px] tracking-wider">
@@ -1822,13 +2312,11 @@ export default function ShopSettingsForm({
                                     {/* Click Action & Target */}
                                     <div className="md:col-span-7 space-y-2">
                                       <Label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Click Action Destination</Label>
-                                      <div className="grid grid-cols-5 gap-1">
+                                      <div className="grid grid-cols-3 gap-1">
                                         {[
                                           { value: 'shop', label: '🛍️ Shop' },
-                                          { value: 'collections', label: '📦 Coll.' },
                                           { value: 'category', label: '🗂️ Cat.' },
                                           { value: 'product', label: '📱 Prod.' },
-                                          { value: 'custom_url', label: '🔗 URL' },
                                         ].map(opt => (
                                           <button
                                             key={opt.value}
@@ -1899,65 +2387,6 @@ export default function ShopSettingsForm({
                         )}
                       </div>
 
-                      {/* Multi-Banner Interactive Live Preview */}
-                      {(formData.heroBanners || []).length > 0 && (
-                        <div className="space-y-1.5 pt-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carousel Live Preview</p>
-                            {(formData.heroBanners || []).length > 1 && (
-                              <span className="text-[10px] text-slate-400">
-                                {previewBannerIndex + 1} / {(formData.heroBanners || []).length}
-                              </span>
-                            )}
-                          </div>
-                          <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-950 min-h-[140px]">
-                            <img
-                              src={formData.heroBanners[previewBannerIndex]?.imageUrl}
-                              alt={`Promo Banner ${previewBannerIndex + 1} Preview`}
-                              className="w-full object-cover max-h-48 transition-all duration-300"
-                            />
-                            {/* Prev / Next buttons */}
-                            {(formData.heroBanners || []).length > 1 && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => setPreviewBannerIndex(i => (i - 1 + (formData.heroBanners || []).length) % (formData.heroBanners || []).length)}
-                                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
-                                  aria-label="Previous banner"
-                                >
-                                  <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setPreviewBannerIndex(i => (i + 1) % (formData.heroBanners || []).length)}
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
-                                  aria-label="Next banner"
-                                >
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </button>
-                              </>
-                            )}
-                            {/* Dot indicators */}
-                            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                              {(formData.heroBanners || []).map((_, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => setPreviewBannerIndex(i)}
-                                  className={cn("w-2 h-2 rounded-full transition-all", i === previewBannerIndex ? "bg-white scale-125" : "bg-white/40 hover:bg-white/70")}
-                                />
-                              ))}
-                            </div>
-                            {/* Destination hint overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/40 pointer-events-none">
-                              <span className="text-white text-xs font-black bg-black/70 px-3 py-1.5 rounded-lg border border-white/10">
-                                Clicking Banner {previewBannerIndex + 1} goes to: {formData.heroBanners[previewBannerIndex]?.link || 'Shop Section'}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-slate-400">Multi-banner carousel auto-slides on your storefront with touch &amp; arrow navigation.</p>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -2590,181 +3019,123 @@ export default function ShopSettingsForm({
               <ToggleRow label="Show Trust Badges" description="Display trust indicators below products" checked={formData.trustBadgesEnabled} onChange={v => handleToggle('trustBadgesEnabled', v)} disabled={!isEligible} />
               {formData.trustBadgesEnabled && (
                 <div className="space-y-5 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  {/* Badge Selection Grid */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: 'secure_payment', icon: Shield, label: 'Secure Payment' },
-                      { id: 'fast_delivery', icon: Truck, label: 'Fast Delivery' },
-                      { id: 'easy_returns', icon: RotateCcw, label: 'Easy Returns' },
-                      { id: 'quality', icon: Star, label: 'Quality Assured' },
-                      { id: 'support', icon: HeartHandshake, label: '24/7 Support' },
-                      { id: 'authentic', icon: Check, label: '100% Authentic' },
-                    ].map(badge => {
-                      const isEnabledOnStore = formData.trustBadges.includes(badge.id)
-                      const isActiveEditing = selectedBadgeId === badge.id
-                      const customItem = formData.trustBadgeItems?.[badge.id]
-                      const badgeTitle = customItem?.title || badge.label
-                      const hasCustomIcon = !!customItem?.iconUrl
+                  {/* Custom Badges List (Image Upload & Badge Name) */}
+                  <div className="space-y-3">
+                    {formData.trustBadges.map((badgeId: string, idx: number) => {
+                      const badgePresets: Record<string, { label: string; icon: any }> = {
+                        secure_payment: { label: 'Secure Payment', icon: Shield },
+                        fast_delivery: { label: 'Fast Delivery', icon: Truck },
+                        easy_returns: { label: 'Easy Returns', icon: RotateCcw },
+                        quality: { label: 'Quality Assured', icon: Star },
+                        support: { label: '24/7 Support', icon: HeartHandshake },
+                        authentic: { label: '100% Authentic', icon: Check },
+                      }
+                      const preset = badgePresets[badgeId]
+                      const customItem = formData.trustBadgeItems?.[badgeId] || {}
+                      const badgeTitle = customItem.title !== undefined ? customItem.title : (preset?.label || `Badge ${idx + 1}`)
+                      const IconComp = preset?.icon || Shield
 
                       return (
-                        <div
-                          key={badge.id}
-                          onClick={() => setSelectedBadgeId(badge.id)}
-                          className={cn(
-                            "p-3 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all cursor-pointer relative group",
-                            isActiveEditing
-                              ? 'ring-2 ring-indigo-500 border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30'
-                              : isEnabledOnStore
-                                ? 'border-indigo-500/50 bg-slate-50 dark:bg-slate-900/40'
-                                : 'border-slate-200 dark:border-slate-800 dark:hover:border-slate-700 opacity-60'
-                          )}
-                        >
-                          {/* Toggle active state checkmark */}
-                          <button
-                            type="button"
-                            title={isEnabledOnStore ? "Remove from storefront" : "Enable on storefront"}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              const updated = isEnabledOnStore
-                                ? formData.trustBadges.filter((b: string) => b !== badge.id)
-                                : [...formData.trustBadges, badge.id]
-                              setFormData(p => ({ ...p, trustBadges: updated }))
-                            }}
-                            className={cn(
-                              "absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[10px] transition-all font-bold",
-                              isEnabledOnStore
-                                ? "bg-indigo-600 text-white"
-                                : "bg-slate-200 dark:bg-slate-800 text-slate-400 hover:bg-slate-300"
-                            )}
-                          >
-                            ✓
-                          </button>
+                        <div key={badgeId} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                          <div className="flex items-center gap-3">
+                            {/* Image / Icon Preview */}
+                            <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 flex items-center justify-center shrink-0">
+                              {customItem.iconUrl ? (
+                                <img src={customItem.iconUrl} alt={badgeTitle} className="w-full h-full object-cover" />
+                              ) : (
+                                <IconComp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                              )}
+                            </div>
 
-                          {hasCustomIcon ? (
-                            <img src={customItem.iconUrl} alt={badgeTitle} className="w-5 h-5 object-cover rounded" />
-                          ) : (
-                            <badge.icon className={cn("w-5 h-5", isEnabledOnStore ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500')} />
-                          )}
-                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center truncate max-w-full">
-                            {badgeTitle}
-                          </span>
+                            {/* Badge Name & Description Inputs */}
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <div>
+                                <Label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Badge Name</Label>
+                                <Input
+                                  value={badgeTitle}
+                                  onChange={(e) => updateTrustBadgeItem(badgeId, 'title', e.target.value)}
+                                  placeholder="e.g. Fast Shipping"
+                                  disabled={isPending || !isEligible}
+                                  className="h-8 text-xs bg-white dark:bg-slate-950"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Description (Optional)</Label>
+                                <Input
+                                  value={customItem.description || ''}
+                                  onChange={(e) => updateTrustBadgeItem(badgeId, 'description', e.target.value)}
+                                  placeholder="e.g. 24-48 hr dispatch"
+                                  disabled={isPending || !isEligible}
+                                  className="h-8 text-xs bg-white dark:bg-slate-950"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Action Buttons: Upload Image & Remove */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <label
+                                htmlFor={`badge_file_${badgeId}`}
+                                className={cn(
+                                  "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors",
+                                  (!isEligible || uploadingField !== null) && "opacity-50 pointer-events-none"
+                                )}
+                              >
+                                {uploadingField === `badge_${badgeId}` ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Upload className="w-3.5 h-3.5" />
+                                )}
+                                Upload Image
+                              </label>
+                              <input
+                                id={`badge_file_${badgeId}`}
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleBadgeIconUpload(e, badgeId)}
+                                className="hidden"
+                                disabled={!isEligible || uploadingField !== null}
+                              />
+
+                              <button
+                                type="button"
+                                title="Remove Badge"
+                                onClick={() => {
+                                  setFormData(p => ({
+                                    ...p,
+                                    trustBadges: p.trustBadges.filter((id: string) => id !== badgeId)
+                                  }))
+                                }}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       )
                     })}
+
+                    {/* Add New Badge Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newBadgeId = `badge-${Date.now()}`
+                        setFormData(p => ({
+                          ...p,
+                          trustBadges: [...p.trustBadges, newBadgeId],
+                          trustBadgeItems: {
+                            ...(p.trustBadgeItems || {}),
+                            [newBadgeId]: { title: 'New Badge', description: '', iconUrl: '' }
+                          }
+                        }))
+                      }}
+                      disabled={!isEligible}
+                      className="w-full py-2.5 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add New Badge
+                    </button>
                   </div>
-
-                  {/* Single Selected Badge Editor */}
-                  {selectedBadgeId && (() => {
-                    const badgePresets: Record<string, { label: string; icon: any }> = {
-                      secure_payment: { label: 'Secure Payment', icon: Shield },
-                      fast_delivery: { label: 'Fast Delivery', icon: Truck },
-                      easy_returns: { label: 'Easy Returns', icon: RotateCcw },
-                      quality: { label: 'Quality Assured', icon: Star },
-                      support: { label: '24/7 Support', icon: HeartHandshake },
-                      authentic: { label: '100% Authentic', icon: Check },
-                    }
-                    const activePreset = badgePresets[selectedBadgeId] || { label: selectedBadgeId, icon: Shield }
-                    const activeCustom = formData.trustBadgeItems?.[selectedBadgeId] || {}
-                    const isEnabledOnStore = formData.trustBadges.includes(selectedBadgeId)
-
-                    return (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                              Editing: {activeCustom.title || activePreset.label}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = isEnabledOnStore
-                                  ? formData.trustBadges.filter((b: string) => b !== selectedBadgeId)
-                                  : [...formData.trustBadges, selectedBadgeId]
-                                setFormData(p => ({ ...p, trustBadges: updated }))
-                              }}
-                              className={cn(
-                                "px-3 py-1 text-xs font-bold rounded-lg border transition-all",
-                                isEnabledOnStore
-                                  ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-950/50 dark:hover:bg-red-950/20"
-                                  : "border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-950/50 dark:hover:bg-indigo-950/20"
-                              )}
-                            >
-                              {isEnabledOnStore ? "Remove from Storefront" : "Add to Storefront"}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Title & Description Fields */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <Label className="text-xs font-semibold mb-1 block">Badge Title</Label>
-                            <Input
-                              value={activeCustom.title !== undefined ? activeCustom.title : activePreset.label}
-                              onChange={(e) => updateTrustBadgeItem(selectedBadgeId, 'title', e.target.value)}
-                              placeholder={activePreset.label}
-                              disabled={isPending || !isEligible}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs font-semibold mb-1 block">Description (Optional)</Label>
-                            <Input
-                              value={activeCustom.description || ''}
-                              onChange={(e) => updateTrustBadgeItem(selectedBadgeId, 'description', e.target.value)}
-                              placeholder="e.g. 100% money back guarantee"
-                              disabled={isPending || !isEligible}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Custom Icon Image Upload */}
-                        <div>
-                          <Label className="text-xs font-semibold mb-1 block">Custom Icon Image</Label>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                              {activeCustom.iconUrl ? (
-                                <img src={activeCustom.iconUrl} alt="Badge Icon" className="w-full h-full object-cover" />
-                              ) : (
-                                <activePreset.icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                              )}
-                            </div>
-                            <label
-                              htmlFor={`badge_icon_file_${selectedBadgeId}`}
-                              className={cn(
-                                "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors",
-                                (!isEligible || uploadingField !== null) && "opacity-50 pointer-events-none"
-                              )}
-                            >
-                              {uploadingField === `badge_${selectedBadgeId}` ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Upload className="w-3.5 h-3.5" />
-                              )}
-                              Upload Icon Image
-                            </label>
-                            <input
-                              id={`badge_icon_file_${selectedBadgeId}`}
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => handleBadgeIconUpload(e, selectedBadgeId)}
-                              className="hidden"
-                              disabled={!isEligible || uploadingField !== null}
-                            />
-                            {activeCustom.iconUrl && (
-                              <button
-                                type="button"
-                                onClick={() => updateTrustBadgeItem(selectedBadgeId, 'iconUrl', '')}
-                                className="text-xs text-red-500 font-bold hover:underline"
-                              >
-                                Reset to Default Icon
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })()}
                 </div>
               )}
             </Section>
@@ -3159,18 +3530,18 @@ export default function ShopSettingsForm({
         )}
 
         {/* ═══════════════ SAVE BAR ═══════════════ */}
-        <div className="sticky bottom-[-32px] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 -mx-6 px-6 py-4 flex items-center justify-between z-20 rounded-b-2xl shadow-lg">
-          <div className="text-xs text-slate-500 dark:text-slate-400">
+        <div className="fixed md:sticky bottom-16 md:bottom-[-32px] left-0 right-0 md:left-auto md:right-auto bg-white dark:bg-slate-900 border-t md:border border-slate-200 dark:border-slate-800 px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row items-center justify-between gap-2.5 md:gap-4 z-40 md:z-30 rounded-t-2xl md:rounded-2xl shadow-xl md:-mx-6">
+          <div className="text-xs text-slate-500 dark:text-slate-400 w-full md:w-auto text-center md:text-left">
             {formData.shop_slug && isEligible && (
-              <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1">
+              <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline inline-flex items-center gap-1.5 py-0.5">
                 <Eye className="w-3.5 h-3.5" /> Preview Store <ExternalLink className="w-3 h-3" />
               </a>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>Cancel</Button>
-            <Button type="submit" disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white dark:text-white shadow-sm">
-              {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <>Save Settings</>}
+          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+            <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending} className="flex-1 md:flex-none h-9 text-xs font-medium">Cancel</Button>
+            <Button type="submit" disabled={isPending} className="flex-1 md:flex-none h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white dark:text-white shadow-sm">
+              {isPending ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Saving...</> : <>Save Settings</>}
             </Button>
           </div>
         </div>
@@ -3182,7 +3553,7 @@ export default function ShopSettingsForm({
 // ─── Helper Components ──────────────────────────────────────
 function Section({ icon: Icon, title, children, pro }: { icon: any; title: string; children: React.ReactNode; pro?: boolean }) {
   return (
-    <div className={cn("bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative", pro && 'opacity-60 pointer-events-none select-none')}>
+    <div className={cn("bg-white dark:bg-slate-900 p-2 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative space-y-4", pro && 'opacity-60 pointer-events-none select-none')}>
       {pro && (
         <div className="absolute inset-0 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center">
           <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-950/30 mb-3"><Lock className="w-6 h-6 text-indigo-600 dark:text-indigo-400" /></div>
@@ -3190,8 +3561,13 @@ function Section({ icon: Icon, title, children, pro }: { icon: any; title: strin
           <Link href="/settings/subscription"><Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white"><Crown className="w-3.5 h-3.5 mr-1.5" /> Upgrade Now</Button></Link>
         </div>
       )}
-      <div className="flex items-center gap-2 mb-4"><Icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" /><h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{title}</h2></div>
-      {children}
+      <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
+        <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shrink-0">
+          <Icon className="h-4 w-4" />
+        </div>
+        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">{title}</h2>
+      </div>
+      <div>{children}</div>
     </div>
   )
 }
@@ -3199,7 +3575,7 @@ function Section({ icon: Icon, title, children, pro }: { icon: any; title: strin
 function ToggleRow({ label, description, checked, onChange, disabled }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <div className="flex items-center justify-between py-2">
-      <div><p className="text-sm font-medium text-slate-900 dark:text-slate-100">{label}</p><p className="text-xs text-slate-500 dark:text-slate-400">{description}</p></div>
+      <div><p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</p><p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">{description}</p></div>
       <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </div>
   )
@@ -3214,19 +3590,59 @@ function SocialInput({ icon: Icon, label, name, value, onChange, placeholder, di
   )
 }
  
-function ColorPicker({ label, name, value, onChange, onSet, presets }: { label: string; name: string; value: string; onChange: any; onSet: (v: string) => void; presets: string[] }) {
+function ColorPicker({ 
+  label, 
+  description, 
+  name, 
+  value, 
+  onChange, 
+  onSet, 
+  presets 
+}: { 
+  label: string; 
+  description?: string; 
+  name: string; 
+  value: string; 
+  onChange: any; 
+  onSet: (v: string) => void; 
+  presets: string[] 
+}) {
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="flex items-center gap-3">
-        <input type="color" name={name} value={value} onChange={onChange} className="w-10 h-10 rounded-lg border-2 border-slate-200 dark:border-slate-800 cursor-pointer p-0.5 bg-white dark:bg-slate-900" />
-        <Input value={value} onChange={onChange} name={name} className="w-28 uppercase font-mono" maxLength={7} />
+    <div className="space-y-2 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/40">
+      <div className="space-y-0.5">
+        <Label className="text-xs font-bold text-slate-900 dark:text-slate-100">{label}</Label>
+        {description && (
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">{description}</p>
+        )}
       </div>
-      <div className="flex gap-1.5">
+      <div className="flex items-center gap-2 pt-1">
+        <input 
+          type="color" 
+          name={name} 
+          value={value} 
+          onChange={onChange} 
+          className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer p-0.5 bg-white dark:bg-slate-900 shrink-0 shadow-xs" 
+        />
+        <Input 
+          value={value} 
+          onChange={onChange} 
+          name={name} 
+          className="w-24 uppercase font-mono text-xs h-8 px-2" 
+          maxLength={7} 
+        />
+      </div>
+      <div className="flex gap-1.5 pt-1">
         {presets.map(c => (
-          <button key={c} type="button" onClick={() => onSet(c)}
-            className={cn("w-6 h-6 rounded-md border-2 transition-all hover:scale-110", value === c ? 'border-slate-900 dark:border-slate-100 scale-110' : 'border-transparent')}
-            style={{ backgroundColor: c }} />
+          <button 
+            key={c} 
+            type="button" 
+            onClick={() => onSet(c)}
+            className={cn(
+              "w-5 h-5 rounded-md border transition-all hover:scale-110", 
+              value === c ? 'border-indigo-600 ring-2 ring-indigo-500/30 scale-110' : 'border-slate-200 dark:border-slate-700'
+            )}
+            style={{ backgroundColor: c }} 
+          />
         ))}
       </div>
     </div>

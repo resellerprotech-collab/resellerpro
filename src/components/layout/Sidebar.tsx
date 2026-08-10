@@ -91,14 +91,14 @@ export default function Sidebar({ user }: { user: UserData }) {
   return (
     <>
       {/* Menu button (top-left on mobile) */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-3.5 left-2.5 z-50">
         <Button
           variant="outline"
           size="icon"
           onClick={() => setMobileMenuOpen(true)}
-          className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+          className="h-9 w-9 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xs"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </Button>
       </div>
 
@@ -159,14 +159,14 @@ export default function Sidebar({ user }: { user: UserData }) {
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all',
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-xs sm:text-[13px] font-medium transition-all',
                   'hover:bg-accent',
                   isActive
-                    ? 'bg-primary text-white shadow-sm hover:bg-primary/90'
-                    : 'text-black dark:text-white'
+                    ? 'bg-primary text-white font-semibold shadow-sm hover:bg-primary/90'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 )}
               >
-                <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "text-black dark:text-white")} />
+                <item.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white" : "text-slate-500 dark:text-slate-400")} />
                 <span className="flex-1">{item.name}</span>
                 {badgeText && (
                   <span className={cn(

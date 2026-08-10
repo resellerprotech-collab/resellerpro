@@ -258,14 +258,20 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-8 text-center z-10 relative">
                 {theme.trustBadges.map((badgeId: string) => {
                   const bdg = trustBadgeIcons[badgeId]
-                  if (!bdg) return null
-                  const Icon = bdg.icon
+                  const custom = theme.trustBadgeItems?.[badgeId]
+                  const label = custom?.title || bdg?.label || badgeId
+                  const iconUrl = custom?.iconUrl
+                  const Icon = bdg?.icon || Shield
                   return (
                     <div key={badgeId} className="flex flex-col items-center gap-4 group cursor-default">
-                      <div className="w-16 h-16 rounded-3xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl" style={{ backgroundColor: `${primaryColor}15` }}>
-                        <Icon className="w-8 h-8" style={{ color: primaryColor }} />
+                      <div className="w-16 h-16 rounded-3xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-2 group-hover:scale-110 group-hover:shadow-xl overflow-hidden" style={{ backgroundColor: `${primaryColor}15` }}>
+                        {iconUrl ? (
+                          <img src={iconUrl} alt={label} className="w-full h-full object-cover" />
+                        ) : (
+                          <Icon className="w-8 h-8" style={{ color: primaryColor }} />
+                        )}
                       </div>
-                      <span className="text-sm font-bold text-slate-700">{bdg.label}</span>
+                      <span className="text-sm font-bold text-slate-700">{label}</span>
                     </div>
                   )
                 })}
