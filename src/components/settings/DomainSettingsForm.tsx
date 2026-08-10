@@ -155,37 +155,37 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
     <div className="space-y-6">
       
       {/* ── CARD 1: Standard Subdomain (₹0 Free Plan) ── */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl px-1 py-3 sm:p-6 border-0 sm:border border-slate-200/80 dark:border-slate-800 shadow-none sm:shadow-sm relative overflow-hidden">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shrink-0">
               <Globe className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">Standard Storefront URL</h3>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 tracking-wider">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">Standard Storefront URL</h3>
+                <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 tracking-wider shrink-0">
                   Included Free
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Every ResellerPro seller gets an automatic, instant storefront web address.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 bg-slate-50 dark:bg-slate-950/60 rounded-xl p-3.5 border border-slate-200/60 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="mt-4 bg-slate-50 dark:bg-slate-950/60 rounded-xl p-3 border border-slate-200/60 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 truncate">
-            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Live URL:</span>
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Live URL:</span>
             <a 
               href={storefrontUrl} 
               target="_blank" 
               rel="noreferrer"
-              className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline flex items-center gap-1.5 truncate"
+              className="text-xs sm:text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline flex items-center gap-1 truncate"
             >
               {storefrontUrl}
-              <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+              <ExternalLink className="w-3 h-3 flex-shrink-0" />
             </a>
           </div>
 
@@ -200,18 +200,15 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
       </div>
 
       {/* ── CARD 2: White-Label Custom Domain (₹999 Pro Plan) ── */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl px-1 py-3 sm:p-6 border-0 sm:border border-slate-200/80 dark:border-slate-800 shadow-none sm:shadow-sm relative overflow-hidden">
         
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/20">
-              <Sparkles className="w-5 h-5" />
-            </div>
+          <div className="flex items-start sm:items-center gap-3">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">White-Label Custom Domain</h3>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 tracking-wider">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 tracking-wider shrink-0">
                   ₹999 Pro Plan
                 </span>
               </div>
@@ -350,8 +347,8 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
           <form onSubmit={handleAddDomain} className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Enter Your Custom Domain Name</label>
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2">
+                <div className="relative flex-1 w-full">
                   <input
                     type="text"
                     value={inputDomain}
@@ -364,7 +361,7 @@ export function DomainSettingsForm({ shopSlug, isProUser = true }: Props) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-xs hover:opacity-95 transition-all shadow-md shadow-orange-500/20 flex items-center gap-2 disabled:opacity-50 flex-shrink-0"
+                  className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-xs hover:opacity-95 transition-all shadow-md shadow-orange-500/20 flex items-center gap-2 disabled:opacity-50 shrink-0"
                 >
                   {submitting ? 'Connecting...' : 'Connect Domain'}
                   <ArrowRight className="w-4 h-4" />

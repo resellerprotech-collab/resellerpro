@@ -17,7 +17,7 @@ import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
 import { useToast } from '@/hooks/use-toast'
-import type { Product, Profile, ShopTheme } from '@/types'
+import type { Product, Profile, ShopTheme, HeroBannerItem } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
@@ -77,11 +77,33 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
   const shopSlug = profile.shop_slug!
   const primaryColor = theme?.primaryColor || '#6366f1'
 
-  // Auto-slide state for Product Showcase Hero images
-  const heroImages: string[] = theme?.heroImages && theme.heroImages.length > 0
-    ? theme.heroImages
-    : theme?.heroImageUrl ? [theme.heroImageUrl] : []
+  // Dedicated Showcase Banners state
+  const heroShowcaseBanners: HeroBannerItem[] = useMemo(() => {
+    if (theme?.heroShowcaseBanners && Array.isArray(theme.heroShowcaseBanners) && theme.heroShowcaseBanners.length > 0) {
+      return theme.heroShowcaseBanners
+    }
+    const images = theme?.heroImages || (theme?.heroImageUrl ? [theme.heroImageUrl] : [])
+    return images.map((img: string) => ({
+      imageUrl: img,
+      link: theme?.heroCtaLink || '#products',
+      clickAction: 'shop'
+    }))
+  }, [theme?.heroShowcaseBanners, theme?.heroImages, theme?.heroImageUrl, theme?.heroCtaLink])
   const [heroImageIndex, setHeroImageIndex] = useState(0)
+
+  // Dedicated Mobile Banners state
+  const mobileBanners: HeroBannerItem[] = useMemo(() => {
+    if (theme?.heroMobileBanners && Array.isArray(theme.heroMobileBanners) && theme.heroMobileBanners.length > 0) {
+      return theme.heroMobileBanners
+    }
+    const images = theme?.heroMobileImages || (theme?.heroMobileImageUrl ? [theme.heroMobileImageUrl] : [])
+    return images.map((img: string) => ({
+      imageUrl: img,
+      link: theme?.heroMobileCtaLink || theme?.heroCtaLink || '#products',
+      clickAction: theme?.heroMobileClickAction || 'shop'
+    }))
+  }, [theme?.heroMobileBanners, theme?.heroMobileImages, theme?.heroMobileImageUrl, theme?.heroMobileCtaLink, theme?.heroCtaLink, theme?.heroMobileClickAction])
+  const [mobileBannerIndex, setMobileBannerIndex] = useState(0)
 
   // Multi-banner promo carousel state
   const heroBanners = useMemo(() => {
@@ -98,6 +120,15 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
     return []
   }, [theme?.heroBanners, theme?.heroImageUrl, theme?.heroCtaLink, theme?.heroBannerClickAction, shopSlug])
 
+  const getBannerHref = (link?: string) => {
+    if (!link || link === 'shop' || link === '#products') return `/store/${shopSlug}/shop`;
+    if (link === 'collections' || link === '#collections') return `/store/${shopSlug}/shop#collections`;
+    if (link.startsWith('?category=')) return `/store/${shopSlug}/shop${link}`;
+    if (link.startsWith('p/')) return `/store/${shopSlug}/product/${link.replace('p/', '')}`;
+    if (link.startsWith('http://') || link.startsWith('https://')) return link;
+    return link.startsWith('/') ? link : `/store/${shopSlug}/${link}`;
+  };
+
   const [promoBannerIndex, setPromoBannerIndex] = useState(0)
 
   // Set shop context in cart
@@ -108,12 +139,12 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
 
   // Auto-slide product showcase images every 3 seconds
   useEffect(() => {
-    if (heroImages.length <= 1) return
+    if (heroShowcaseBanners.length <= 1) return
     const interval = setInterval(() => {
-      setHeroImageIndex(i => (i + 1) % heroImages.length)
+      setHeroImageIndex(i => (i + 1) % heroShowcaseBanners.length)
     }, 3000)
     return () => clearInterval(interval)
-  }, [heroImages.length])
+  }, [heroShowcaseBanners.length])
 
   // Auto-slide promotional banners every 4 seconds
   useEffect(() => {
@@ -123,6 +154,15 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
     }, 4000)
     return () => clearInterval(interval)
   }, [heroBanners.length])
+
+  // Auto-slide mobile banners every 4 seconds
+  useEffect(() => {
+    if (mobileBanners.length <= 1) return
+    const interval = setInterval(() => {
+      setMobileBannerIndex(i => (i + 1) % mobileBanners.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [mobileBanners.length])
 
   // Products and categories to render
   const displayProducts = products
@@ -229,164 +269,218 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         onSearch={setSearchQuery}
         activePage="home"
       />
-
       {/* 1. Dynamic Hero Section */}
       {theme?.heroEnabled !== false && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          {(!theme?.heroTemplate || theme.heroTemplate === 'split') ? (
-            /* Template 1: Luxury Split Design */
-            <div className="relative rounded-2xl overflow-hidden text-white min-h-[440px] md:min-h-[500px] flex items-center shadow-2xl" style={{ backgroundColor: theme?.heroBgColor || 'var(--store-neutral-dark)' }}>
-              {/* Visual gradient backdrop */}
-              <div className="absolute inset-0 bg-black/20 z-0" />
-              <div className="absolute top-0 right-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_#ffffff_1px,_transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-6 py-10 md:px-14 w-full">
-                {/* Left Column: Headings & CTA */}
-                <div className="space-y-5 text-left max-w-xl">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/10 text-slate-200 border border-white/10">
-                    {theme?.heroBadge || 'New Arrival'}
-                  </span>
-                  <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-[1.1] text-white whitespace-pre-line">
-                    {theme?.heroTitle || 'Premium Quality.\nTimeless Style.'}
-                  </h1>
-                  <p className="text-xs md:text-sm text-slate-400 font-semibold leading-relaxed max-w-md">
-                    {theme?.heroSubtitle || 'Discover our curated collection of luxury products crafted for your lifestyle.'}
-                  </p>
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <Link
-                      href={`/store/${shopSlug}/shop`}
-                      className="px-7 py-3.5 hover:opacity-90 text-white font-black text-xs sm:text-sm transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 12px)' }}
-                    >
-                      {theme?.heroCtaText || 'Explore Shop'}
-                    </Link>
-                    <Link
-                      href={`/store/${shopSlug}/about`}
-                      className="px-7 py-3.5 border border-white/20 hover:border-white/40 text-white font-black text-xs sm:text-sm transition-all hover:bg-white/5 active:scale-[0.98]"
-                      style={{ borderRadius: 'var(--store-btn-radius, 12px)' }}
-                    >
-                      {theme?.heroSecondaryCtaText || 'About Our Brand'}
-                    </Link>
-                  </div>
-
-                  {/* Micro trust icons */}
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-5 border-t border-white/10 text-slate-400 text-[11px] font-bold">
-                    <div className="flex items-center gap-1.5">
-                      <Truck className="w-3.5 h-3.5 text-slate-300" />
-                      <span>{theme?.heroBadge1 || 'Free Shipping'}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
-                      <span>{theme?.heroBadge2 || '7-Day Easy Returns'}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-slate-300" />
-                      <span>{theme?.heroBadge3 || 'COD Available'}</span>
-                    </div>
-                  </div>
+          {/* Dedicated Mobile Banner Carousel (Shown ONLY on mobile view when mobileBanners exist) */}
+          {mobileBanners.length > 0 && (
+            <div className="lg:hidden relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[16/9] sm:aspect-[2.2/1] min-h-[180px] sm:min-h-[240px] group bg-slate-900">
+              {mobileBanners.map((banner, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-opacity duration-700 ${idx === mobileBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                >
+                  <Image
+                    src={banner.imageUrl}
+                    alt={`Mobile Store Banner ${idx + 1}`}
+                    fill
+                    className="object-cover object-center"
+                    priority={idx === 0}
+                  />
+                  <Link
+                    href={getBannerHref(banner.link)}
+                    className="absolute inset-0 z-20 hover:bg-black/5 transition-colors"
+                    aria-label={`Mobile Hero Banner ${idx + 1} Link`}
+                  />
                 </div>
+              ))}
 
-                {/* Right Column: Premium Showcase Image Frame */}
-                <div className="relative w-full h-[300px] md:h-[380px] flex items-center justify-center lg:justify-end">
-                  <div className="relative w-[220px] h-[220px] sm:w-[260px] sm:h-[320px] md:w-[320px] md:h-[360px] rounded-3xl overflow-hidden border border-white/15 bg-white/5 backdrop-blur-md shadow-2xl p-4 flex items-center justify-center transition-all duration-500 hover:scale-[1.02] group">
-                    {heroImages.length > 0 ? (
-                      <>
-                        {heroImages.map((imgUrl, idx) => (
-                          <Image
-                            key={idx}
-                            src={imgUrl}
-                            alt={`Product showcase ${idx + 1}`}
-                            fill
-                            className={`object-contain p-3 transition-opacity duration-700 ${idx === heroImageIndex ? 'opacity-100' : 'opacity-0'}`}
-                            priority={idx === 0}
-                          />
-                        ))}
-                        {heroImages.length > 1 && (
-                          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
-                            {heroImages.map((_, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => setHeroImageIndex(idx)}
-                                className={`h-1.5 rounded-full transition-all ${idx === heroImageIndex ? 'bg-white w-5' : 'bg-white/40 w-1.5'}`}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <Image
-                        src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&auto=format&fit=crop"
-                        alt={theme?.heroTitle || 'Premium Smartwatch Mockup'}
-                        fill
-                        className="object-contain p-3"
-                        priority
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Template 2: Promotion Banner Carousel */
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[260px] sm:min-h-[340px] md:min-h-[400px] group" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
-              {heroBanners.length > 0 ? (
-                <>
-                  {heroBanners.map((banner, idx) => (
-                    <div
+              {mobileBanners.length > 1 && (
+                <div className="absolute bottom-3 left-0 right-0 z-30 flex justify-center gap-1.5 pointer-events-none">
+                  {mobileBanners.map((_, idx) => (
+                    <button
                       key={idx}
-                      className={`absolute inset-0 transition-opacity duration-700 ${idx === promoBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
-                    >
-                      <Image
-                        src={banner.imageUrl}
-                        alt={`Promotional Banner ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                        priority={idx === 0}
-                      />
-                      <Link
-                        href={`/store/${shopSlug}/shop`}
-                        className="absolute inset-0 z-20 hover:bg-black/5 transition-colors"
-                        aria-label={`Go to banner ${idx + 1} destination`}
-                      />
-                    </div>
+                      type="button"
+                      onClick={() => setMobileBannerIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all pointer-events-auto ${idx === mobileBannerIndex ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`}
+                    />
                   ))}
-
-                  {heroBanners.length > 1 && (
-                    <>
-                      <button
-                        onClick={() => setPromoBannerIndex(i => (i === 0 ? heroBanners.length - 1 : i - 1))}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                        aria-label="Previous Banner"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setPromoBannerIndex(i => (i + 1) % heroBanners.length)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                        aria-label="Next Banner"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-
-                      <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center gap-2">
-                        {heroBanners.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setPromoBannerIndex(idx)}
-                            className={`h-2 rounded-full transition-all ${idx === promoBannerIndex ? 'bg-white w-6' : 'bg-white/50 w-2'}`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
-                  <p className="text-white/70 text-sm font-bold">Upload promotional banners in Store Settings</p>
                 </div>
               )}
             </div>
           )}
+
+          {/* Main Hero Container (Hidden on mobile if dedicated mobile banners exist) */}
+          <div className={mobileBanners.length > 0 ? "hidden lg:block" : "block"}>
+            {(!theme?.heroTemplate || theme.heroTemplate === 'split') ? (
+              /* Template 1: Luxury Split Design */
+              <div className="relative rounded-2xl overflow-hidden text-white min-h-[440px] md:min-h-[500px] flex items-center shadow-2xl" style={{ backgroundColor: theme?.heroBgColor || 'var(--store-neutral-dark)' }}>
+                {/* Visual gradient backdrop */}
+                <div className="absolute inset-0 bg-black/20 z-0" />
+                <div className="absolute top-0 right-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_#ffffff_1px,_transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-6 py-8 sm:py-10 md:px-14 w-full">
+                  {/* Left Column: Headings & CTA */}
+                  <div className="space-y-4 sm:space-y-5 text-left max-w-xl">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/20 text-white border border-white/20 backdrop-blur-sm">
+                      {theme?.heroBadge || 'New Arrival'}
+                    </span>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1] text-white whitespace-pre-line">
+                      {theme?.heroTitle || 'Premium Quality.\nTimeless Style.'}
+                    </h1>
+                    <p className="text-xs md:text-sm text-white/80 font-semibold leading-relaxed max-w-md">
+                      {theme?.heroSubtitle || 'Discover our curated collection of luxury products crafted for your lifestyle.'}
+                    </p>
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <Link
+                        href={`/store/${shopSlug}/shop`}
+                        className="px-6 sm:px-7 py-3 sm:py-3.5 hover:opacity-90 text-white font-bold sm:font-black text-xs sm:text-sm transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] rounded-full"
+                        style={{ backgroundColor: 'var(--store-primary, #4f46e5)' }}
+                      >
+                        {theme?.heroCtaText || 'Shop Now'}
+                      </Link>
+                    </div>
+
+                    {/* Micro trust icons */}
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-4 sm:pt-5 border-t border-white/15 text-white/90 text-[11px] font-bold">
+                      <div className="flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5 text-white/90" />
+                        <span>{theme?.heroBadge1 || 'Free Shipping'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <RotateCcw className="w-3.5 h-3.5 text-white/90" />
+                        <span>{theme?.heroBadge2 || 'Easy Returns'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-white/90" />
+                        <span>{theme?.heroBadge3 || 'COD Available'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Premium Showcase Image Frame */}
+                  <div className="relative w-full h-[260px] sm:h-[300px] md:h-[380px] flex items-center justify-center lg:justify-end">
+                    <div className="relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[480px] h-[220px] sm:h-[280px] md:h-[340px] rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:scale-[1.02] group">
+                      {heroShowcaseBanners.length > 0 ? (
+                        <>
+                          {heroShowcaseBanners.map((banner, idx) => (
+                            <div
+                              key={idx}
+                              className={`absolute inset-0 transition-opacity duration-700 ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                            >
+                              <Image
+                                src={banner.imageUrl}
+                                alt={`Product showcase ${idx + 1}`}
+                                fill
+                                className="object-cover"
+                                priority={idx === 0}
+                              />
+                              <Link
+                                href={getBannerHref(banner.link)}
+                                className="absolute inset-0 z-20 hover:bg-black/5 transition-colors cursor-pointer"
+                                aria-label={`Product Showcase ${idx + 1} Link`}
+                              />
+                            </div>
+                          ))}
+                          {heroShowcaseBanners.length > 1 && (
+                            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-30">
+                              {heroShowcaseBanners.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setHeroImageIndex(idx);
+                                  }}
+                                  className={`h-1.5 rounded-full transition-all ${idx === heroImageIndex ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Image
+                            src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&auto=format&fit=crop"
+                            alt={theme?.heroTitle || 'Premium Product'}
+                            fill
+                            className="object-cover"
+                            priority
+                          />
+                          <Link
+                            href={getBannerHref(theme?.heroCtaLink)}
+                            className="absolute inset-0 z-10 hover:bg-black/5 transition-colors cursor-pointer"
+                            aria-label="Product Showcase Link"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Template 2: Promotion Banner Carousel */
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl min-h-[260px] sm:min-h-[340px] md:min-h-[400px] group" style={{ backgroundColor: 'var(--store-neutral-dark)' }}>
+                {heroBanners.length > 0 ? (
+                  <>
+                    {heroBanners.map((banner, idx) => (
+                      <div
+                        key={idx}
+                        className={`absolute inset-0 transition-opacity duration-700 ${idx === promoBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                      >
+                        <Image
+                          src={banner.imageUrl}
+                          alt={`Promotional Banner ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                          priority={idx === 0}
+                        />
+                        <Link
+                          href={getBannerHref(banner.link)}
+                          className="absolute inset-0 z-20 hover:bg-black/5 transition-colors"
+                          aria-label={`Go to banner ${idx + 1} destination`}
+                        />
+                      </div>
+                    ))}
+
+                    {heroBanners.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setPromoBannerIndex(i => (i === 0 ? heroBanners.length - 1 : i - 1))}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                          aria-label="Previous Banner"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setPromoBannerIndex(i => (i + 1) % heroBanners.length)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                          aria-label="Next Banner"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+
+                        <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center gap-2">
+                          {heroBanners.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setPromoBannerIndex(idx)}
+                              className={`h-2 rounded-full transition-all ${idx === promoBannerIndex ? 'bg-white w-6' : 'bg-white/50 w-2'}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
+                    <p className="text-white/70 text-sm font-bold">Upload promotional banners in Store Settings</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </section>
       )}
 

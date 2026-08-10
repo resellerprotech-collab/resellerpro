@@ -124,24 +124,24 @@ export default function CustomWebsiteRequestCard({
     })
 
     return (
-      <Card className="border shadow-sm bg-muted/20">
-        <CardContent className="p-4 flex items-center justify-between">
+      <Card className="border-0 sm:border shadow-none sm:shadow-sm bg-muted/20">
+        <CardContent className="p-4 flex items-center justify-between border shadow-sm rounded-2xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-sm">Custom Website Request</span>
                 <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 text-[10px] capitalize">
                   {requestState.status === 'pending' ? 'Pending Review' : requestState.status}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+              <div className="text-xs text-muted-foreground mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                 <span>Requested: <strong className="text-foreground">{formattedDate}</strong></span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span className="flex items-center gap-1"><PhoneCall className="h-3 w-3" /> Ekodrix team will contact you</span>
-              </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -155,21 +155,20 @@ export default function CustomWebsiteRequestCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-600" />
-            <CardTitle className="text-lg font-bold">Custom Website</CardTitle>
+            <CardTitle className="text-sm sm:text-base font-bold">Custom Website</CardTitle>
           </div>
-          <Badge variant="secondary" className="text-xs font-medium">Ekodrix Headless</Badge>
+          <Badge variant="secondary" className="text-[10px] font-medium">Ekodrix Headless</Badge>
         </div>
-        <CardDescription className="mt-1">
+        <CardDescription className="mt-1 text-xs">
           Need a unique website for your brand? Our team will build a professionally designed custom website powered by ResellerPro.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium flex items-center gap-2 shadow-sm">
+            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium flex items-center gap-1.5 shadow-sm">
               Request Custom Website
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
 

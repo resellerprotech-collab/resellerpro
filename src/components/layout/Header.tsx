@@ -30,41 +30,25 @@ export default function Header() {
   const { isOnline } = useOfflineQueue() // ✅ Initialize hook globally
 
   return (
-    <header className="flex flex-wrap items-center justify-between px-4 border-b">
-      {/* Buttons Section (Top on mobile, Right on desktop) */}
-      <div className="order-1 sm:order-2 flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-end py-2 sm:py-0">
-        {/* Offline Indicator */}
+    <header className="flex items-center justify-between pl-12 pr-2.5 lg:px-4 h-16 border-b gap-1.5 sm:gap-3 min-w-0">
+      {/* Left Side: Offline Indicator */}
+      <div className="hidden sm:flex items-center gap-2">
         {!isOnline && (
-          <Badge variant="destructive" className="items-center gap-1 hidden sm:flex">
+          <Badge variant="destructive" className="items-center gap-1 flex">
             <WifiOff className="h-3 w-3" />
             <span className="text-xs">Offline</span>
           </Badge>
         )}
-
-        {/* Theme Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-        <ThemeToggleToast />
-
-        {/* Notifications */}
-        <NotificationDrawer />
       </div>
 
-      {/* Search Section (Bottom on mobile, Left on desktop) */}
-      <div className="order-2 sm:order-1 flex h-16 w-full sm:w-[50%] items-center gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Right Side: Search, Quick Add, Theme Toggle, Notifications */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 justify-end flex-1 min-w-0 max-w-3xl">
         <GlobalSearch />
 
         {/* Quick Add */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" className="gap-2 h-10">
+            <Button size="sm" className="gap-1.5 h-9 px-2.5 sm:px-3 text-xs shrink-0">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Quick Add</span>
             </Button>
@@ -94,6 +78,24 @@ export default function Header() {
             </RequireVerification>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="h-9 w-9 shrink-0 flex items-center justify-center"
+        >
+          <Sun className="h-4 w-4 sm:h-5 sm:w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-4 w-4 sm:h-5 sm:w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+        <ThemeToggleToast />
+
+        {/* Notifications */}
+        <div className="shrink-0 flex items-center">
+          <NotificationDrawer />
+        </div>
       </div>
       <LimitReachedModal {...limitModalProps} />
     </header>

@@ -6,7 +6,7 @@ import { IosSpinner } from '@/components/ui/ios-spinner'
  */
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex flex-1 items-center justify-center min-h-[calc(100vh-10rem)] w-full bg-background">
       <IosSpinner size="xl" className="text-blue-600 dark:text-blue-400" />
     </div>
   )
