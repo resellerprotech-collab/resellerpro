@@ -90,20 +90,26 @@ export default async function MyStorePage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
-  // Get active products for banner click actions
+  // Get categories from managed categories table
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('name')
+    .eq('user_id', user.id)
+
+  // Get products for banner click actions
   const { data: dbProducts } = await supabase
     .from('products')
     .select('id, name, category')
     .eq('user_id', user.id)
-    .eq('is_active', true)
 
   const activeProducts = dbProducts || []
+  const categoryNamesFromDb = (dbCategories || []).map((c: { name: string }) => c.name).filter(Boolean)
+  const categoryNamesFromProducts = activeProducts
+    .map((p: { category: string | null }) => p.category)
+    .filter((c: string | null): c is string => typeof c === 'string' && c.trim().length > 0)
+
   const distinctCategories: string[] = Array.from(
-    new Set(
-      activeProducts
-        .map((p: { category: string | null }) => p.category)
-        .filter((c: string | null): c is string => typeof c === 'string' && c.trim().length > 0)
-    )
+    new Set([...categoryNamesFromDb, ...categoryNamesFromProducts])
   )
 
   // Get custom website request status if existing
@@ -116,10 +122,10 @@ export default async function MyStorePage() {
     .maybeSingle()
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto py-6">
+    <div className="space-y-6 py-4 text-xs sm:text-sm">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Store Setup &amp; Domain Settings</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Store Setup &amp; Domain Settings</h1>
+        <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 mt-1">
           Configure your store web address, custom domains, branding appearance, color themes, and social checkout preferences.
         </p>
       </div>
@@ -157,12 +163,12 @@ export default async function MyStorePage() {
       )}
 
       {/* Domain Management Panel (Subdomain + Custom Domain) */}
-      <div className="border rounded-2xl pt-6 px-6 pb-6 bg-card">
+      <div className="border rounded-2xl px-2 py-2 md:pt-6 md:px-6 md:pb-6 bg-card">
         <DomainSettingsForm shopSlug={profile.shop_slug || ''} isProUser={isEligible} />
       </div>
 
       {/* Main Store Customizer */}
-      <div className="border rounded-2xl p-6 bg-card shadow-sm">
+      <div className="md:border rounded-2xl md:pt-6 md:px-6 bg-card shadow-sm">
         <ShopSettingsForm
           profile={profile}
           isEligible={isEligible}

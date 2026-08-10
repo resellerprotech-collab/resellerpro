@@ -115,20 +115,20 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="space-y-6 p-10 pb-16 block">
+    <div className="space-y-6 pb-16 block">
       <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Settings</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Manage your account settings, domain web address, wallet payouts, and preferences.
         </p>
       </div>
-      <Separator className="my-6" />
+      <Separator className="my-5" />
 
       {/* Horizontal Nav Bar */}
-      <div className="relative border-b pb-4">
+      <div className="relative border-b pb-3">
         <div 
           ref={scrollContainerRef}
-          className="flex space-x-2 overflow-x-auto no-scrollbar scroll-smooth py-1"
+          className="flex space-x-1.5 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth py-1"
         >
           {settingsNavItems.map((item) => {
             const Icon = item.icon
@@ -139,37 +139,18 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all flex-shrink-0",
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex-shrink-0",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 )}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 {item.title}
               </Link>
             )
           })}
         </div>
-
-        {/* Scroll Page Indicators */}
-        {totalPages > 1 && (
-          <div className="flex justify-center space-x-1 mt-3">
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => scrollToPage(index)}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-200",
-                  activePage === index
-                    ? "bg-primary w-4"
-                    : "bg-slate-200 hover:bg-slate-300"
-                )}
-                aria-label={`Go to tab page ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="mt-6">{children}</div>

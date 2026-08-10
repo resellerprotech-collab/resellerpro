@@ -57,6 +57,8 @@ export interface ShopTheme {
   heroBgColor?: string
   heroPattern?: 'none' | 'dots' | 'waves' | 'gradient'
   heroImageUrl?: string
+  heroMobileImageUrl?: string
+  heroMobileImages?: string[]
   heroBackgroundImage?: string
   heroTemplate?: 'split' | 'banner'
   heroBadge?: string
@@ -68,6 +70,10 @@ export interface ShopTheme {
   heroImages?: string[]
   heroBanners?: HeroBannerItem[]
   heroBannerClickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
+  heroMobileCtaLink?: string
+  heroMobileClickAction?: 'shop' | 'collections' | 'category' | 'product' | 'custom_url'
+  heroMobileBanners?: HeroBannerItem[]
+  heroShowcaseBanners?: HeroBannerItem[]
 
   // Promotional Section
   promoSectionEnabled?: boolean

@@ -70,8 +70,8 @@ export default async function DashboardPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Dashboard</h1>
-        <p className="text-muted-foreground text-[13px] sm:text-[15px]">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1">Dashboard</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Welcome back! Here's what's happening with your business today.
         </p>
       </div>
@@ -235,17 +235,17 @@ function StatsCard({
 
   return (
     <Card className="overflow-hidden border border-border shadow-none hover:shadow-sm transition-all duration-200">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-[13px] font-medium text-muted-foreground tracking-tight">{title}</CardTitle>
-        <div className={`p-2 rounded-lg ${iconBg}`}>
-          <Icon className="h-4 w-4" />
+      <CardHeader className="flex flex-row items-center justify-between pb-1.5 space-y-0">
+        <CardTitle className="text-xs font-semibold text-muted-foreground tracking-tight">{title}</CardTitle>
+        <div className={`p-1.5 rounded-lg ${iconBg}`}>
+          <Icon className="h-3.5 w-3.5" />
         </div>
       </CardHeader>
       <CardContent>
-        <div className={`text-2xl font-bold tracking-tight ${type === 'profit' && value > 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-foreground'}`}>
+        <div className={`text-xl sm:text-2xl font-bold tracking-tight ${type === 'profit' && value > 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-foreground'}`}>
           {formattedValue}
         </div>
-        <div className="flex items-center gap-1.5 mt-1">
+        <div className="flex items-center gap-1.5 mt-0.5">
           {!isNeutral && (
             isPositive ? (
               <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />

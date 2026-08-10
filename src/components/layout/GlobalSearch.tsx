@@ -83,17 +83,15 @@ export function GlobalSearch() {
         results.products.length > 0
 
     return (
-        <div className="relative w-full max-w-md" ref={containerRef}>
+        <div className="relative flex-1 min-w-0 max-w-md" ref={containerRef}>
             <div
                 className="relative group cursor-text"
                 onClick={() => setOpen(true)}
             >
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors" />
-                <div className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm text-muted-foreground ring-offset-background group-hover:border-accent transition-colors items-center truncate">
-                    <span className="truncate">Search orders, customers...</span>
-                    <kbd className="pointer-events-none absolute right-3 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                        <span className="text-xs">⌘</span>K
-                    </kbd>
+                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <div className="flex h-9 sm:h-10 w-full rounded-lg border border-input bg-background pl-8 sm:pl-10 pr-2 sm:pr-4 text-xs sm:text-sm text-muted-foreground ring-offset-background group-hover:border-accent transition-colors items-center truncate">
+                    <span className="truncate hidden sm:inline">Search orders, customers...</span>
+                    <span className="truncate sm:hidden">Search...</span>
                 </div>
             </div>
 
