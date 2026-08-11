@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ShoppingBag, Minus, Plus, Trash2, ArrowRight } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getSubtotal, getItemCount } = useCartStore()
@@ -14,9 +15,48 @@ export function CartDrawer() {
   const shopSlug = params?.shopSlug as string
   const overlayRef = useRef<HTMLDivElement>(null)
 
+  const [shippingConfig, setShippingConfig] = useState<{
+    shippingType: 'free' | 'above_amount' | 'flat'
+    freeShippingThreshold: number
+    flatShippingFee: number
+  }>({
+    shippingType: 'above_amount',
+    freeShippingThreshold: 500,
+    flatShippingFee: 49,
+  })
+
+  useEffect(() => {
+    if (!shopSlug) return
+    const supabase = createClient()
+    supabase
+      .from('profiles')
+      .select('shop_theme')
+      .eq('shop_slug', shopSlug)
+      .single()
+      .then(({ data }) => {
+        if (data?.shop_theme) {
+          const theme = data.shop_theme as any
+          setShippingConfig({
+            shippingType: theme.shippingType || 'above_amount',
+            freeShippingThreshold: theme.freeShippingThreshold ?? 500,
+            flatShippingFee: theme.flatShippingFee ?? 49,
+          })
+        }
+      })
+  }, [shopSlug])
+
   const subtotal = getSubtotal()
   const itemCount = getItemCount()
-  const shippingFee = subtotal >= 500 ? 0 : 49
+
+  let shippingFee = 0
+  if (shippingConfig.shippingType === 'free') {
+    shippingFee = 0
+  } else if (shippingConfig.shippingType === 'flat') {
+    shippingFee = shippingConfig.flatShippingFee
+  } else {
+    shippingFee = subtotal >= shippingConfig.freeShippingThreshold ? 0 : shippingConfig.flatShippingFee
+  }
+
   const total = subtotal + shippingFee
 
   // Prevent body scroll when open
@@ -45,7 +85,7 @@ export function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
             onClick={closeCart}
           />
 
@@ -55,7 +95,7 @@ export function CartDrawer() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:max-h-full border-l border-slate-200"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-white text-slate-900 shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:max-h-full border-l border-slate-200"
           >
             {/* Handle bar (mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
@@ -191,9 +231,9 @@ export function CartDrawer() {
                     {shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}
                   </span>
                 </div>
-                {shippingFee > 0 && (
+                {shippingConfig.shippingType === 'above_amount' && shippingFee > 0 && (
                   <p className="text-xs text-slate-400 font-medium">
-                    Add ₹{(500 - subtotal).toLocaleString('en-IN')} more for free shipping
+                    Add ₹{(shippingConfig.freeShippingThreshold - subtotal).toLocaleString('en-IN')} more for free shipping
                   </p>
                 )}
                 <div className="flex justify-between font-bold text-base pt-2.5 border-t border-slate-100 text-slate-900">
@@ -202,8 +242,8 @@ export function CartDrawer() {
                 </div>
                 <button
                   onClick={handleCheckout}
-                  className="w-full h-12 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-md"
-                  style={{ backgroundColor: 'var(--store-primary, #6366f1)' }}
+                  className="w-full h-12 text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-md"
+                  style={{ backgroundColor: 'var(--store-primary, #6366f1)', borderRadius: 'var(--store-btn-radius, 12px)' }}
                 >
                   Proceed to Checkout
                   <ArrowRight className="w-5 h-5" />

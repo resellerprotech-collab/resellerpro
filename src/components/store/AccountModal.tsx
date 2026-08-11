@@ -157,7 +157,7 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -167,7 +167,7 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:rounded-l-3xl lg:max-h-full border-l border-slate-200"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:max-h-full border-l border-slate-200"
           >
             {/* Handle Bar (Mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
@@ -307,8 +307,8 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
                         </div>
                         <button
                           type="submit"
-                          className="px-4 h-10 rounded-xl text-white font-bold text-xs shadow-sm shrink-0 hover:opacity-90"
-                          style={{ backgroundColor: primaryColor }}
+                          className="px-4 h-10 text-white font-bold text-xs shadow-sm shrink-0 hover:opacity-90"
+                          style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                         >
                           Track
                         </button>
@@ -409,8 +409,8 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
 
                   <button
                     type="submit"
-                    className="w-full h-12 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
-                    style={{ backgroundColor: primaryColor }}
+                    className="w-full h-12 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                   >
                     <span>Sign In</span>
                     <ArrowRight className="w-4 h-4" />
@@ -492,8 +492,8 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
 
                   <button
                     type="submit"
-                    className="w-full h-11 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 mt-2"
-                    style={{ backgroundColor: primaryColor }}
+                    className="w-full h-11 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 mt-2"
+                    style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                   >
                     <span>Create Account</span>
                     <ArrowRight className="w-4 h-4" />
@@ -561,8 +561,8 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
 
                       <button
                         type="submit"
-                        className="w-full h-11 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
-                        style={{ backgroundColor: primaryColor }}
+                        className="w-full h-11 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                       >
                         <span>Send Reset Link</span>
                         <ArrowRight className="w-4 h-4" />

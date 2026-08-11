@@ -138,19 +138,7 @@ export class MailService {
         }, { type: 'enquiry_alert', count })
     }
 
-    static async sendOrderStatus(
-        email: string,
-        customerName: string,
-        orderId: string,
-        status: string,
-        isUpdate = false
-    ) {
-        const template = templates.orderStatus(customerName, orderId, status, isUpdate)
-        return this.send({
-            to: email,
-            ...template
-        }, { type: 'order_status', orderId, status })
-    }
+
 
     static async sendOrderAlert(email: string, userName: string, count: number) {
         const template = templates.orderAlert(userName, count)
@@ -158,5 +146,13 @@ export class MailService {
             to: email,
             ...template
         }, { type: 'order_alert', count })
+    }
+
+    static async sendInstantNewOrderResellerAlert(email: string, data: any) {
+        const template = templates.newOrderResellerAlert(data)
+        return this.send({
+            to: email,
+            ...template
+        }, { type: 'instant_reseller_order_alert', orderId: data.orderId })
     }
 }

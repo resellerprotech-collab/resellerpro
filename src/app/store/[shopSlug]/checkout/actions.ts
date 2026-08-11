@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { ShopTheme } from '@/types'
 
 interface PlaceOrderInput {
   storeUserId: string
@@ -16,7 +17,7 @@ interface PlaceOrderInput {
     state: string
     pincode: string
   }
-  paymentMethod: 'cod' | 'upi'
+  paymentMethod: 'cod' | 'upi' | 'whatsapp' | 'razorpay' | 'card'
   orderNotes?: string | null
   items: {
     productId: string
@@ -67,7 +68,27 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: 'Pricing mismatch detected. Please refresh your page and try again.' }
   }
 
-  const serverShippingFee = serverSubtotal >= 500 ? 0 : 49
+  // Fetch store theme to validate shipping policy
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('shop_theme')
+    .eq('id', input.storeUserId)
+    .single()
+
+  const shopTheme = (profileData?.shop_theme || {}) as ShopTheme
+  const shippingType = shopTheme.shippingType || 'above_amount'
+  const freeThreshold = shopTheme.freeShippingThreshold ?? 500
+  const flatFee = shopTheme.flatShippingFee ?? 49
+
+  let serverShippingFee = 0
+  if (shippingType === 'free') {
+    serverShippingFee = 0
+  } else if (shippingType === 'flat') {
+    serverShippingFee = flatFee
+  } else {
+    serverShippingFee = serverSubtotal >= freeThreshold ? 0 : flatFee
+  }
+
   if (serverShippingFee !== input.shippingFee) {
     return { error: 'Shipping fee mismatch detected. Please try again.' }
   }
@@ -148,39 +169,44 @@ export async function placeOrder(input: PlaceOrderInput) {
   }
 
   // 3. Insert order with total_cost (non-null constraint) and customer_id
-  const { data: order, error: orderError } = await supabase
+  const orderInsertData: any = {
+    user_id: input.storeUserId,
+    customer_id: customerId,
+    status: 'pending',
+    payment_method: input.paymentMethod,
+    payment_status: 'unpaid',
+    subtotal: input.subtotal,
+    shipping_cost: input.shippingFee,
+    total_amount: input.total,
+    total_cost: totalCost,
+  }
+
+  if (input.orderNotes) {
+    orderInsertData.notes = input.orderNotes
+  }
+
+  let { data: order, error: orderError } = await supabase
     .from('orders')
-    .insert({
-      user_id: input.storeUserId,
-      customer_id: customerId,
-      source: 'storefront',
-      status: 'pending',
-      customer_name: input.customer.fullName,
-      customer_phone: input.customer.phone,
-      customer_email: input.customer.email || null,
-      shipping_name: input.customer.fullName,
-      shipping_phone: input.customer.phone,
-      shipping_line1: input.shipping.addressLine1,
-      shipping_line2: input.shipping.addressLine2 || null,
-      shipping_city: input.shipping.city,
-      shipping_state: input.shipping.state,
-      shipping_pincode: input.shipping.pincode,
-      payment_method_v2: input.paymentMethod,
-      payment_status_v2: 'pending',
-      payment_method: input.paymentMethod,
-      payment_status: 'unpaid',
-      subtotal: input.subtotal,
-      shipping_cost: input.shippingFee,
-      total_amount: input.total,
-      total_cost: totalCost,
-      order_notes: input.orderNotes || null,
-    })
+    .insert(orderInsertData)
     .select()
     .single()
 
-  if (orderError) {
+  // Fallback if notes column name varies in production schema
+  if (orderError && (orderError.message.includes('notes') || orderError.code === 'PGRST204')) {
+    delete orderInsertData.notes
+    delete orderInsertData.order_notes
+    const retry = await supabase
+      .from('orders')
+      .insert(orderInsertData)
+      .select()
+      .single()
+    order = retry.data
+    orderError = retry.error
+  }
+
+  if (orderError || !order) {
     console.error('Order insert error:', orderError)
-    return { error: orderError.message }
+    return { error: orderError?.message || 'Failed to create order record' }
   }
 
   // 3. Insert order items (write to both legacy & new pricing/image fields)
@@ -198,13 +224,75 @@ export async function placeOrder(input: PlaceOrderInput) {
     }
   })
 
-  const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+  let { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+
+  if (itemsError) {
+    console.warn('Initial order_items insert error, retrying with fallback schema:', itemsError)
+    const cleanItems = input.items.map((item) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      product_name: item.name,
+      quantity: item.quantity,
+      unit_selling_price: item.price,
+      unit_cost_price: costMap.get(item.productId) || 0,
+    }))
+    const retryItems = await supabase.from('order_items').insert(cleanItems)
+    itemsError = retryItems.error
+  }
 
   if (itemsError) {
     console.error('Order items insert error:', itemsError)
     // Rollback the order if items fail to insert
     await supabase.from('orders').delete().eq('id', order.id)
     return { error: itemsError.message }
+  }
+
+  // 4. Send instant email notifications to Reseller and Customer
+  try {
+    const { data: resellerProfile } = await supabase
+      .from('profiles')
+      .select('id, full_name, business_name, shop_name')
+      .eq('id', input.storeUserId)
+      .single()
+
+    // Fetch reseller's email from auth.users using admin client
+    const { data: authUser } = await supabase.auth.admin.getUserById(input.storeUserId)
+    const resellerEmail = authUser?.user?.email
+
+    const resellerName = resellerProfile?.full_name || resellerProfile?.business_name || resellerProfile?.shop_name || 'Reseller'
+    const storeName = resellerProfile?.shop_name || resellerProfile?.business_name || resellerProfile?.full_name || 'Store'
+    const shippingAddressStr = `${input.shipping.addressLine1}${input.shipping.addressLine2 ? ', ' + input.shipping.addressLine2 : ''}, ${input.shipping.city}, ${input.shipping.state} - ${input.shipping.pincode}`
+
+    const emailOrderData = {
+      orderId: order.id,
+      resellerName,
+      storeName,
+      customerName: input.customer.fullName,
+      customerPhone: input.customer.phone,
+      customerEmail: input.customer.email || null,
+      shippingAddress: shippingAddressStr,
+      paymentMethod: input.paymentMethod,
+      items: input.items.map((i) => ({
+        name: i.name,
+        quantity: i.quantity,
+        price: i.price,
+        image: i.image,
+      })),
+      subtotal: input.subtotal,
+      shippingFee: input.shippingFee,
+      total: input.total,
+      orderNotes: input.orderNotes || null,
+    }
+
+    // Send instant order alert to reseller ONLY
+    if (resellerEmail) {
+      const { MailService } = await import('@/lib/mail/mailer')
+      MailService.sendInstantNewOrderResellerAlert(resellerEmail, emailOrderData).catch((e) =>
+        console.error('Failed to send reseller order email alert:', e)
+      )
+    }
+  } catch (emailErr) {
+    console.error('Non-blocking error sending instant order emails:', emailErr)
   }
 
   return { orderId: order.id }

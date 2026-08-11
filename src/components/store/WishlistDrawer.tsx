@@ -52,7 +52,7 @@ export function WishlistDrawer({ theme }: WishlistDrawerProps = {}) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
             onClick={closeWishlist}
           />
 
@@ -62,7 +62,7 @@ export function WishlistDrawer({ theme }: WishlistDrawerProps = {}) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:rounded-l-3xl lg:max-h-full border-l border-slate-200"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:max-h-full border-l border-slate-200"
           >
             {/* Handle bar (mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
@@ -137,8 +137,8 @@ export function WishlistDrawer({ theme }: WishlistDrawerProps = {}) {
                         {/* Add to Cart button */}
                         <button
                           onClick={() => handleAddToCart(item)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all active:scale-95 hover:opacity-90 shadow-sm"
-                          style={{ backgroundColor: primaryColor }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white transition-all active:scale-95 hover:opacity-90 shadow-sm"
+                          style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 8px)' }}
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
                           Add to Cart
