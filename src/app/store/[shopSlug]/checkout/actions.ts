@@ -1,7 +1,6 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { ShopTheme } from '@/types'
 
 interface PlaceOrderInput {
   storeUserId: string
@@ -68,27 +67,7 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: 'Pricing mismatch detected. Please refresh your page and try again.' }
   }
 
-  // Fetch store theme to validate shipping policy
-  const { data: profileData } = await supabase
-    .from('profiles')
-    .select('shop_theme')
-    .eq('id', input.storeUserId)
-    .single()
-
-  const shopTheme = (profileData?.shop_theme || {}) as ShopTheme
-  const shippingType = shopTheme.shippingType || 'above_amount'
-  const freeThreshold = shopTheme.freeShippingThreshold ?? 500
-  const flatFee = shopTheme.flatShippingFee ?? 49
-
-  let serverShippingFee = 0
-  if (shippingType === 'free') {
-    serverShippingFee = 0
-  } else if (shippingType === 'flat') {
-    serverShippingFee = flatFee
-  } else {
-    serverShippingFee = serverSubtotal >= freeThreshold ? 0 : flatFee
-  }
-
+  const serverShippingFee = serverSubtotal >= 500 ? 0 : 49
   if (serverShippingFee !== input.shippingFee) {
     return { error: 'Shipping fee mismatch detected. Please try again.' }
   }
@@ -284,19 +263,11 @@ export async function placeOrder(input: PlaceOrderInput) {
       orderNotes: input.orderNotes || null,
     }
 
-    // A. Send instant order alert to reseller
+    // Send instant order alert to reseller ONLY
     if (resellerEmail) {
       const { MailService } = await import('@/lib/mail/mailer')
       MailService.sendInstantNewOrderResellerAlert(resellerEmail, emailOrderData).catch((e) =>
         console.error('Failed to send reseller order email alert:', e)
-      )
-    }
-
-    // B. Send instant order receipt to customer (if email provided)
-    if (input.customer.email) {
-      const { MailService } = await import('@/lib/mail/mailer')
-      MailService.sendInstantCustomerOrderConfirmation(input.customer.email, emailOrderData).catch((e) =>
-        console.error('Failed to send customer order receipt email:', e)
       )
     }
   } catch (emailErr) {
