@@ -424,36 +424,7 @@ export const templates = {
     `,
   }),
 
-  // ─── 🚚 ORDER STATUS UPDATE EMAIL ──────────────────────────────────────────
-  orderStatus: (customerName: string, orderId: string, status: string, isUpdate: boolean): EmailTemplate => {
-    const title = isUpdate ? `Update on Order #${orderId.slice(0, 8).toUpperCase()}` : `Order #${orderId.slice(0, 8).toUpperCase()} Status: ${status}`
-    return {
-      subject: title,
-      text: `Hello ${customerName},\n\nThe status of your order #${orderId.slice(0, 8).toUpperCase()} is now: ${status}.\n\nRegards,\nResellerPro Team`,
-      html: `
-        <div style="background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 36px 12px; width: 100%; box-sizing: border-box;">
-          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.1);">
-            ${BRAND_HEADER}
 
-            <tr>
-              <td style="padding: 36px; text-align: center;">
-                <h2 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 900; color: #0f172a;">Order Status Update</h2>
-                <p style="margin: 0 0 16px 0; font-size: 15px; color: #334155;">Hello <strong>${customerName}</strong>,</p>
-                <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">
-                  The status of your order <strong>#${orderId.slice(0, 8).toUpperCase()}</strong> has been updated:
-                </p>
-                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 28px; display: inline-block; margin-bottom: 20px;">
-                  <span style="font-size: 16px; font-weight: 900; color: #1d4ed8; text-transform: uppercase;">${status}</span>
-                </div>
-              </td>
-            </tr>
-
-            ${BRAND_FOOTER}
-          </table>
-        </div>
-      `,
-    }
-  },
 
   // ─── 🔔 GENERIC ORDER ALERT ───────────────────────────────────────────────
   orderAlert: (userName: string, pendingCount: number): EmailTemplate => ({
