@@ -112,6 +112,18 @@ export interface ShopTheme {
   categoryShowcase?: boolean
   showPrices?: boolean
   showWhatsApp?: boolean
+  // Payment Method Settings
+  enableOnlinePayment?: boolean
+  onlinePaymentTitle?: string
+  onlinePaymentDescription?: string
+  razorpayKeyId?: string
+  razorpayKeySecret?: string
+  enableCod?: boolean
+  codTitle?: string
+  codDescription?: string
+  enableWhatsAppOrder?: boolean
+  whatsappOrderTitle?: string
+  whatsappOrderDescription?: string
   headerStyle?: 'standard' | 'centered' | 'minimal'
   socialInstagram?: string
   socialFacebook?: string

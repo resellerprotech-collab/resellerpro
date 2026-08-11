@@ -202,8 +202,8 @@ export function CartDrawer() {
                 </div>
                 <button
                   onClick={handleCheckout}
-                  className="w-full h-12 rounded-2xl text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-md"
-                  style={{ backgroundColor: 'var(--store-primary, #6366f1)' }}
+                  className="w-full h-12 text-white font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-md"
+                  style={{ backgroundColor: 'var(--store-primary, #6366f1)', borderRadius: 'var(--store-btn-radius, 12px)' }}
                 >
                   Proceed to Checkout
                   <ArrowRight className="w-5 h-5" />
