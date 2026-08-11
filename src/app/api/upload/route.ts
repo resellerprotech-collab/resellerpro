@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { uploadImageToCloudinary } from '@/lib/cloudinary'
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,9 +19,24 @@ export async function POST(req: NextRequest) {
     const fileName = `${folder}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
     const filePath = `${folder}/${fileName}`
 
+    // 1. Try Cloudinary Upload First (if CLOUDINARY_CLOUD_NAME is set)
+    if (process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
+      const cloudinaryResult = await uploadImageToCloudinary(buffer, fileName, folder)
+      if (cloudinaryResult.success && cloudinaryResult.url) {
+        return NextResponse.json({
+          success: true,
+          provider: 'cloudinary',
+          url: cloudinaryResult.url,
+          filePath: cloudinaryResult.publicId || filePath
+        })
+      }
+      console.warn('[Upload Route] Cloudinary failed or skipped, falling back to Supabase Storage:', cloudinaryResult.error)
+    }
+
+    // 2. Fallback to Supabase Storage
     const supabase = await createAdminClient()
 
-    // 1. Ensure bucket exists
+    // Ensure bucket exists
     const { data: buckets } = await supabase.storage.listBuckets()
     const bucketExists = buckets?.some(b => b.name === 'product-images')
 
@@ -28,7 +44,7 @@ export async function POST(req: NextRequest) {
       await supabase.storage.createBucket('product-images', { public: true })
     }
 
-    // 2. Upload file using Admin Client (bypasses RLS)
+    // Upload file using Admin Client (bypasses RLS)
     const { error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(filePath, buffer, {
