@@ -157,7 +157,6 @@ export async function placeOrder(input: PlaceOrderInput) {
       status: 'pending',
       customer_name: input.customer.fullName,
       customer_phone: input.customer.phone,
-      customer_email: input.customer.email || null,
       shipping_name: input.customer.fullName,
       shipping_phone: input.customer.phone,
       shipping_line1: input.shipping.addressLine1,
