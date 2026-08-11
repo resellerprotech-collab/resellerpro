@@ -174,7 +174,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-[999] overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -191,7 +191,7 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -15 }}
             transition={{ type: 'spring', duration: 0.25 }}
-            className="relative w-full max-w-2xl bg-white rounded-[10px] shadow-2xl border border-slate-200 text-left overflow-hidden z-50 flex flex-col max-h-[85vh]"
+            className="relative w-full max-w-2xl bg-white rounded-[10px] shadow-2xl border border-slate-200 text-left overflow-hidden z-[999] flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input Top Bar */}

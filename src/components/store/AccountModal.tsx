@@ -157,7 +157,7 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -167,7 +167,7 @@ export function AccountModal({ isOpen, onClose, shopSlug, shopName, theme }: Acc
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:max-h-full border-l border-slate-200"
+            className="fixed bottom-0 left-0 right-0 z-[999] bg-white text-slate-900 rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col lg:left-auto lg:top-0 lg:right-0 lg:bottom-0 lg:w-[420px] lg:rounded-none lg:max-h-full border-l border-slate-200"
           >
             {/* Handle Bar (Mobile) */}
             <div className="lg:hidden flex justify-center pt-3 pb-1">
