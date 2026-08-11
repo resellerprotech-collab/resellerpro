@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // System reserved subdomains & path prefixes that must bypass store rewrites
-const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'dashboard', 'ekodrix', 'ekodrix-panel', 'auth', 'onboarding']
+const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'dashboard', 'ekodrix', 'ekodrix-panel', 'auth', 'onboarding', 'signin', 'signup', 'login', 'forgot-password', 'reset-password']
 
 export async function middleware(request: NextRequest) {
   // 🔓 CORS handling for Headless Commerce API routes
@@ -229,6 +229,7 @@ export async function middleware(request: NextRequest) {
   const isAuthPage =
     request.nextUrl.pathname === '/signin' ||
     request.nextUrl.pathname === '/signup' ||
+    request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/forgot-password' ||
     request.nextUrl.pathname === '/reset-password'
 
@@ -238,7 +239,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const url = request.nextUrl.clone()
-    url.pathname = '/onboarding'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
