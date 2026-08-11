@@ -209,5 +209,61 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: itemsError.message }
   }
 
+  // 4. Send instant email notifications to Reseller and Customer
+  try {
+    const { data: resellerProfile } = await supabase
+      .from('profiles')
+      .select('id, full_name, business_name, shop_name')
+      .eq('id', input.storeUserId)
+      .single()
+
+    // Fetch reseller's email from auth.users using admin client
+    const { data: authUser } = await supabase.auth.admin.getUserById(input.storeUserId)
+    const resellerEmail = authUser?.user?.email
+
+    const resellerName = resellerProfile?.full_name || resellerProfile?.business_name || resellerProfile?.shop_name || 'Reseller'
+    const storeName = resellerProfile?.shop_name || resellerProfile?.business_name || resellerProfile?.full_name || 'Store'
+    const shippingAddressStr = `${input.shipping.addressLine1}${input.shipping.addressLine2 ? ', ' + input.shipping.addressLine2 : ''}, ${input.shipping.city}, ${input.shipping.state} - ${input.shipping.pincode}`
+
+    const emailOrderData = {
+      orderId: order.id,
+      resellerName,
+      storeName,
+      customerName: input.customer.fullName,
+      customerPhone: input.customer.phone,
+      customerEmail: input.customer.email || null,
+      shippingAddress: shippingAddressStr,
+      paymentMethod: input.paymentMethod,
+      items: input.items.map((i) => ({
+        name: i.name,
+        quantity: i.quantity,
+        price: i.price,
+        image: i.image,
+      })),
+      subtotal: input.subtotal,
+      shippingFee: input.shippingFee,
+      total: input.total,
+      orderNotes: input.orderNotes || null,
+    }
+
+    // A. Send instant order alert to reseller
+    if (resellerEmail) {
+      const { MailService } = await import('@/lib/mail/mailer')
+      MailService.sendInstantNewOrderResellerAlert(resellerEmail, emailOrderData).catch((e) =>
+        console.error('Failed to send reseller order email alert:', e)
+      )
+    }
+
+    // B. Send instant order receipt to customer (if email provided)
+    if (input.customer.email) {
+      const { MailService } = await import('@/lib/mail/mailer')
+      MailService.sendInstantCustomerOrderConfirmation(input.customer.email, emailOrderData).catch((e) =>
+        console.error('Failed to send customer order receipt email:', e)
+      )
+    }
+  } catch (emailErr) {
+    console.error('Non-blocking error sending instant order emails:', emailErr)
+  }
+
   return { orderId: order.id }
 }
