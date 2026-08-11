@@ -40,7 +40,7 @@ export default function SignupForm() {
   })
 
   // Read referral code from query param (still passed to backend silently)
-  const referralCode = searchParams.get('ref') || ''
+  const referralCode = searchParams?.get('ref') || ''
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
