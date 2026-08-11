@@ -138,19 +138,7 @@ export class MailService {
         }, { type: 'enquiry_alert', count })
     }
 
-    static async sendOrderStatus(
-        email: string,
-        customerName: string,
-        orderId: string,
-        status: string,
-        isUpdate = false
-    ) {
-        const template = templates.orderStatus(customerName, orderId, status, isUpdate)
-        return this.send({
-            to: email,
-            ...template
-        }, { type: 'order_status', orderId, status })
-    }
+
 
     static async sendOrderAlert(email: string, userName: string, count: number) {
         const template = templates.orderAlert(userName, count)
