@@ -25,7 +25,7 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
   const waMessage = [
     `Hi! I just placed an order on ${storeName}.`,
     `Order #${orderNumber}`,
-    order.payment_method_v2 === 'upi' ? `Payment: UPI` : `Payment: COD`,
+    (order.payment_method_v2 || order.payment_method) === 'upi' ? `Payment: UPI` : `Payment: COD`,
     `Total: ₹${totalAmount.toLocaleString('en-IN')}`,
     ``,
     `Please confirm my order. Thank you.`,
@@ -35,7 +35,7 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
     ? generateWhatsAppLink(waClean, waMessage)
     : null
 
-  const isUPI = order.payment_method_v2 === 'upi'
+  const isUPI = (order.payment_method_v2 || order.payment_method) === 'upi'
   const items = order.order_items ?? []
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
                     <Package className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
                     <span className="text-slate-600 truncate font-semibold">{item.product_name} × {item.quantity}</span>
                   </div>
-                  <span className="font-bold text-slate-900 flex-shrink-0 ml-2">₹{item.total_price.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-slate-900 flex-shrink-0 ml-2">₹{((item as any).total_price || ((item as any).unit_selling_price || (item as any).unit_price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</span>
                 </div>
               ))}
             </div>

@@ -263,19 +263,11 @@ export async function placeOrder(input: PlaceOrderInput) {
       orderNotes: input.orderNotes || null,
     }
 
-    // A. Send instant order alert to reseller
+    // Send instant order alert to reseller ONLY
     if (resellerEmail) {
       const { MailService } = await import('@/lib/mail/mailer')
       MailService.sendInstantNewOrderResellerAlert(resellerEmail, emailOrderData).catch((e) =>
         console.error('Failed to send reseller order email alert:', e)
-      )
-    }
-
-    // B. Send instant order receipt to customer (if email provided)
-    if (input.customer.email) {
-      const { MailService } = await import('@/lib/mail/mailer')
-      MailService.sendInstantCustomerOrderConfirmation(input.customer.email, emailOrderData).catch((e) =>
-        console.error('Failed to send customer order receipt email:', e)
       )
     }
   } catch (emailErr) {
