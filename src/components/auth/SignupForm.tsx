@@ -10,6 +10,7 @@ import {
   Mail,
   Lock,
   User,
+  Phone,
   ArrowRight,
   Check,
   Shield,
@@ -34,6 +35,7 @@ export default function SignupForm() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phone: '',
     password: '',
   })
 
@@ -61,6 +63,10 @@ export default function SignupForm() {
         const name = formData.fullName.trim()
         return name.length >= 2 && name.length <= 50
       }
+      case 'phone': {
+        const phone = formData.phone.trim()
+        return /^[6-9]\d{9}$/.test(phone)
+      }
       case 'password':
         return formData.password.length >= 8 && formData.password.length <= 72
       default:
@@ -69,7 +75,7 @@ export default function SignupForm() {
   }
 
   const validateAllFields = (): boolean => {
-    setTouchedFields(new Set(['fullName', 'email', 'password']))
+    setTouchedFields(new Set(['fullName', 'email', 'phone', 'password']))
     const errors: string[] = []
 
     const name = formData.fullName.trim()
@@ -80,6 +86,10 @@ export default function SignupForm() {
     const email = formData.email.trim()
     if (!email) errors.push('Email is required')
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email address')
+
+    const phone = formData.phone.trim()
+    if (!phone) errors.push('Phone number is required')
+    else if (!/^[6-9]\d{9}$/.test(phone)) errors.push('Please enter a valid 10-digit mobile number')
 
     if (!formData.password) errors.push('Password is required')
     else if (formData.password.length < 8) errors.push('Password must be at least 8 characters')
@@ -100,6 +110,7 @@ export default function SignupForm() {
       const fd = new FormData()
       fd.append('fullName', formData.fullName.trim())
       fd.append('email', formData.email.trim().toLowerCase())
+      fd.append('phone', formData.phone.trim())
       fd.append('password', formData.password)
       if (referralCode) fd.append('referralCode', referralCode.trim().toUpperCase())
 
@@ -274,6 +285,38 @@ export default function SignupForm() {
                     </div>
                     {touchedFields.has('email') && !isFieldValid('email') && (
                       <p className="text-xs text-rose-500">Please enter a valid email address</p>
+                    )}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="space-y-1">
+                    <Label htmlFor="phone" className="text-xs font-semibold text-slate-700">
+                      Phone Number
+                    </Label>
+                    <div className="relative">
+                      <Phone className={`${iconClass('phone')} w-4 h-4`} />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="10-digit mobile number"
+                        className={fieldClass('phone')}
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '')
+                          if (val.length <= 10) {
+                            setFormData(prev => ({ ...prev, phone: val }))
+                          }
+                        }}
+                        onFocus={() => setFocusedField('phone')}
+                        onBlur={() => handleBlur('phone')}
+                        autoComplete="tel"
+                        required
+                        disabled={isLoading}
+                        maxLength={10}
+                      />
+                    </div>
+                    {touchedFields.has('phone') && !isFieldValid('phone') && (
+                      <p className="text-xs text-rose-500">Please enter a valid 10-digit mobile number</p>
                     )}
                   </div>
 
