@@ -53,7 +53,7 @@ export default async function ContactPage({ params }: Props) {
       <StoreHeader
         shopSlug={shopSlug}
         shopName={storeName}
-        logoUrl={profile.shop_logo_url || profile.avatar_url}
+        logoUrl={profile.shop_logo_url || profile.avatar_url || theme?.shop_logo_url}
         announcement={profile.shop_announcement}
         theme={theme}
         activePage="contact"
