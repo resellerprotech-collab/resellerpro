@@ -148,26 +148,44 @@ export async function placeOrder(input: PlaceOrderInput) {
   }
 
   // 3. Insert order with total_cost (non-null constraint) and customer_id
-  const { data: order, error: orderError } = await supabase
+  const orderInsertData: any = {
+    user_id: input.storeUserId,
+    customer_id: customerId,
+    status: 'pending',
+    payment_method: input.paymentMethod,
+    payment_status: 'unpaid',
+    subtotal: input.subtotal,
+    shipping_cost: input.shippingFee,
+    total_amount: input.total,
+    total_cost: totalCost,
+  }
+
+  if (input.orderNotes) {
+    orderInsertData.notes = input.orderNotes
+  }
+
+  let { data: order, error: orderError } = await supabase
     .from('orders')
-    .insert({
-      user_id: input.storeUserId,
-      customer_id: customerId,
-      status: 'pending',
-      payment_method: input.paymentMethod,
-      payment_status: 'unpaid',
-      subtotal: input.subtotal,
-      shipping_cost: input.shippingFee,
-      total_amount: input.total,
-      total_cost: totalCost,
-      order_notes: input.orderNotes || null,
-    })
+    .insert(orderInsertData)
     .select()
     .single()
 
-  if (orderError) {
+  // Fallback if notes column name varies in production schema
+  if (orderError && (orderError.message.includes('notes') || orderError.code === 'PGRST204')) {
+    delete orderInsertData.notes
+    delete orderInsertData.order_notes
+    const retry = await supabase
+      .from('orders')
+      .insert(orderInsertData)
+      .select()
+      .single()
+    order = retry.data
+    orderError = retry.error
+  }
+
+  if (orderError || !order) {
     console.error('Order insert error:', orderError)
-    return { error: orderError.message }
+    return { error: orderError?.message || 'Failed to create order record' }
   }
 
   // 3. Insert order items (write to both legacy & new pricing/image fields)
@@ -185,7 +203,21 @@ export async function placeOrder(input: PlaceOrderInput) {
     }
   })
 
-  const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+  let { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+
+  if (itemsError) {
+    console.warn('Initial order_items insert error, retrying with fallback schema:', itemsError)
+    const cleanItems = input.items.map((item) => ({
+      order_id: order.id,
+      product_id: item.productId,
+      product_name: item.name,
+      quantity: item.quantity,
+      unit_selling_price: item.price,
+      unit_cost_price: costMap.get(item.productId) || 0,
+    }))
+    const retryItems = await supabase.from('order_items').insert(cleanItems)
+    itemsError = retryItems.error
+  }
 
   if (itemsError) {
     console.error('Order items insert error:', itemsError)
