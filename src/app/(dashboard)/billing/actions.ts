@@ -140,25 +140,12 @@ export async function getAvailablePlans() {
 
   if (!dbPlans) return []
 
-  const { pricingPlans } = await import('@/config/pricing')
-
-  return dbPlans.map(dbPlan => {
-    const configPlan = pricingPlans.find(p =>
-      p.id === dbPlan.name.toLowerCase() ||
-      p.id === dbPlan.id ||
-      p.name.toLowerCase() === dbPlan.name.toLowerCase()
-    )
-
-    if (configPlan) {
-      return {
-        ...dbPlan,
-        features: configPlan.features,
-        description: configPlan.description,
-        display_name: configPlan.display_name || dbPlan.display_name,
-      }
-    }
-    return dbPlan
-  })
+  return dbPlans.map(dbPlan => ({
+    ...dbPlan,
+    features: Array.isArray(dbPlan.features) ? dbPlan.features : [],
+    display_name: dbPlan.display_name || dbPlan.name,
+    tag_line: dbPlan.tag_line || '',
+  }))
 }
 
 // --------------------
