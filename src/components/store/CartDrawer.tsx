@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ShoppingBag, Minus, Plus, Trash2, ArrowRight } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getSubtotal, getItemCount } = useCartStore()
@@ -14,9 +15,48 @@ export function CartDrawer() {
   const shopSlug = params?.shopSlug as string
   const overlayRef = useRef<HTMLDivElement>(null)
 
+  const [shippingConfig, setShippingConfig] = useState<{
+    shippingType: 'free' | 'above_amount' | 'flat'
+    freeShippingThreshold: number
+    flatShippingFee: number
+  }>({
+    shippingType: 'above_amount',
+    freeShippingThreshold: 500,
+    flatShippingFee: 49,
+  })
+
+  useEffect(() => {
+    if (!shopSlug) return
+    const supabase = createClient()
+    supabase
+      .from('profiles')
+      .select('shop_theme')
+      .eq('shop_slug', shopSlug)
+      .single()
+      .then(({ data }) => {
+        if (data?.shop_theme) {
+          const theme = data.shop_theme as any
+          setShippingConfig({
+            shippingType: theme.shippingType || 'above_amount',
+            freeShippingThreshold: theme.freeShippingThreshold ?? 500,
+            flatShippingFee: theme.flatShippingFee ?? 49,
+          })
+        }
+      })
+  }, [shopSlug])
+
   const subtotal = getSubtotal()
   const itemCount = getItemCount()
-  const shippingFee = subtotal >= 500 ? 0 : 49
+
+  let shippingFee = 0
+  if (shippingConfig.shippingType === 'free') {
+    shippingFee = 0
+  } else if (shippingConfig.shippingType === 'flat') {
+    shippingFee = shippingConfig.flatShippingFee
+  } else {
+    shippingFee = subtotal >= shippingConfig.freeShippingThreshold ? 0 : shippingConfig.flatShippingFee
+  }
+
   const total = subtotal + shippingFee
 
   // Prevent body scroll when open
@@ -191,9 +231,9 @@ export function CartDrawer() {
                     {shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}
                   </span>
                 </div>
-                {shippingFee > 0 && (
+                {shippingConfig.shippingType === 'above_amount' && shippingFee > 0 && (
                   <p className="text-xs text-slate-400 font-medium">
-                    Add ₹{(500 - subtotal).toLocaleString('en-IN')} more for free shipping
+                    Add ₹{(shippingConfig.freeShippingThreshold - subtotal).toLocaleString('en-IN')} more for free shipping
                   </p>
                 )}
                 <div className="flex justify-between font-bold text-base pt-2.5 border-t border-slate-100 text-slate-900">

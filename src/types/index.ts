@@ -112,6 +112,10 @@ export interface ShopTheme {
   categoryShowcase?: boolean
   showPrices?: boolean
   showWhatsApp?: boolean
+  // Delivery & Shipping Fee Settings
+  shippingType?: 'free' | 'above_amount' | 'flat'
+  freeShippingThreshold?: number
+  flatShippingFee?: number
   // Payment Method Settings
   enableOnlinePayment?: boolean
   onlinePaymentTitle?: string
