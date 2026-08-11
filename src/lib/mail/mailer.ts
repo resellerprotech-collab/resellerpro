@@ -159,4 +159,20 @@ export class MailService {
             ...template
         }, { type: 'order_alert', count })
     }
+
+    static async sendInstantNewOrderResellerAlert(email: string, data: any) {
+        const template = templates.newOrderResellerAlert(data)
+        return this.send({
+            to: email,
+            ...template
+        }, { type: 'instant_reseller_order_alert', orderId: data.orderId })
+    }
+
+    static async sendInstantCustomerOrderConfirmation(email: string, data: any) {
+        const template = templates.customerOrderConfirmation(data)
+        return this.send({
+            to: email,
+            ...template
+        }, { type: 'instant_customer_order_confirmation', orderId: data.orderId })
+    }
 }
