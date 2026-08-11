@@ -263,7 +263,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
         shopSlug={shopSlug}
         shopName={storeName}
         shopDescription={profile.shop_description}
-        logoUrl={profile.shop_logo_url || profile.avatar_url}
+        logoUrl={profile.shop_logo_url || profile.avatar_url || theme?.shop_logo_url}
         announcement={profile.shop_announcement || 'Free Delivery on orders above ₹999 | COD Available'}
         theme={theme}
         onSearch={setSearchQuery}

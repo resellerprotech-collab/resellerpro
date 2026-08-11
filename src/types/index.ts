@@ -152,6 +152,7 @@ export interface ShopTheme {
   returnPolicy?: string
   shippingInfo?: string
   customCss?: string
+  shop_logo_url?: string | null
   vacationMessage?: string
   storeStatus?: 'open' | 'vacation' | 'closed'
 }
