@@ -362,8 +362,8 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider border-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
-                  style={{ borderColor: primaryColor, color: primaryColor }}
+                  className="w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider border-2 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderColor: primaryColor, color: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                 >
                   <ShoppingCart className="w-4 h-4 shrink-0" />
                   <span>{added ? '✓ Added to Cart!' : 'Add to Cart'}</span>
@@ -372,8 +372,8 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
-                  className={`w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider text-white transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${btnRadius}`}
-                  style={{ backgroundColor: primaryColor }}
+                  className="w-full h-12 flex items-center justify-center gap-1.5 sm:gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider text-white transition-all active:scale-95 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
                 >
                   <Zap className="w-4 h-4 shrink-0" />
                   <span>Buy Now</span>
@@ -386,7 +386,8 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                   href={waInquiryLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-full h-12 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold transition-all shadow-sm active:scale-95 mb-6 ${btnRadius}`}
+                  className="w-full h-12 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold transition-all shadow-sm active:scale-95 mb-6"
+                  style={{ borderRadius: 'var(--store-btn-radius, 12px)' }}
                 >
                   <MessageCircle className="w-4 h-4 fill-white shrink-0" />
                   Inquire via WhatsApp
