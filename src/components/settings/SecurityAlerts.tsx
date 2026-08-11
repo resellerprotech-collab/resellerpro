@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Bell, Loader2, Mail, Shield, AlertTriangle, CalendarDays } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 
 interface SecurityPreferences {
   email_on_new_login: boolean
@@ -26,7 +26,7 @@ export default function SecurityAlerts() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const { toast } = useToast()
+
 
   useEffect(() => {
     const fetchPreferences = async () => {
@@ -62,17 +62,10 @@ export default function SecurityAlerts() {
         throw new Error('Failed to update')
       }
 
-      toast({
-        title: 'Preference Updated',
-        description: 'Your security alert settings have been saved.'
-      })
+      toast.success('Alert settings updated')
     } catch (error) {
       setPreferences(prev) // Rollback on error
-      toast({
-        title: 'Error',
-        description: 'Failed to save preference',
-        variant: 'destructive'
-      })
+      toast.error('Unable to save preference')
     } finally {
       setSaving(false)
     }

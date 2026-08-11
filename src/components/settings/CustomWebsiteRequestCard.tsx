@@ -15,8 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { submitCustomWebsiteRequest } from '@/app/actions/custom-website'
-import { toast } from 'sonner'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Sparkles, Clock, CheckCircle2, PhoneCall, Globe, ArrowRight } from 'lucide-react'
 
 interface CustomWebsiteRequestCardProps {
@@ -35,7 +34,6 @@ export default function CustomWebsiteRequestCard({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [requestState, setRequestState] = useState(existingRequest)
-  const { toast: uiToast } = useToast()
   const router = useRouter()
 
   useEffect(() => {
@@ -49,10 +47,8 @@ export default function CustomWebsiteRequestCard({
       const res = await submitCustomWebsiteRequest(formData)
 
       if (res.success) {
-        toast.success("🎉 Thanks! We've received your request. Our team will contact you shortly!")
-        uiToast({
-          title: "🎉 Thanks!",
-          description: "We've received your request. Our team will contact you shortly via phone or WhatsApp.",
+        toast.success("Request received", {
+          description: "Our team will contact you shortly via phone or WhatsApp.",
         })
         setOpen(false)
         setRequestState({
@@ -62,15 +58,14 @@ export default function CustomWebsiteRequestCard({
         })
         router.refresh()
       } else {
-        toast.error(res.message || 'Submission failed')
-        uiToast({
-          title: "Submission Status",
-          description: res.message || 'Could not submit request',
-          variant: "destructive"
+        toast.error('Unable to submit request', {
+          description: res.message || 'Please try again later.',
         })
       }
     } catch (err: any) {
-      toast.error(err.message || 'An unexpected error occurred')
+      toast.error('Unable to submit request', {
+        description: err.message || 'Check your connection and try again.',
+      })
     } finally {
       setLoading(false)
     }

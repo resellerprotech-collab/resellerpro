@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Smartphone, Monitor, Tablet, MapPin, Clock, Loader2, LogOut, ShieldAlert } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { formatDistanceToNow } from 'date-fns'
 
 interface Session {
@@ -38,7 +38,7 @@ export default function ActiveDevices() {
   const [loading, setLoading] = useState(true)
   const [revoking, setRevoking] = useState<string | null>(null)
   const [revokingAll, setRevokingAll] = useState(false)
-  const { toast } = useToast()
+
 
   // 1. Helpers (Hoisted or defined before use)
   const getDeviceName = useCallback((session: Session) => {
@@ -191,17 +191,10 @@ export default function ActiveDevices() {
       const data = await res.json()
       if (data.success) {
         setSessions(prev => prev.filter(s => s.id !== sessionId))
-        toast({
-          title: 'Session Revoked',
-          description: 'The device has been logged out successfully.'
-        })
+        toast.success('Session revoked')
       }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to revoke session',
-        variant: 'destructive'
-      })
+      toast.error('Failed to revoke session')
     } finally {
       setRevoking(null)
     }
@@ -219,17 +212,10 @@ export default function ActiveDevices() {
       const data = await res.json()
       if (data.success) {
         setSessions(prev => prev.filter(s => s.is_current))
-        toast({
-          title: 'All Sessions Revoked',
-          description: 'All other devices have been logged out.'
-        })
+        toast.success('All other sessions revoked')
       }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to revoke sessions',
-        variant: 'destructive'
-      })
+      toast.error('Failed to revoke sessions')
     } finally {
       setRevokingAll(false)
     }

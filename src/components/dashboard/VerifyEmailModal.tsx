@@ -11,7 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { verifyOtp } from '@/app/actions/verify-otp'
 import { sendVerificationOtp, getRecentOtpStatus } from '@/app/actions/send-verification-otp'
 import { Loader2, CheckCircle2 } from 'lucide-react'
@@ -25,7 +25,7 @@ interface VerifyEmailModalProps {
 }
 
 export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: VerifyEmailModalProps) {
-    const { toast } = useToast()
+
     const router = useRouter()
     const [step, setStep] = useState<'send' | 'verify'>('send')
     const [otp, setOtp] = useState('')
@@ -76,27 +76,20 @@ export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: Veri
             const res = await sendVerificationOtp(email)
 
             if (res.success) {
-                toast({
-                    title: 'Code Sent',
-                    description: `We've sent a code to ${email}`,
-                })
+                toast.success(`Verification code sent to ${email}`)
                 setStep('verify')
                 setTimeLeft(300) // 5 minutes cooldown
             } else {
                 if (res.alreadyVerified) {
-                    toast({ title: 'Already Verified', description: 'Your email is already verified.', })
+                    toast.info('Your email is already verified')
                     onOpenChange(false)
                     router.refresh()
                     return
                 }
-                toast({
-                    title: 'Failed to Send',
-                    description: res.message,
-                    variant: 'destructive',
-                })
+                toast.error(res.message || 'Failed to send verification code')
             }
         } catch (error) {
-            toast({ title: 'Error', description: 'Failed to send code.', variant: 'destructive' })
+            toast.error('Failed to send verification code')
         } finally {
             setResendLoading(false)
         }
@@ -110,27 +103,15 @@ export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: Veri
             const res = await verifyOtp(email, otp)
 
             if (res.success) {
-                toast({
-                    title: 'Verified!',
-                    description: 'Your email has been successfully verified.',
-                    action: <CheckCircle2 className="h-5 w-5 text-green-500" />
-                })
+                toast.success('Email verified successfully')
                 onOpenChange(false)
                 router.refresh()
                 if (onVerified) onVerified()
             } else {
-                toast({
-                    title: 'Verification Failed',
-                    description: res.message,
-                    variant: 'destructive',
-                })
+                toast.error(res.message || 'Verification failed')
             }
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Something went wrong. Please try again.',
-                variant: 'destructive',
-            })
+            toast.error('Something went wrong. Please try again.')
         } finally {
             setIsLoading(false)
         }

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Key, Loader2, Eye, EyeOff, Shield, Check, X } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { createClient } from '@/lib/supabase/client'
 
 export default function PasswordChange() {
@@ -18,7 +18,7 @@ export default function PasswordChange() {
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
+
 
   const supabase = createClient()
 
@@ -57,19 +57,15 @@ export default function PasswordChange() {
     e.preventDefault()
 
     if (newPassword !== confirmPassword) {
-      toast({
-        title: 'Passwords don\'t match',
+      toast.error("Passwords don't match", {
         description: 'Please ensure both passwords are identical.',
-        variant: 'destructive'
       })
       return
     }
 
     if (strength < 50) {
-      toast({
-        title: 'Password too weak',
+      toast.error('Password too weak', {
         description: 'Please choose a stronger password.',
-        variant: 'destructive'
       })
       return
     }
@@ -82,9 +78,8 @@ export default function PasswordChange() {
 
       if (error) throw error
 
-      toast({
-        title: 'Password Updated',
-        description: 'Your password has been changed successfully.'
+      toast.success('Password updated', {
+        description: 'Your password has been changed successfully.',
       })
 
       // Clear form
@@ -92,10 +87,8 @@ export default function PasswordChange() {
       setNewPassword('')
       setConfirmPassword('')
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update password',
-        variant: 'destructive'
+      toast.error('Unable to update password', {
+        description: error.message || 'Something went wrong. Please try again.',
       })
     } finally {
       setLoading(false)

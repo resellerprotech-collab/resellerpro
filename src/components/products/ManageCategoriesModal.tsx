@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Trash2, Edit, Plus, Image as ImageIcon, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import type { Category } from '@/types'
@@ -43,7 +43,7 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
   const [removeImage, setRemoveImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const { toast } = useToast()
+
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -62,11 +62,11 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
       if (res.success && res.data) {
         setCategories(res.data)
       } else {
-        toast({ title: 'Error', description: res.message || 'Failed to fetch categories', variant: 'destructive' })
+        toast.error('Unable to load categories', { description: res.message || 'Please refresh the page.' })
       }
     } catch (err) {
       console.error(err)
-      toast({ title: 'Error', description: 'Failed to fetch categories', variant: 'destructive' })
+      toast.error('Unable to load categories')
     } finally {
       setFetching(false)
     }
@@ -104,7 +104,7 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      toast({ title: 'Validation Error', description: 'Name is required', variant: 'destructive' })
+      toast.error('Category name required', { description: 'Please enter a category name.' })
       return
     }
 
@@ -130,7 +130,7 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
       }
 
       if (res?.success) {
-        toast({ title: 'Success', description: `Category ${mode === 'add' ? 'created' : 'updated'} successfully!` })
+        toast.success(mode === 'add' ? 'Category created' : 'Category updated')
         await fetchCategories()
         setMode('list')
         resetForm()
@@ -140,11 +140,13 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['products-stats'] })
       } else {
-        toast({ title: 'Error', description: res?.message || 'Action failed', variant: 'destructive' })
+        toast.error(mode === 'add' ? 'Unable to create category' : 'Unable to update category', {
+          description: res?.message || 'Check your input and try again.',
+        })
       }
     } catch (err) {
       console.error(err)
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
+      toast.error('Something went wrong', { description: 'Please try again.' })
     } finally {
       setLoading(false)
     }
@@ -159,7 +161,7 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
     try {
       const res = await deleteCategoryAction(category.id, category.name)
       if (res.success) {
-        toast({ title: 'Success', description: 'Category deleted successfully' })
+        toast.success('Category deleted')
         setCategories(categories.filter(c => c.id !== category.id))
         if (onSuccess) onSuccess()
         router.refresh()
@@ -167,11 +169,11 @@ export function ManageCategoriesModal({ open, onOpenChange, onSuccess }: Props) 
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['products-stats'] })
       } else {
-        toast({ title: 'Error', description: res.message || 'Failed to delete', variant: 'destructive' })
+        toast.error('Unable to delete category', { description: res.message || 'Please try again.' })
       }
     } catch (err) {
       console.error(err)
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' })
+      toast.error('Something went wrong', { description: 'Please try again.' })
     } finally {
       setLoading(false)
     }

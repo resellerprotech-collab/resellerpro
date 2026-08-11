@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { updateHeadlessSettings, generateNewApiKey } from '@/app/(dashboard)/settings/headless/actions'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { Copy, RefreshCw, Key, Globe, ShieldCheck, AlertTriangle, Sparkles, AlertCircle } from 'lucide-react'
 
 interface HeadlessSettingsFormProps {
@@ -54,7 +54,7 @@ export default function HeadlessSettingsForm({
 
     if (res.success) {
       setStoreMode(targetMode)
-      toast.success(`Store mode switched to ${targetMode.toUpperCase()}!`)
+      toast.success(`Store mode switched to ${targetMode}`)
       if (res.newApiKey) {
         setNewlyGeneratedKey(res.newApiKey)
       }
@@ -97,7 +97,7 @@ export default function HeadlessSettingsForm({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
+    toast.success('Copied to clipboard')
   }
 
   return (

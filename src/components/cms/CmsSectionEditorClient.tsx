@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { reorderCmsSectionsAction } from '@/app/actions/cms-sections'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { Layout, Save, RefreshCw, Sparkles, Layers, Eye } from 'lucide-react'
 import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
 
@@ -55,7 +55,7 @@ export default function CmsSectionEditorClient({
     setSavingOrder(false)
 
     if (res.success) {
-      toast.success('Section order saved successfully! ✨')
+      toast.success('Section order saved')
     } else {
       toast.error(res.error || 'Failed to save section order')
     }
