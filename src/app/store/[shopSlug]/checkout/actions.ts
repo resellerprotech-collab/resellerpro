@@ -16,7 +16,7 @@ interface PlaceOrderInput {
     state: string
     pincode: string
   }
-  paymentMethod: 'cod' | 'upi'
+  paymentMethod: 'cod' | 'upi' | 'card' | 'whatsapp' | 'razorpay'
   orderNotes?: string | null
   items: {
     productId: string
@@ -147,7 +147,10 @@ export async function placeOrder(input: PlaceOrderInput) {
     console.error('Failed to link storefront guest order to customer:', err)
   }
 
-  // 3. Insert order with total_cost (non-null constraint) and customer_id
+  const notesWithChannel = input.paymentMethod === 'whatsapp'
+    ? (input.orderNotes ? `[WhatsApp Order] ${input.orderNotes}` : '[WhatsApp Order]')
+    : input.orderNotes || null
+
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
@@ -165,15 +168,14 @@ export async function placeOrder(input: PlaceOrderInput) {
       shipping_city: input.shipping.city,
       shipping_state: input.shipping.state,
       shipping_pincode: input.shipping.pincode,
-      payment_method_v2: input.paymentMethod,
       payment_status_v2: 'pending',
       payment_method: input.paymentMethod,
-      payment_status: 'unpaid',
+      payment_status: input.paymentMethod === 'cod' ? 'cod' : 'unpaid',
       subtotal: input.subtotal,
       shipping_cost: input.shippingFee,
       total_amount: input.total,
       total_cost: totalCost,
-      order_notes: input.orderNotes || null,
+      order_notes: notesWithChannel,
     })
     .select()
     .single()

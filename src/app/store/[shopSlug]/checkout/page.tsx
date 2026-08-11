@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { 
   ChevronLeft, Truck, Smartphone, ShoppingBag, User, 
   ChevronRight, ShieldCheck, Lock, Package, Gift,
-  HelpCircle, ChevronDown, Search, MessageCircle
+  HelpCircle, ChevronDown, Search, MessageCircle, CreditCard
 } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
 import { createClient } from '@/lib/supabase/client'
@@ -35,7 +35,7 @@ const schema = z.object({
   city: z.string().min(2, 'City required'),
   state: z.string().min(2, 'State required'),
   pincode: z.string().regex(/^\d{6}$/, 'Enter valid 6-digit pincode'),
-  paymentMethod: z.enum(['cod', 'upi']),
+  paymentMethod: z.enum(['cod', 'upi', 'card', 'whatsapp', 'razorpay']),
   orderNotes: z.string().optional(),
 })
 
@@ -49,6 +49,7 @@ interface CheckoutPageProps {
   logoUrl?: string | null
   announcement?: string | null
   theme?: ShopTheme | null
+  isPaidUser?: boolean
 }
 
 function CheckoutPageInner({
@@ -59,10 +60,63 @@ function CheckoutPageInner({
   logoUrl,
   announcement,
   theme,
+  isPaidUser = true,
 }: CheckoutPageProps) {
   const router = useRouter()
   const { items, getSubtotal, clearCart } = useCartStore()
-  const [payment, setPayment] = useState<'cod' | 'upi'>('cod')
+
+  const primaryColor = theme?.primaryColor || '#4f46e5'
+  const enableOnline = theme?.enableOnlinePayment !== false
+  const enableCod = theme?.enableCod !== false
+
+  const availableMethods: Array<{
+    id: 'cod' | 'upi' | 'card' | 'whatsapp' | 'razorpay'
+    title: string
+    description: string
+    icon: any
+  }> = []
+
+  if (!isPaidUser || !enableOnline) {
+    // Free User store owner OR Online Payment OFF ➔ WhatsApp order only.
+    availableMethods.push({
+      id: 'whatsapp',
+      title: theme?.whatsappOrderTitle || 'Place Order via WhatsApp',
+      description: theme?.whatsappOrderDescription || 'Direct order & support on WhatsApp',
+      icon: MessageCircle,
+    })
+  } else {
+    // Online Payment ON ➔ Online Payment option
+    const rawTitle = theme?.onlinePaymentTitle
+    const displayTitle = (!rawTitle || rawTitle === 'Card Payment') ? 'Online Payment' : rawTitle
+
+    availableMethods.push({
+      id: 'razorpay',
+      title: displayTitle,
+      description: theme?.onlinePaymentDescription || 'Credit/Debit Card, NetBanking & UPI',
+      icon: CreditCard,
+    })
+
+    // Cash on Delivery (COD) if enabled
+    if (enableCod) {
+      availableMethods.push({
+        id: 'cod',
+        title: theme?.codTitle || 'Cash on Delivery (COD)',
+        description: theme?.codDescription || 'Pay cash on delivery',
+        icon: Truck,
+      })
+    }
+
+    // Place Order via WhatsApp option
+    availableMethods.push({
+      id: 'whatsapp',
+      title: theme?.whatsappOrderTitle || 'Place Order via WhatsApp',
+      description: theme?.whatsappOrderDescription || 'Direct order & support on WhatsApp',
+      icon: MessageCircle,
+    })
+  }
+
+  const initialMethod = availableMethods[0].id
+  const [payment, setPayment] = useState<'razorpay' | 'cod' | 'upi' | 'card' | 'whatsapp'>(initialMethod)
   const [loading, setLoading] = useState(false)
 
   const subtotal = getSubtotal()
@@ -71,8 +125,15 @@ function CheckoutPageInner({
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { paymentMethod: 'cod' },
+    defaultValues: { paymentMethod: initialMethod },
   })
+
+  useEffect(() => {
+    if (!availableMethods.some(m => m.id === payment)) {
+      setPayment(availableMethods[0].id)
+      setValue('paymentMethod', availableMethods[0].id)
+    }
+  }, [availableMethods, payment, setValue])
 
   useEffect(() => {
     if (items.length === 0) router.replace(`/store/${shopSlug}`)
@@ -80,8 +141,7 @@ function CheckoutPageInner({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function onSubmit(data: FormData) {
-    setLoading(true)
+  async function executePlaceOrder(data: FormData) {
     try {
       const result = await placeOrder({
         storeUserId,
@@ -130,6 +190,61 @@ function CheckoutPageInner({
     } finally {
       setLoading(false)
     }
+  }
+
+  async function loadRazorpayScript(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        resolve(true)
+        return
+      }
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
+  async function onSubmit(data: FormData) {
+    setLoading(true)
+    const razorpayKey = theme?.razorpayKeyId
+
+    if (data.paymentMethod === 'razorpay' && razorpayKey) {
+      const loaded = await loadRazorpayScript()
+      if (loaded && (window as any).Razorpay) {
+        const options = {
+          key: razorpayKey,
+          amount: Math.round(total * 100),
+          currency: 'INR',
+          name: shopName || 'Store Order',
+          description: `Payment for ${items.length} item(s)`,
+          image: logoUrl || undefined,
+          prefill: {
+            name: data.fullName,
+            email: data.email || '',
+            contact: data.phone,
+          },
+          theme: {
+            color: theme?.primaryColor || '#4f46e5',
+          },
+          handler: async function () {
+            await executePlaceOrder(data)
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false)
+            },
+          },
+        }
+
+        const rzp = new (window as any).Razorpay(options)
+        rzp.open()
+        return
+      }
+    }
+
+    await executePlaceOrder(data)
   }
 
   if (items.length === 0) return null
@@ -309,28 +424,32 @@ function CheckoutPageInner({
               <div className="space-y-2.5 sm:space-y-3">
                 <h2 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">Payment Method</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {(['cod', 'upi'] as const).map((method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => { setPayment(method); setValue('paymentMethod', method) }}
-                      className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border-2 transition-all text-left cursor-pointer ${
-                        payment === method 
-                          ? 'border-slate-900 bg-slate-50' 
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                    >
-                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        payment === method ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {method === 'cod' ? <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-xs text-slate-900">{method === 'cod' ? 'Cash on Delivery' : 'Pay via UPI'}</p>
-                        <p className="text-[10px] text-slate-500 truncate">{method === 'cod' ? 'Pay on delivery' : 'UPI link on WhatsApp'}</p>
-                      </div>
-                    </button>
-                  ))}
+                  {availableMethods.map((methodObj) => {
+                    const MethodIcon = methodObj.icon
+                    const isSelected = payment === methodObj.id
+                    return (
+                      <button
+                        key={methodObj.id}
+                        type="button"
+                        onClick={() => { setPayment(methodObj.id); setValue('paymentMethod', methodObj.id) }}
+                        className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border-2 transition-all text-left cursor-pointer ${
+                          isSelected 
+                            ? 'border-slate-900 bg-slate-50' 
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 ${
+                          isSelected ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <MethodIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-xs text-slate-900">{methodObj.title}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{methodObj.description}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -383,9 +502,6 @@ function CheckoutPageInner({
                             <Package className="w-5 h-5" />
                           </div>
                         )}
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center">
-                          {item.quantity}
-                        </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-900 truncate">{item.name}</p>
@@ -430,12 +546,20 @@ function CheckoutPageInner({
                   </div>
                 </div>
 
-                {/* Desktop WhatsApp Place Order Button */}
+                {/* Desktop Place Order Button */}
                 <button
                   type="submit"
                   form="checkout-form"
                   disabled={loading}
-                  className="hidden lg:flex w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base items-center justify-center gap-2.5 transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] disabled:opacity-70 cursor-pointer"
+                  style={payment === 'whatsapp'
+                    ? { borderRadius: 'var(--store-btn-radius, 12px)' }
+                    : { backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }
+                  }
+                  className={`hidden lg:flex w-full h-14 ${
+                    payment === 'whatsapp'
+                      ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
+                      : 'hover:opacity-95 shadow-indigo-500/20'
+                  } text-white font-bold text-base items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 cursor-pointer`}
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
@@ -444,8 +568,18 @@ function CheckoutPageInner({
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5 fill-white text-emerald-500" />
-                      Place Order via WhatsApp
+                      {payment === 'whatsapp' ? (
+                        <MessageCircle className="w-5 h-5 fill-white text-emerald-500" />
+                      ) : payment === 'cod' ? (
+                        <Truck className="w-5 h-5" />
+                      ) : (
+                        <Lock className="w-5 h-5" />
+                      )}
+                      {payment === 'razorpay' || payment === 'card'
+                        ? 'Pay Online'
+                        : payment === 'cod'
+                        ? 'Place Order (Cash on Delivery)'
+                        : 'Place Order via WhatsApp'}
                     </span>
                   )}
                 </button>
@@ -467,7 +601,15 @@ function CheckoutPageInner({
             type="submit"
             form="checkout-form"
             disabled={loading}
-            className="flex-1 h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] disabled:opacity-70 cursor-pointer"
+            style={payment === 'whatsapp'
+              ? { borderRadius: 'var(--store-btn-radius, 12px)' }
+              : { backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }
+            }
+            className={`flex-1 h-12 ${
+              payment === 'whatsapp'
+                ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
+                : 'hover:opacity-95 shadow-indigo-500/20'
+            } text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 cursor-pointer`}
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -476,8 +618,18 @@ function CheckoutPageInner({
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <MessageCircle className="w-4.5 h-4.5 fill-white text-emerald-500" />
-                Place Order via WhatsApp
+                {payment === 'whatsapp' ? (
+                  <MessageCircle className="w-4.5 h-4.5 fill-white text-emerald-500" />
+                ) : payment === 'cod' ? (
+                  <Truck className="w-4.5 h-4.5" />
+                ) : (
+                  <Lock className="w-4.5 h-4.5" />
+                )}
+                {payment === 'razorpay' || payment === 'card'
+                  ? 'Pay Online'
+                  : payment === 'cod'
+                  ? 'Place Order (COD)'
+                  : 'Place Order via WhatsApp'}
               </span>
             )}
           </button>
@@ -500,6 +652,7 @@ export default function CheckoutPage() {
     logo_url: string | null
     announcement: string | null
     theme: ShopTheme | null
+    isPaidUser: boolean
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -525,6 +678,16 @@ export default function CheckoutPage() {
         } else if (!data) {
           setError('Store checkout details not found.')
         } else {
+          // Check subscription status of the store owner
+          const { data: subData } = await supabase
+            .from('user_subscriptions')
+            .select('*, plan:subscription_plans(name)')
+            .eq('user_id', data.id)
+            .maybeSingle()
+
+          const planName = (Array.isArray(subData?.plan) ? subData.plan[0]?.name : (subData?.plan as any)?.name)?.toLowerCase() || 'free'
+          const isPaid = planName !== 'free'
+
           setStoreData({
             id: data.id,
             upi_id: data.upi_id,
@@ -534,6 +697,7 @@ export default function CheckoutPage() {
             logo_url: data.shop_logo_url || data.avatar_url || null,
             announcement: data.shop_announcement || null,
             theme: (data.shop_theme as ShopTheme) || null,
+            isPaidUser: isPaid,
           })
         }
       } catch (err: any) {
@@ -587,6 +751,7 @@ export default function CheckoutPage() {
       logoUrl={storeData.logo_url}
       announcement={storeData.announcement}
       theme={storeData.theme}
+      isPaidUser={storeData.isPaidUser}
     />
   )
 }
