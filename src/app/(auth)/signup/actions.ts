@@ -48,9 +48,15 @@ const SignupSchema = z.object({
     .min(2, 'Name must be at least 2 characters.')
     .max(50, 'Name must not exceed 50 characters.'),
 
-  // Business details are now optional at signup — collected during onboarding wizard
+  // PHONE VALIDATION
+  // Mandatory 10-digit mobile number
+  phone: z.string()
+    .trim()
+    .min(1, 'Phone number is required.')
+    .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number.'),
+
+  // Business details are optional at signup — collected during onboarding wizard
   businessName: z.string().trim().optional().or(z.literal('')),
-  phone: z.string().optional().or(z.literal('')),
   referralCode: z.string().optional().or(z.literal('')),
 })
 

@@ -31,6 +31,11 @@ import {
   Zap,
   ArrowRight,
   ArrowLeft,
+  X,
+  Clock,
+  Link as LinkIcon,
+  MessageCircle,
+  Lightbulb,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -396,18 +401,34 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-4 py-8">
-      <div className="w-full max-w-4xl grid md:grid-cols-[100px_1fr] gap-8 md:gap-12 items-start">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 flex items-center justify-center p-3 sm:p-6 py-6 sm:py-10">
+      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-7 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 relative">
 
-        {/* ── Left Stepper Column ─────────────────────── */}
-        <div className="flex md:flex-col items-center justify-between md:justify-start w-full md:w-auto h-full border-b md:border-b-0 pb-6 md:pb-0 border-slate-100 dark:border-slate-800 relative">
+        {/* ── Top Bar Header (Close + Step Badge) ── */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            aria-label="Close onboarding"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          <span className="px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 text-xs font-semibold tracking-wide">
+            {step} of {TOTAL_STEPS}
+          </span>
+        </div>
+
+        {/* ── Stepper Header Bar (Horizontal) ── */}
+        <div className="flex items-center justify-between w-full mb-6 sm:mb-8 px-1 relative">
           {Array.from({ length: TOTAL_STEPS }).map((_, idx) => {
             const stepNum = idx + 1
             const isCompleted = stepNum < step
             const isActive = stepNum === step
             const isLast = stepNum === TOTAL_STEPS
             return (
-              <div key={stepNum} className="relative z-10 flex md:flex-col items-center">
+              <div key={stepNum} className="flex-1 flex items-center relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -416,346 +437,857 @@ export default function OnboardingPage() {
                       setStep(stepNum)
                     }
                   }}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all relative ${isCompleted
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all z-10 ${isCompleted
                       ? 'bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700'
                       : isActive
-                        ? 'bg-indigo-600 text-white ring-[4px] ring-indigo-500/20 shadow-md'
+                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-500/20 shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                     }`}
                 >
-                  {isCompleted ? <Check className="w-4 h-4" /> : stepNum}
+                  {isCompleted ? <Check className="w-3.5 h-3.5" /> : stepNum}
                 </button>
 
-                {/* Line segment connecting to next step (vertical on desktop, hidden on mobile) */}
                 {!isLast && (
-                  <div className="hidden md:block w-0.5 h-12 bg-slate-100 dark:bg-slate-800 my-2" />
+                  <div className={`flex-1 h-0.5 mx-1 transition-colors ${stepNum < step ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-800'
+                    }`} />
                 )}
               </div>
             )
           })}
         </div>
 
-        {/* ── Right Content Column ────────────────────── */}
-        <div className="space-y-6">
-          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
-            Step {step}
-          </span>
+        {/* ── Animated Step Content ── */}
+        <AnimatePresence mode="wait" custom={dir}>
+          <motion.div
+            key={step}
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+          >
+            {/* ── STEP 1: Welcome ── */}
+            {step === 1 && (
+              <div>
+                {/* ── MOBILE VIEW ONLY (hidden on md: and above) ── */}
+                <div className="block md:hidden space-y-5 text-center">
+                  {/* Store Icon */}
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center relative shadow-sm">
+                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-400 rounded-full blur-[1px] animate-pulse" />
+                    <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-indigo-400 rounded-full blur-[1px]" />
+                    <Store className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                  </div>
 
-          <AnimatePresence mode="wait" custom={dir}>
-            <motion.div
-              key={step}
-              custom={dir}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="space-y-6"
-            >
-              {/* ── STEP 1: Welcome ────────────────────── */}
-              {step === 1 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                      👋 Welcome to ResellerPro
+                  {/* Mobile Headings */}
+                  <div className="space-y-1.5">
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                      Create your online store <br />
+                      in just <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">2 minutes</span>
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl">
-                      Let's create your online store. It only takes about 2 minutes. Choose options tailored to your workflow.
+                    <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed max-w-xs mx-auto">
+                      Turn your products into a professional online store and start sharing your store link with customers.
                     </p>
                   </div>
 
-                  <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4 max-w-xl">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
-                      <Store className="w-6 h-6" />
+                  {/* Exact Uploaded Store Mockup Image */}
+                  <div className="max-w-xs mx-auto rounded-2xl overflow-hidden shadow-lg border border-indigo-100/80 dark:border-indigo-900/40">
+                    <img
+                      src="/images/onboarding_store_mockup.jpg"
+                      alt="My Store Mockup"
+                      className="w-full h-auto object-cover rounded-2xl"
+                    />
+                  </div>
+
+                  {/* Features Highlight Box */}
+                  <div className="bg-slate-50/70 dark:bg-slate-900/80 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 space-y-3 text-left">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+                        <LinkIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Your own store link</h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Get a beautiful link for your store.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Instant storefront storefront url</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Launch direct shopping links with direct buyer checkouts instantly.</p>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                        <MessageCircle className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Share on WhatsApp & Instagram</h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Share your store with customers instantly.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                        <Package className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Manage orders easily</h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Track, manage and grow your business.</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+                  {/* Mobile Footer Action */}
+                  <div className="space-y-2.5 pt-1">
+                    <div className="flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Takes about 2 minutes</span>
+                    </div>
+
                     <Button
                       onClick={goNext}
-                      className="h-11 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2"
+                      className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
                     >
-                      Let's Start <ArrowRight className="w-4 h-4" />
+                      Create My Store <ArrowRight className="w-4 h-4" />
                     </Button>
+
+                    <div className="flex items-center justify-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 text-center">
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Free to start • No technical skills required</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── DESKTOP VIEW ONLY (displayed on md: and above) ── */}
+                <div className="hidden md:grid md:grid-cols-2 gap-8 items-center text-left">
+                  {/* Left Column: Headings, Features & CTA */}
+                  <div className="space-y-5">
+                    {/* Store Icon */}
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center relative shadow-sm">
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-purple-400 rounded-full blur-[1px] animate-pulse" />
+                      <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-indigo-400 rounded-full blur-[1px]" />
+                      <Store className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+
+                    {/* Headings */}
+                    <div className="space-y-2">
+                      <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                        Create your online store <br />
+                        in just <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">2 minutes</span>
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-md">
+                        Turn your products into a professional online store and start sharing your store link with customers.
+                      </p>
+                    </div>
+
+                    {/* Features List Box */}
+                    <div className="bg-slate-50/70 dark:bg-slate-900/80 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+                          <LinkIcon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Your own store link</h4>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">Get a beautiful link for your store.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                          <MessageCircle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Share on WhatsApp & Instagram</h4>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">Share your store with customers instantly.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                          <Package className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Manage orders easily</h4>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">Track, manage and grow your business.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop Action Footer */}
+                    <div className="space-y-2.5 pt-1">
+                      <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Takes about 2 minutes</span>
+                      </div>
+
+                      <Button
+                        onClick={goNext}
+                        className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
+                      >
+                        Create My Store <ArrowRight className="w-4 h-4" />
+                      </Button>
+
+                      <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Free to start • No technical skills required</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Code-Based Mini Storefront Preview Component (Not image) */}
+                  <div className="bg-gradient-to-b from-indigo-50/80 to-purple-50/40 dark:from-indigo-950/40 dark:to-purple-950/20 p-4 rounded-3xl border border-indigo-100/80 dark:border-indigo-900/40 shadow-inner">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-4 space-y-3 text-left">
+                      {/* Mock Navigation Header */}
+                      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-2">
+                          <div className="space-y-0.5">
+                            <div className="w-4 h-0.5 bg-slate-500 rounded-full" />
+                            <div className="w-2.5 h-0.5 bg-slate-500 rounded-full" />
+                          </div>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100">My Store</span>
+                        </div>
+                        <div className="relative flex items-center gap-1">
+                          <ShoppingCart className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          <span className="w-4 h-4 bg-indigo-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
+                        </div>
+                      </div>
+
+                      {/* Mock Section Header */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">Featured Products</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 text-[11px] font-medium hover:underline cursor-pointer">View all</span>
+                      </div>
+
+                      {/* Mock Product Grid with Actual Product Images */}
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {/* Product 1: Handbag */}
+                        <div className="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl text-center space-y-1.5 border border-slate-100 dark:border-slate-800">
+                          <div className="w-full h-16 bg-white dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center p-0.5 border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <img src="/images/demo_handbag.png" alt="Handbag" className="w-full h-full object-cover rounded-md" />
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">Handbag</div>
+                          <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">₹399</div>
+                        </div>
+
+                        {/* Product 2: Watch */}
+                        <div className="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl text-center space-y-1.5 border border-slate-100 dark:border-slate-800">
+                          <div className="w-full h-16 bg-white dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center p-0.5 border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <img src="/images/demo_watch.png" alt="Watch" className="w-full h-full object-cover rounded-md" />
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">Watch</div>
+                          <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">₹599</div>
+                        </div>
+
+                        {/* Product 3: Perfume */}
+                        <div className="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-xl text-center space-y-1.5 border border-slate-100 dark:border-slate-800">
+                          <div className="w-full h-16 bg-white dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center p-0.5 border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <img src="/images/demo_perfume.png" alt="Perfume" className="w-full h-full object-cover rounded-md" />
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">Perfume</div>
+                          <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">₹299</div>
+                        </div>
+                      </div>
+
+                      {/* Mock Action Button inside card */}
+                      <div className="pt-1">
+                        <div className="w-full py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold text-center shadow-sm">
+                          Shop Now
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+              {/* ── STEP 2: Business Type ───────────────── */}
+              {step === 2 && (
+                <div>
+                  {/* ── MOBILE VIEW ONLY (hidden on md: and above) ── */}
+                  <div className="block md:hidden space-y-5">
+                    <div className="space-y-1.5 text-left">
+                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        What type of business do you have?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                        Please choose from the options so we can help customize your onboarding experience.
+                      </p>
+                    </div>
+
+                    {/* 2-Column Compact Card Grid for Mobile */}
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                      {BUSINESS_TYPES.map(biz => {
+                        const Icon = biz.icon
+                        const selected = businessType === biz.id
+                        return (
+                          <button
+                            key={biz.id}
+                            type="button"
+                            onClick={() => setBusinessType(biz.id)}
+                            className={`group border rounded-none p-4 sm:p-5 transition-all duration-200 flex flex-col items-center justify-between text-center select-none cursor-pointer ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-600/10 shadow-sm'
+                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-200 dark:hover:border-indigo-900/50 hover:shadow-md'
+                              }`}
+                          >
+                            <div className="flex flex-col items-center w-full">
+                              {/* Centered Top Icon */}
+                              <div className={`w-11 h-11 rounded-none flex items-center justify-center transition-colors ${selected
+                                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600'
+                                }`}>
+                                <Icon className="w-5 h-5 stroke-[1.8]" />
+                              </div>
+
+                              {/* Label & Description */}
+                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-3 leading-snug">
+                                {biz.label}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight max-w-[160px]">
+                                {biz.desc}
+                              </p>
+                            </div>
+
+                            {/* Radio Dot at Bottom Center */}
+                            <div className="mt-3.5 pt-1">
+                              <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
+                                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                }`}>
+                                {selected && <Check className="w-3 h-3 stroke-[2.5]" />}
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Soft Purple Callout Banner */}
+                    <div className="bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-2.5 text-xs text-indigo-700 dark:text-indigo-300">
+                      <Lightbulb className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span>Don't worry, you can change this later from your store settings.</span>
+                    </div>
+
+                    {/* Mobile Navigation Bar */}
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep2}
+                      nextDisabled={!businessType}
+                      saving={saving}
+                    />
+                  </div>
+
+                  {/* ── DESKTOP VIEW ONLY (previous 3-col style, displayed on md: and above) ── */}
+                  <div className="hidden md:block space-y-6">
+                    <div className="space-y-2 text-left">
+                      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        What type of business do you have?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Please choose from the options so we can help customize your onboarding experience.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      {BUSINESS_TYPES.map(biz => {
+                        const Icon = biz.icon
+                        const selected = businessType === biz.id
+                        return (
+                          <button
+                            key={biz.id}
+                            type="button"
+                            onClick={() => setBusinessType(biz.id)}
+                            className={`group text-left border rounded-2xl p-5 bg-white dark:bg-slate-900 transition-all duration-200 relative flex flex-col justify-between min-h-[140px] select-none cursor-pointer ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5'
+                              }`}
+                          >
+                            <div className="flex justify-between items-start w-full">
+                              <div className={`p-2.5 rounded-xl transition-colors ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
+                                }`}>
+                                <Icon className="w-5 h-5 stroke-[1.8]" />
+                              </div>
+                              <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
+                                  ? 'border-transparent bg-emerald-500 text-white'
+                                  : 'border-slate-200 dark:border-slate-700'
+                                }`}>
+                                {selected && <Check className="w-3.5 h-3.5" />}
+                              </div>
+                            </div>
+
+                            <div className="mt-4">
+                              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{biz.label}</h4>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 leading-snug">{biz.desc}</p>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep2}
+                      nextDisabled={!businessType}
+                      saving={saving}
+                    />
                   </div>
                 </div>
               )}
 
-              {/* ── STEP 2: Business Type ───────────────── */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                      What type of business do you have?
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                      Please choose from the options so we can help customize your onboarding experience.
-                    </p>
+              {/* ── STEP 3: Product Categories ──────────── */}
+              {step === 3 && (
+                <div>
+                  {/* ── MOBILE VIEW ONLY (hidden on md: and above) ── */}
+                  <div className="block md:hidden space-y-5">
+                    <div className="space-y-1.5 text-left">
+                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        What products do you sell?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                        Select all that apply to list in your catalog category selections.
+                      </p>
+                    </div>
+
+                    {/* 3-Column Compact Grid for Mobile matching screenshot */}
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                      {PRODUCT_CATEGORIES.map(cat => {
+                        const Icon = cat.icon
+                        const selected = businessCategories.includes(cat.id)
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                              setBusinessCategories(prev =>
+                                selected ? prev.filter(c => c !== cat.id) : [...prev, cat.id]
+                              )
+                            }}
+                            className={`group border rounded-none p-3 sm:p-4 transition-all duration-200 flex flex-col items-center justify-between text-center relative select-none cursor-pointer min-h-[110px] ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-600/10 shadow-sm'
+                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+                              }`}
+                          >
+                            {/* Checkmark Badge Top-Right */}
+                            <div className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center absolute top-2 right-2 ${selected
+                                ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                                : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
+                              }`}>
+                              {selected && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
+                            </div>
+
+                            {/* Centered Top Icon */}
+                            <div className={`w-10 h-10 rounded-none flex items-center justify-center transition-colors mt-1 ${selected
+                                ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                              }`}>
+                              <Icon className="w-4 h-4 stroke-[1.8]" />
+                            </div>
+
+                            {/* Category Label */}
+                            <span className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight mt-2.5 px-0.5">
+                              {cat.label}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Soft Purple Callout Banner */}
+                    <div className="bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-2.5 text-xs text-indigo-700 dark:text-indigo-300">
+                      <Lightbulb className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span>Select all categories that apply to your store.</span>
+                    </div>
+
+                    {/* Mobile Navigation Bar */}
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep3}
+                      nextDisabled={businessCategories.length === 0}
+                      saving={saving}
+                    />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {BUSINESS_TYPES.map(biz => {
-                      const Icon = biz.icon
-                      const selected = businessType === biz.id
-                      return (
-                        <button
-                          key={biz.id}
-                          type="button"
-                          onClick={() => setBusinessType(biz.id)}
-                          className={`group text-left border rounded-2xl p-5 bg-white dark:bg-slate-900 transition-all duration-200 relative flex flex-col justify-between min-h-[140px] select-none ${selected
-                              ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10'
-                              : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5'
-                            }`}
-                        >
-                          <div className="flex justify-between items-start w-full">
-                            <div className={`p-2.5 rounded-xl transition-colors ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
+                  {/* ── DESKTOP VIEW ONLY (unchanged) ── */}
+                  <div className="hidden md:block space-y-6">
+                    <div className="space-y-2 text-left">
+                      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        What products do you sell?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Select all that apply to list in your catalog category selections.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      {PRODUCT_CATEGORIES.map(cat => {
+                        const Icon = cat.icon
+                        const selected = businessCategories.includes(cat.id)
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            title={cat.label}
+                            onClick={() => {
+                              setBusinessCategories(prev =>
+                                selected ? prev.filter(c => c !== cat.id) : [...prev, cat.id]
+                              )
+                            }}
+                            className={`text-left border rounded-xl p-3.5 bg-white dark:bg-slate-900 transition-all select-none flex items-center gap-3 relative min-h-[58px] cursor-pointer ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10 bg-indigo-50/5 dark:bg-indigo-900/5'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800'
+                              }`}
+                          >
+                            <div className={`p-2 rounded-lg flex-shrink-0 ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
                               }`}>
-                              <Icon className="w-5 h-5 stroke-[1.8]" />
+                              <Icon className="w-4 h-4 stroke-[1.8]" />
                             </div>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex-1 pr-5 whitespace-normal leading-tight">
+                              {cat.label}
+                            </span>
+                            <div className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center flex-shrink-0 absolute top-2 right-2 ${selected
+                                ? 'border-transparent bg-emerald-500 text-white'
+                                : 'border-slate-200 dark:border-slate-700'
+                              }`}>
+                              {selected && <Check className="w-3 h-3" />}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep3}
+                      nextDisabled={businessCategories.length === 0}
+                      saving={saving}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ── STEP 4: Business Details ─────────────── */}
+              {step === 4 && (
+                <div>
+                  {/* ── MOBILE VIEW ONLY (hidden on md: and above) ── */}
+                  <div className="block md:hidden space-y-5">
+                    <div className="space-y-1.5 text-left">
+                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        Tell us about your business
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                        Configure your shop credentials and claim your public custom shop link.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4 text-left">
+                      {/* Business Name */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="businessNameMobile" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Business Name
+                        </Label>
+                        <Input
+                          id="businessNameMobile"
+                          placeholder="e.g. Fashion Hub"
+                          value={businessName}
+                          onChange={e => setBusinessName(e.target.value)}
+                          className="h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs focus:border-indigo-500 focus:ring-indigo-500/10"
+                          maxLength={50}
+                        />
+                      </div>
+
+                      {/* Store URL */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="storeSlugMobile" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Store URL Link
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="storeSlugMobile"
+                            placeholder="your-store-slug"
+                            value={storeSlug}
+                            onChange={e => {
+                              setIsSlugManuallyEdited(true)
+                              setStoreSlug(toSlug(e.target.value))
+                            }}
+                            className={`h-10 rounded-xl font-mono text-xs pr-10 ${slugStatus === 'available'
+                                ? 'border-emerald-400 bg-emerald-50/20 dark:bg-emerald-900/10 focus:ring-emerald-500/10'
+                                : slugStatus === 'taken'
+                                  ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-900/10'
+                                  : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'
+                              }`}
+                            maxLength={50}
+                          />
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                            {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
+                            {slugStatus === 'available' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                          </div>
+                        </div>
+
+                        {slugStatus === 'available' && storeSlug && (
+                          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">✓ Custom store slug is available!</p>
+                        )}
+                        {slugStatus === 'taken' && (
+                          <div className="space-y-1">
+                            <p className="text-[11px] text-rose-500 font-medium">✗ This link is already taken.</p>
+                            {slugSuggestion && (
+                              <button
+                                type="button"
+                                onClick={() => setStoreSlug(slugSuggestion)}
+                                className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
+                              >
+                                Suggest: <span className="font-mono">{slugSuggestion}</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {storeSlug && slugStatus !== 'taken' && (
+                          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 mt-1.5">
+                            <Store className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate">
+                              https://resellerpro.in/store/<span className="text-indigo-600 dark:text-indigo-400 font-semibold">{storeSlug}</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Soft Purple Callout Banner */}
+                    <div className="bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-2.5 text-xs text-indigo-700 dark:text-indigo-300">
+                      <Lightbulb className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span>You can change your store name and custom link anytime.</span>
+                    </div>
+
+                    {/* Mobile Navigation Bar */}
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep4}
+                      nextDisabled={
+                        !businessName.trim() ||
+                        !storeSlug ||
+                        slugStatus === 'taken' ||
+                        slugStatus === 'checking' ||
+                        slugStatus === 'error'
+                      }
+                      saving={saving}
+                    />
+                  </div>
+
+                  {/* ── DESKTOP VIEW ONLY (unchanged) ── */}
+                  <div className="hidden md:block space-y-6">
+                    <div className="space-y-2 text-left">
+                      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        Tell us about your business
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Configure your shop credentials and claim your public custom shop link.
+                      </p>
+                    </div>
+
+                    <div className="max-w-xl space-y-4 text-left">
+                      {/* Business Name */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="businessNameDesktop" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Business Name
+                        </Label>
+                        <Input
+                          id="businessNameDesktop"
+                          placeholder="e.g. Fashion Hub"
+                          value={businessName}
+                          onChange={e => setBusinessName(e.target.value)}
+                          className="h-11 rounded-xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10"
+                          maxLength={50}
+                        />
+                      </div>
+
+                      {/* Store URL */}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="storeSlugDesktop" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Store URL Link
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="storeSlugDesktop"
+                            placeholder="your-store-slug"
+                            value={storeSlug}
+                            onChange={e => {
+                              setIsSlugManuallyEdited(true)
+                              setStoreSlug(toSlug(e.target.value))
+                            }}
+                            className={`h-11 rounded-xl font-mono text-sm pr-10 ${slugStatus === 'available'
+                                ? 'border-emerald-400 bg-emerald-50/20 dark:bg-emerald-900/10 focus:ring-emerald-500/10'
+                                : slugStatus === 'taken'
+                                  ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-900/10'
+                                  : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'
+                              }`}
+                            maxLength={50}
+                          />
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                            {slugStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+                            {slugStatus === 'available' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                          </div>
+                        </div>
+
+                        {slugStatus === 'available' && storeSlug && (
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Custom store slug is available!</p>
+                        )}
+                        {slugStatus === 'taken' && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-rose-500 font-medium">✗ This link is already taken.</p>
+                            {slugSuggestion && (
+                              <button
+                                type="button"
+                                onClick={() => setStoreSlug(slugSuggestion)}
+                                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
+                              >
+                                Suggest: <span className="font-mono">{slugSuggestion}</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {storeSlug && slugStatus !== 'taken' && (
+                          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 mt-2">
+                            <Store className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
+                              https://resellerpro.in/store/<span className="text-indigo-600 dark:text-indigo-400 font-semibold">{storeSlug}</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep4}
+                      nextDisabled={
+                        !businessName.trim() ||
+                        !storeSlug ||
+                        slugStatus === 'taken' ||
+                        slugStatus === 'checking' ||
+                        slugStatus === 'error'
+                      }
+                      saving={saving}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ── STEP 5: Product Count ───────────────── */}
+              {step === 5 && (
+                <div>
+                  {/* ── MOBILE VIEW ONLY (hidden on md: and above) ── */}
+                  <div className="block md:hidden space-y-5">
+                    <div className="space-y-1.5 text-left">
+                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        How many products do you currently have?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                        Please select an option so we can optimize your dashboard setup settings.
+                      </p>
+                    </div>
+
+                    {/* 2-Column Compact Card Grid for Mobile */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {PRODUCT_COUNTS.map(opt => {
+                        const selected = productCountRange === opt.id
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setProductCountRange(opt.id)}
+                            className={`group border rounded-none p-3.5 transition-all duration-200 flex flex-col items-center justify-between text-center select-none cursor-pointer ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-600/10 shadow-sm'
+                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+                              }`}
+                          >
+                            <div className="flex flex-col items-center w-full">
+                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-1 leading-snug">
+                                {opt.label}
+                              </h4>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-tight max-w-[140px]">
+                                {opt.desc}
+                              </p>
+                            </div>
+
+                            {/* Radio Dot at Bottom Center */}
+                            <div className="mt-3 pt-0.5">
+                              <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
+                                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
+                                }`}>
+                                {selected && <Check className="w-3 h-3 stroke-[2.5]" />}
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Soft Purple Callout Banner */}
+                    <div className="bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl p-3 sm:p-3.5 border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-2.5 text-xs text-indigo-700 dark:text-indigo-300">
+                      <Lightbulb className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span>This helps us set up your product catalog default layout.</span>
+                    </div>
+
+                    {/* Mobile Navigation Bar */}
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep5AndFinish}
+                      nextDisabled={!productCountRange}
+                      nextLabel="Next →"
+                      saving={saving}
+                    />
+                  </div>
+
+                  {/* ── DESKTOP VIEW ONLY (unchanged) ── */}
+                  <div className="hidden md:block space-y-6">
+                    <div className="space-y-2 text-left">
+                      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        How many products do you currently have?
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Please select an option so we can optimize your dashboard setup settings.
+                      </p>
+                    </div>
+
+                    <div className="max-w-xl space-y-3 text-left">
+                      {PRODUCT_COUNTS.map(opt => {
+                        const selected = productCountRange === opt.id
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setProductCountRange(opt.id)}
+                            className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all cursor-pointer ${selected
+                                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/5 dark:bg-indigo-900/5 ring-2 ring-indigo-600/10'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-900'
+                              }`}
+                          >
                             <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
                                 ? 'border-transparent bg-emerald-500 text-white'
                                 : 'border-slate-200 dark:border-slate-700'
                               }`}>
                               {selected && <Check className="w-3.5 h-3.5" />}
                             </div>
-                          </div>
-
-                          <div className="mt-4">
-                            <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{biz.label}</h4>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 leading-snug">{biz.desc}</p>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  <StepNav
-                    onBack={goBack}
-                    onNext={saveStep2}
-                    nextDisabled={!businessType}
-                    saving={saving}
-                  />
-                </div>
-              )}
-
-              {/* ── STEP 3: Product Categories ──────────── */}
-              {step === 3 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                      What products do you sell?
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                      Select all that apply to list in your catalog category selections.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {PRODUCT_CATEGORIES.map(cat => {
-                      const Icon = cat.icon
-                      const selected = businessCategories.includes(cat.id)
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          title={cat.label}
-                          onClick={() => {
-                            setBusinessCategories(prev =>
-                              selected ? prev.filter(c => c !== cat.id) : [...prev, cat.id]
-                            )
-                          }}
-                          className={`text-left border rounded-xl p-3.5 bg-white dark:bg-slate-900 transition-all select-none flex items-center gap-3 relative min-h-[58px] ${selected
-                              ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-600/10 dark:ring-indigo-500/10 bg-indigo-50/5 dark:bg-indigo-900/5'
-                              : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800'
-                            }`}
-                        >
-                          <div className={`p-2 rounded-lg flex-shrink-0 ${selected ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
-                            }`}>
-                            <Icon className="w-4 h-4 stroke-[1.8]" />
-                          </div>
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex-1 pr-5 whitespace-normal leading-tight">
-                            {cat.label}
-                          </span>
-                          <div className={`w-4 h-4 rounded-full border transition-all flex items-center justify-center flex-shrink-0 absolute top-2 right-2 ${selected
-                              ? 'border-transparent bg-emerald-500 text-white'
-                              : 'border-slate-200 dark:border-slate-700'
-                            }`}>
-                            {selected && <Check className="w-3 h-3" />}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  <StepNav
-                    onBack={goBack}
-                    onNext={saveStep3}
-                    nextDisabled={businessCategories.length === 0}
-                    saving={saving}
-                  />
-                </div>
-              )}
-
-              {/* ── STEP 4: Business Details ─────────────── */}
-              {step === 4 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                      Tell us about your business
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                      Configure your shop credentials and claim your public custom shop link.
-                    </p>
-                  </div>
-
-                  <div className="max-w-xl space-y-4">
-                    {/* Business Name */}
-                    <div className="space-y-1.5">
-                      <Label htmlFor="businessName" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Business Name
-                      </Label>
-                      <Input
-                        id="businessName"
-                        placeholder="e.g. Fashion Hub"
-                        value={businessName}
-                        onChange={e => setBusinessName(e.target.value)}
-                        className="h-11 rounded-xl bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10"
-                        maxLength={50}
-                      />
+                            <div>
+                              <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 block">{opt.label}</span>
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">{opt.desc}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
                     </div>
 
-                    {/* Store URL */}
-                    <div className="space-y-1.5">
-                      <Label htmlFor="storeSlug" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Store URL Link
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="storeSlug"
-                          placeholder="your-store-slug"
-                          value={storeSlug}
-                          onChange={e => {
-                            setIsSlugManuallyEdited(true)
-                            setStoreSlug(toSlug(e.target.value))
-                          }}
-                          className={`h-11 rounded-xl font-mono text-sm pr-10 ${slugStatus === 'available'
-                              ? 'border-emerald-400 bg-emerald-50/20 dark:bg-emerald-900/10 focus:ring-emerald-500/10'
-                              : slugStatus === 'taken'
-                                ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-900/10'
-                                : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'
-                            }`}
-                          maxLength={50}
-                        />
-                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                          {slugStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
-                          {slugStatus === 'available' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                        </div>
-                      </div>
-
-                      {slugStatus === 'available' && storeSlug && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Custom store slug is available!</p>
-                      )}
-                      {slugStatus === 'taken' && (
-                        <div className="space-y-1">
-                          <p className="text-xs text-rose-500 font-medium">✗ This link is already taken.</p>
-                          {slugSuggestion && (
-                            <button
-                              type="button"
-                              onClick={() => setStoreSlug(slugSuggestion)}
-                              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
-                            >
-                              Suggest: <span className="font-mono">{slugSuggestion}</span>
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      {storeSlug && slugStatus !== 'taken' && (
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 mt-2">
-                          <Store className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
-                            https://resellerpro.in/store/<span className="text-indigo-600 dark:text-indigo-400 font-semibold">{storeSlug}</span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    <StepNav
+                      onBack={goBack}
+                      onNext={saveStep5AndFinish}
+                      nextDisabled={!productCountRange}
+                      nextLabel="Next →"
+                      saving={saving}
+                    />
                   </div>
-
-                  <StepNav
-                    onBack={goBack}
-                    onNext={saveStep4}
-                    nextDisabled={
-                      !businessName.trim() ||
-                      !storeSlug ||
-                      slugStatus === 'taken' ||
-                      slugStatus === 'checking' ||
-                      slugStatus === 'error'
-                    }
-                    saving={saving}
-                  />
-                </div>
-              )}
-
-              {/* ── STEP 5: Product Count ───────────────── */}
-              {step === 5 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                      How many products do you currently have?
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                      Please select an option so we can optimize your dashboard setup settings.
-                    </p>
-                  </div>
-
-                  <div className="max-w-xl space-y-3">
-                    {PRODUCT_COUNTS.map(opt => {
-                      const selected = productCountRange === opt.id
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setProductCountRange(opt.id)}
-                          className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${selected
-                              ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/5 dark:bg-indigo-900/5 ring-2 ring-indigo-600/10'
-                              : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-900'
-                            }`}
-                        >
-                          <div className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${selected
-                              ? 'border-transparent bg-emerald-500 text-white'
-                              : 'border-slate-200 dark:border-slate-700'
-                            }`}>
-                            {selected && <Check className="w-3.5 h-3.5" />}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 block">{opt.label}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5">{opt.desc}</span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  <StepNav
-                    onBack={goBack}
-                    onNext={saveStep5AndFinish}
-                    nextDisabled={!productCountRange}
-                    nextLabel="Next →"
-                    saving={saving}
-                  />
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
         </div>
-
       </div>
-    </div>
-  )
+    )
 }
 
 // ─────────────────────────────────────────────────────
@@ -776,12 +1308,12 @@ function StepNav({
   saving?: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 pt-6 border-t border-slate-100 dark:border-slate-800 w-full max-w-xl">
+    <div className="flex items-center justify-between gap-3 pt-5 sm:pt-6 border-t border-slate-100 dark:border-slate-800 w-full">
       <Button
         type="button"
         variant="ghost"
         onClick={onBack}
-        className="flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-lg text-sm px-4 h-10"
+        className="flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-xl text-xs sm:text-sm px-3 sm:px-4 h-10 sm:h-11 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" /> Back
       </Button>
@@ -790,7 +1322,7 @@ function StepNav({
         type="button"
         onClick={onNext}
         disabled={nextDisabled || saving}
-        className="h-10 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+        className="h-10 sm:h-11 px-6 sm:px-8 flex-1 sm:flex-initial max-w-[220px] rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer ml-auto"
       >
         {saving ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
