@@ -17,7 +17,7 @@ interface PlaceOrderInput {
     state: string
     pincode: string
   }
-  paymentMethod: 'cod' | 'upi'
+  paymentMethod: 'cod' | 'upi' | 'whatsapp' | 'razorpay' | 'card'
   orderNotes?: string | null
   items: {
     productId: string
