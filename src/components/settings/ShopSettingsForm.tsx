@@ -533,6 +533,24 @@ export default function ShopSettingsForm({
     )
   }
 
+  const uploadViaApi = async (file: File, folder: string = 'settings'): Promise<string> => {
+    const apiFormData = new FormData()
+    apiFormData.append('file', file)
+    apiFormData.append('folder', folder)
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: apiFormData
+    })
+
+    const data = await res.json()
+    if (!res.ok || !data.success || !data.url) {
+      throw new Error(data.error || 'Upload failed')
+    }
+
+    return data.url
+  }
+
   const handleBadgeIconUpload = async (e: React.ChangeEvent<HTMLInputElement>, badgeId: string) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -544,15 +562,7 @@ export default function ShopSettingsForm({
 
     setUploadingField(`badge_${badgeId}`)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `badge-${badgeId}-${Date.now()}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage.from('product-images').upload(filePath, file, { upsert: false })
-      if (error) throw error
-
-      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath)
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, 'badges')
 
       setFormData(prev => ({
         ...prev,
@@ -594,26 +604,7 @@ export default function ShopSettingsForm({
 
     setUploadingField(fieldName)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${fieldName}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) {
-        throw error
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, fieldName)
 
       setFormData(prev => ({ ...prev, [fieldName]: uploadedUrl }))
       toast({
@@ -649,26 +640,7 @@ export default function ShopSettingsForm({
     setUploadingField(fieldKey)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `heroBanners-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) {
-        throw error
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, 'banners')
 
       setFormData(prev => {
         const currentBanners = [...(prev.heroBanners || [])]

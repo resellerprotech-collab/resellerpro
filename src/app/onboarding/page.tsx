@@ -31,6 +31,8 @@ import {
   Zap,
   ArrowRight,
   ArrowLeft,
+  LogOut,
+  LayoutDashboard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -396,8 +398,46 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-4 py-8">
-      <div className="w-full max-w-4xl grid md:grid-cols-[100px_1fr] gap-8 md:gap-12 items-start">
+    <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col">
+      {/* Top Header with Navigation & Sign Out Options */}
+      <header className="w-full border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-sm">
+              R
+            </div>
+            <span className="font-bold text-base text-slate-900 dark:text-white">ResellerPro</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/dashboard')}
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white gap-1.5"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              Go to Dashboard
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await supabase.auth.signOut()
+                router.replace('/signin')
+              }}
+              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 gap-1.5 border-red-200 dark:border-red-900/40"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center p-4 py-8">
+        <div className="w-full max-w-4xl grid md:grid-cols-[100px_1fr] gap-8 md:gap-12 items-start">
 
         {/* ── Left Stepper Column ─────────────────────── */}
         <div className="flex md:flex-col items-center justify-between md:justify-start w-full md:w-auto h-full border-b md:border-b-0 pb-6 md:pb-0 border-slate-100 dark:border-slate-800 relative">
@@ -755,7 +795,8 @@ export default function OnboardingPage() {
 
       </div>
     </div>
-  )
+  </div>
+)
 }
 
 // ─────────────────────────────────────────────────────

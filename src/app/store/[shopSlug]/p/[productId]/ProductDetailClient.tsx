@@ -119,7 +119,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
       <StoreHeader
         shopSlug={shopSlug}
         shopName={profile.business_name || profile.shop_name || 'Store'}
-        logoUrl={profile.shop_logo_url || profile.avatar_url}
+        logoUrl={profile.shop_logo_url || profile.avatar_url || theme?.shop_logo_url}
         announcement={profile.shop_announcement}
         theme={theme}
       />

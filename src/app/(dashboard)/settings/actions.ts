@@ -527,6 +527,11 @@ export async function updateShopSettings(formData: FormData) {
       updated_at: new Date().toISOString(),
     }
 
+    if (shop_logo_url !== undefined) {
+      updateData.shop_logo_url = shop_logo_url || null
+      updateData.avatar_url = shop_logo_url || null
+    }
+
     if (upi_id !== null && upi_id !== undefined) {
       updateData.upi_id = upi_id.trim() || null
     }
