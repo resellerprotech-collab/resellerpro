@@ -13,7 +13,7 @@ import { exportToCSV } from '@/lib/utils/export'
 import { exportToPDF } from '@/lib/utils/exportPDF'
 import { formatDate, getDayName, getDate, getMonthName, getYear } from '@/lib/utils/dateHelpers'
 import { formatCurrency, formatNumber, getReadableDate, getReadableMonth } from '@/lib/utils/formatters'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { ProBadge } from '@/components/shared/ProBadge'
 import { useRouter } from 'next/navigation'
@@ -110,7 +110,7 @@ export function ExportButton({ orders, dateRange, businessName = 'ResellerPro' }
         }),
         totalRecords: orders.length
       })
-      toast.success('✅ Detailed report exported successfully!')
+      toast.success('Analytics report exported')
     } catch (error) {
       console.error('Export error:', error)
       toast.error('Failed to export detailed report')
@@ -150,7 +150,7 @@ export function ExportButton({ orders, dateRange, businessName = 'ResellerPro' }
         : `Analytics_${getReadableDate()}_Summary`
 
       exportToPDF(summaryData, filename)
-      toast.success('✅ Summary PDF exported successfully!')
+      toast.success('Analytics PDF exported')
     } catch (error) {
       console.error('PDF export error:', error)
       toast.error('Failed to export summary PDF')

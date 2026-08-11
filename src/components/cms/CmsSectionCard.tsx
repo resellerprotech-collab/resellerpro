@@ -12,7 +12,7 @@ import {
   Layout, PanelTop, Grid, Star, MessageSquare, Shield, Mail, RefreshCw, Check, Upload
 } from 'lucide-react'
 import { updateCmsSectionAction, reorderCmsSectionsAction } from '@/app/actions/cms-sections'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import type { CmsSectionItem } from '@/lib/services/cms/sections.service'
 
 interface CmsSectionCardProps {
@@ -59,7 +59,7 @@ export default function CmsSectionCard({
     setSaving(false)
 
     if (res.success) {
-      toast.success(`${section.label} content saved ✨`)
+      toast.success(`${section.label} content saved`)
       onUpdate({ ...section, content })
       setExpanded(false)
     } else {
@@ -241,7 +241,7 @@ export default function CmsSectionCard({
                               heroImages: [publicUrl],
                               heroBanners: prev.heroBanners?.length ? prev.heroBanners.map((b: any, i: number) => i === 0 ? { ...b, imageUrl: publicUrl } : b) : [{ id: 'banner-1', imageUrl: publicUrl, clickAction: 'shop', link: '#products' }]
                             }))
-                            toast.success('Hero image uploaded! ✨ Click "Save Changes" to apply.')
+                            toast.success('Hero image uploaded. Click "Save Changes" to apply.')
                           } catch (err: any) {
                             console.error('CMS Hero image upload error:', err)
                             toast.error(err?.message || 'Image upload failed. Please try again.')
@@ -326,7 +326,7 @@ export default function CmsSectionCard({
                               ...prev,
                               promoFullBanner: { ...(prev.promoFullBanner || {}), imageUrl: publicUrl }
                             }))
-                            toast.success('Promotional banner uploaded! ✨ Click "Save Changes" to apply.')
+                            toast.success('Banner uploaded. Click "Save Changes" to apply.')
                           } catch (err: any) {
                             console.error('CMS Promo image upload error:', err)
                             toast.error(err?.message || 'Image upload failed. Please try again.')

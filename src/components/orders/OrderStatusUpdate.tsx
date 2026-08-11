@@ -32,7 +32,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Loader2, Truck, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { updateOrderStatus } from '@/app/(dashboard)/orders/actions'
@@ -66,7 +66,7 @@ export function OrderStatusUpdate({
   onStatusUpdated?: (status: string) => void
 }) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [selectedStatus, setSelectedStatus] = useState('')
@@ -88,20 +88,16 @@ export function OrderStatusUpdate({
     e.preventDefault()
 
     if (!selectedStatus) {
-      toast({
-        title: 'No status selected',
-        description: 'Please select a new status',
-        variant: 'destructive',
+      toast.warning('Select a status', {
+        description: 'Please select a new status to update.',
       })
       return
     }
 
     // Validate shipping info if status is shipped
     if (selectedStatus === 'shipped' && (!courierName || !trackingNumber)) {
-      toast({
-        title: 'Missing shipping details',
-        description: 'Please provide courier name and tracking number',
-        variant: 'destructive',
+      toast.warning('Missing shipping details', {
+        description: 'Provide courier name and tracking number.',
       })
       return
     }
@@ -128,22 +124,12 @@ export function OrderStatusUpdate({
         }
 
         // Show toast with undo button
-        const { dismiss } = toast({
-          title: '✅ Status Updated',
+        toast.success('Status updated', {
           description: `Order status changed to ${STATUS_CONFIG[selectedStatus as keyof typeof STATUS_CONFIG]?.label}.`,
-          action: (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                handleUndo(currentStatus, selectedStatus)
-                dismiss()
-              }}
-            >
-              Undo
-            </Button>
-          ),
-          duration: 5000,
+          action: {
+            label: 'Undo',
+            onClick: () => handleUndo(currentStatus, selectedStatus),
+          },
         })
 
         // Set timeout to clear undo ability after 5 seconds
@@ -173,10 +159,8 @@ export function OrderStatusUpdate({
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['orders-stats'] })
       } else {
-        toast({
-          title: 'Error',
-          description: result.message || 'Failed to update order status',
-          variant: 'destructive',
+        toast.error('Unable to update status', {
+          description: result.message || 'Check connection and try again.',
         })
       }
     })
@@ -201,8 +185,7 @@ export function OrderStatusUpdate({
 
       if (result.success) {
         // SUCCESS: Update state only after successful revert
-        toast({
-          title: '↩️ Status Reverted',
+        toast.success('Status reverted', {
           description: `Order restored to ${STATUS_CONFIG[oldStatus as keyof typeof STATUS_CONFIG]?.label}.`,
         })
 
@@ -216,10 +199,8 @@ export function OrderStatusUpdate({
         queryClient.invalidateQueries({ queryKey: ['orders-stats'] })
       } else {
         // FAILURE: Show error but don't change anything
-        toast({
-          title: 'Undo Failed',
-          description: result.message || 'Could not revert. Status remains unchanged.',
-          variant: 'destructive',
+        toast.error('Unable to revert status', {
+          description: result.message || 'Status remains unchanged.',
         })
         // Reset undo state but keep current status
         setPreviousStatus('')

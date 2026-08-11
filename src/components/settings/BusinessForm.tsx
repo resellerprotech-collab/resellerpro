@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Loader2, Building, MapPin, Phone, Mail, Globe, CreditCard, FileText } from 'lucide-react'
 import { updateBusinessInfo } from '@/app/(dashboard)/settings/actions'
 
@@ -23,7 +23,7 @@ type BusinessData = {
 
 export default function BusinessForm({ business }: { business: BusinessData }) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const [isPending, startTransition] = useTransition()
 
   const [formData, setFormData] = useState({
@@ -58,20 +58,16 @@ export default function BusinessForm({ business }: { business: BusinessData }) {
 
     // Validate GSTIN
     if (formData.gstin && !validateGSTIN(formData.gstin)) {
-      toast({
-        title: 'Invalid GSTIN',
-        description: 'Please enter a valid GSTIN (e.g., 29ABCDE1234F1Z5)',
-        variant: 'destructive',
+      toast.error('Invalid GSTIN format', {
+        description: 'Check the 15-character GSTIN format and try again.',
       })
       return
     }
 
     // Validate PAN
     if (formData.pan_number && !validatePAN(formData.pan_number)) {
-      toast({
-        title: 'Invalid PAN',
-        description: 'Please enter a valid PAN (e.g., ABCDE1234F)',
-        variant: 'destructive',
+      toast.error('Invalid PAN format', {
+        description: 'Check the 10-character PAN format and try again.',
       })
       return
     }
@@ -90,16 +86,11 @@ export default function BusinessForm({ business }: { business: BusinessData }) {
       const result = await updateBusinessInfo(data)
 
       if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'Business information updated successfully',
-        })
+        toast.success('Business details updated')
         router.refresh()
       } else {
-        toast({
-          title: 'Error',
-          description: result.message || 'Failed to update business information',
-          variant: 'destructive',
+        toast.error('Unable to update business details', {
+          description: result.message || 'Check your information and try again.',
         })
       }
     })

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Loader2, Upload, User, Mail, Phone, Building, Smartphone } from 'lucide-react'
 import { updateProfile, uploadAvatar } from '@/app/(dashboard)/settings/actions'
 import { ImageCropper } from '../shared/ImageCropper'
@@ -28,7 +28,7 @@ type UserData = {
 
 export default function ProfileForm({ user }: { user: UserData }) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -75,20 +75,16 @@ export default function ProfileForm({ user }: { user: UserData }) {
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Avatar image must be less than 2MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Avatar image must be less than 2MB.',
       })
       return
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please upload an image file',
-        variant: 'destructive',
+      toast.error('Invalid file type', {
+        description: 'Please upload an image file.',
       })
       return
     }
@@ -119,19 +115,14 @@ export default function ProfileForm({ user }: { user: UserData }) {
         const newAvatarUrl = `${result.avatarUrl}?t=${new Date().getTime()}`
         setAvatarUrl(newAvatarUrl)
         setCropImage(null) // Close cropper
-        toast({
-          title: 'Success',
-          description: 'Profile picture updated successfully',
-        })
+        toast.success('Profile picture updated')
         router.refresh()
       } else {
         throw new Error(result.message)
       }
     } catch (error: any) {
-      toast({
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload avatar',
-        variant: 'destructive',
+      toast.error('Unable to upload picture', {
+        description: error.message || 'Check your image file and try again.',
       })
     } finally {
       setIsUploadingAvatar(false)
@@ -142,10 +133,8 @@ export default function ProfileForm({ user }: { user: UserData }) {
     e.preventDefault()
 
     if (!formData.full_name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Full name is required',
-        variant: 'destructive',
+      toast.error('Full name required', {
+        description: 'Please enter your full name.',
       })
       return
     }
@@ -162,20 +151,15 @@ export default function ProfileForm({ user }: { user: UserData }) {
       const result = await updateProfile(data)
 
       if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'Profile updated successfully',
-        })
+        toast.success('Profile updated')
         
         // Invalidate React Query to ensure it fetches updated data from the server
         queryClient.invalidateQueries({ queryKey: ['profile'] })
         
         router.refresh()
       } else {
-        toast({
-          title: 'Error',
-          description: result.message || 'Failed to update profile',
-          variant: 'destructive',
+        toast.error('Unable to update profile', {
+          description: result.message || 'Something went wrong. Please try again.',
         })
       }
     })

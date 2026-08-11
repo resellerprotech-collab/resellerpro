@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchableSelect, SearchableSelectOption } from "@/components/ui/searchable-select";
@@ -53,7 +53,6 @@ export function WhatsAppShare({
   const [isSharing, setIsSharing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
   const supabase = createClient();
 
   useEffect(() => {
@@ -175,17 +174,10 @@ export function WhatsAppShare({
     try {
       await navigator.clipboard.writeText(formatProductMessage());
       setCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Message copied to clipboard",
-      });
+      toast.success("Message copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy message",
-        variant: "destructive",
-      });
+      toast.error("Unable to copy message");
     }
   };
 
@@ -205,16 +197,9 @@ export function WhatsAppShare({
       link.click();
       URL.revokeObjectURL(link.href);
 
-      toast({
-        title: "Success",
-        description: "Image saved successfully",
-      });
+      toast.success("Image saved");
     } catch (error) {
-      toast({
-        title: "Failed",
-        description: "Could not download image",
-        variant: "destructive",
-      });
+      toast.error("Unable to download image");
     } finally {
       setDownloading(false);
     }
@@ -222,10 +207,8 @@ export function WhatsAppShare({
 
   const shareProductImage = async () => {
     if (!navigator.share) {
-      toast({
-        title: "Not Supported",
-        description: "Sharing is not supported on this browser. Please use download instead.",
-        variant: "destructive",
+      toast.error("Sharing not supported", {
+        description: "Sharing is not supported on this browser. Use download instead.",
       });
       return;
     }
@@ -251,10 +234,7 @@ export function WhatsAppShare({
           text: `Check out ${product.name} - ₹${product.selling_price}`,
         });
 
-        toast({
-          title: "Success",
-          description: "Product image shared! Opening WhatsApp chat...",
-        });
+        toast.success("Image shared! Opening WhatsApp...");
 
         // After sharing, open WhatsApp chat with the selected customer if possible
         if (phoneNumber) {
@@ -272,23 +252,13 @@ export function WhatsAppShare({
         link.click();
         URL.revokeObjectURL(link.href);
 
-        toast({
-          title: "Info",
-          description: "Sharing not available. Image downloaded instead.",
-        });
+        toast.info("Sharing not available. Image downloaded instead.")
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        toast({
-          title: "Cancelled",
-          description: "Share cancelled",
-        });
+        toast.info("Share cancelled");
       } else {
-        toast({
-          title: "Failed",
-          description: "Could not share image",
-          variant: "destructive",
-        });
+        toast.error("Unable to share image");
       }
     } finally {
       setIsSharing(false);
@@ -297,7 +267,9 @@ export function WhatsAppShare({
 
   const shareToWhatsApp = () => {
     if (!phoneNumber) {
-      toast({ title: "Phone Required", variant: "destructive" });
+      toast.error("Phone number required", {
+        description: "Please enter or select a customer phone number.",
+      });
       return;
     }
     const cleanNumber = phoneNumber.replace(/[^\d+]/g, "").replace("+", "");

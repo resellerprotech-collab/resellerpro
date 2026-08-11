@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Printer, Download, Loader2, Share2, MessageCircle } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 
 interface InvoiceActionsProps {
     orderNumber: string | number

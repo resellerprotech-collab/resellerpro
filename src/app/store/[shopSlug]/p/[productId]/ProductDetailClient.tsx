@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
 import { trackEvent } from '@/lib/analytics'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { StoreProductCard } from '@/components/store/StoreProductCard'
 import { StoreFooter } from '@/components/store/StoreFooter'
@@ -28,7 +28,7 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product, relatedProducts, profile, theme, shopSlug }: ProductDetailClientProps) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const { addItem, closeCart, setShopSlug } = useCartStore()
 
   const [quantity, setQuantity] = useState(1)
@@ -97,7 +97,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
     } else {
       navigator.clipboard.writeText(window.location.href)
       setCopied(true)
-      toast({ title: 'Link copied!', description: 'Product link copied to clipboard' })
+      toast.success('Product link copied')
       setTimeout(() => setCopied(false), 2500)
     }
   }

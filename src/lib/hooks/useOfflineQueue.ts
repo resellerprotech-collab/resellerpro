@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 
 interface QueuedAction {
     id: string
@@ -183,7 +183,7 @@ export function useOfflineQueue() {
         toast.dismiss('sync-toast')
 
         if (successCount > 0) {
-            toast.success('Synced successfully! ✨', {
+            toast.success('Synced successfully', {
                 description: `${successCount} item${successCount > 1 ? 's' : ''} synced`,
                 duration: 2000,
             })

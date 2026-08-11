@@ -16,14 +16,14 @@ import {
   Lightbulb,
   ClipboardPaste
 } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/lib/toast'
 
 interface SmartPasteDialogProps {
   onDataConfirmed: (data: ParsedCustomerData) => void
 }
 
 export function SmartPasteDialog({ onDataConfirmed }: SmartPasteDialogProps) {
-  const { toast } = useToast()
+
   const [open, setOpen] = useState(false)
   const [rawMessage, setRawMessage] = useState('')
   const [parsedData, setParsedData] = useState<ParsedCustomerData | null>(null)
@@ -34,18 +34,18 @@ export function SmartPasteDialog({ onDataConfirmed }: SmartPasteDialogProps) {
       const text = await navigator.clipboard.readText()
       if (text.trim()) {
         setRawMessage(text)
-        toast({ title: 'Pasted from clipboard! 📋', description: 'Click "Extract Data" to continue.' })
+        toast.info('Pasted from clipboard. Click "Extract Data" to continue.')
       } else {
-        toast({ title: 'Clipboard is empty', variant: 'destructive' })
+        toast.error('Clipboard is empty')
       }
     } catch (error) {
-      toast({ title: 'Clipboard access denied', description: 'Please paste manually.', variant: 'destructive' })
+      toast.error('Clipboard access denied. Please paste manually.')
     }
   }
 
   function handleParse() {
     if (!rawMessage.trim()) {
-      toast({ title: 'Nothing to parse', variant: 'destructive' })
+      toast.error('Nothing to parse')
       return
     }
     setIsProcessing(true)
@@ -53,16 +53,16 @@ export function SmartPasteDialog({ onDataConfirmed }: SmartPasteDialogProps) {
       const result = parseWhatsAppMessage(rawMessage)
       setParsedData(result)
       setIsProcessing(false)
-      toast({
-        title: result.confidence >= 70 ? 'Data extracted! ✨' : 'Partial extraction',
-        description: `${result.confidence}% confidence. Please review the fields.`,
-      })
+      toast.info(
+        result.confidence >= 70 ? 'Data extracted' : 'Partial extraction',
+        { description: `${result.confidence}% confidence. Please review fields.` }
+      )
     }, 300)
   }
 
   function handleConfirm() {
     if (!parsedData || !parsedData.name || !parsedData.phone) {
-      toast({ title: 'Missing required fields', description: 'Please fill Name and Phone number.', variant: 'destructive' })
+      toast.error('Please fill Name and Phone number')
       return
     }
     onDataConfirmed(parsedData)

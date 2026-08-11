@@ -13,7 +13,7 @@ import { exportToCSV } from '@/lib/utils/export'
 import { exportToPDF } from '@/lib/utils/exportPDF'
 import { formatCurrency } from '@/lib/utils/formatters'
 import { Product } from '@/types'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { ProBadge } from '@/components/shared/ProBadge'
 import { useRouter } from 'next/navigation'
@@ -59,10 +59,10 @@ export function ExportProducts({ products, businessName = 'ResellerPro', classNa
         generatedOn: new Date().toLocaleString('en-IN'),
         totalRecords: products.length
       })
-      toast.success('✅ Inventory report exported successfully!')
+      toast.success('Inventory report exported')
     } catch (error) {
       console.error('Export error:', error)
-      toast.error('Failed to export inventory report')
+      toast.error('Unable to export inventory report')
     } finally {
       setIsExporting(false)
     }
@@ -89,10 +89,10 @@ export function ExportProducts({ products, businessName = 'ResellerPro', classNa
       }
 
       exportToPDF(summaryData, 'Products_Summary_PDF')
-      toast.success('✅ Product summary PDF exported successfully!')
+      toast.success('Product summary PDF exported')
     } catch (error) {
       console.error('PDF Export error:', error)
-      toast.error('Failed to export product summary')
+      toast.error('Unable to export product summary')
     } finally {
       setIsExporting(false)
     }

@@ -16,7 +16,7 @@ import { WhyChooseUs } from '@/components/store/WhyChooseUs'
 import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import type { Product, Profile, ShopTheme, HeroBannerItem } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -45,7 +45,7 @@ function getCategoryIcon(categoryName: string) {
 export function StorefrontClient({ profile, products, categories, theme, cmsSections }: StorefrontClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const setShopSlug = useCartStore((s) => s.setShopSlug)
-  const { toast } = useToast()
+
   
   const categorySliderRef = useRef<HTMLDivElement>(null)
   const isCategoryHoveredRef = useRef(false)
@@ -705,23 +705,12 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
                     if (res.ok && data.success) {
                       setNewsletterSubscribed(true)
                       setNewsletterEmail('')
-                      toast({
-                        title: 'Subscribed! 🎉',
-                        description: 'Thank you for joining our VIP Circle!',
-                      })
+                      toast.success('Subscribed!')
                     } else {
-                      toast({
-                        title: 'Subscription Failed',
-                        description: data.error || 'Failed to subscribe',
-                        variant: 'destructive',
-                      })
+                      toast.error(data.error || 'Failed to subscribe')
                     }
                   } catch (err) {
-                    toast({
-                      title: 'Error',
-                      description: 'Failed to subscribe. Please try again.',
-                      variant: 'destructive',
-                    })
+                    toast.error('Failed to subscribe. Please try again.')
                   } finally {
                     setNewsletterSubscribing(false)
                   }
