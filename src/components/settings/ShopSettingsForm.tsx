@@ -226,6 +226,10 @@ export default function ShopSettingsForm({
     // Store Status
     storeStatus: theme.storeStatus || 'open',
     vacationMessage: theme.vacationMessage || '',
+    // Delivery & Shipping Fee Settings
+    shippingType: theme.shippingType || 'above_amount',
+    freeShippingThreshold: theme.freeShippingThreshold ?? 500,
+    flatShippingFee: theme.flatShippingFee ?? 49,
     // Testimonials
     testimonialsEnabled: theme.testimonialsEnabled || false,
     testimonialsHeading: theme.testimonialsHeading || 'What Our Customers Say',
@@ -1688,6 +1692,119 @@ export default function ShopSettingsForm({
                     placeholder="We'll be back on March 30! 🏖️" disabled={isPending || !isEligible} className="mt-1.5" />
                 </div>
               )}
+            </Section>
+
+            {/* Delivery & Shipping Fee Settings */}
+            <Section icon={Truck} title="Delivery & Shipping Fee Settings">
+              <div className="space-y-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Configure how shipping charges and free delivery rules are calculated for your store customers.
+                </p>
+
+                {/* 3 Shipping Options Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    {
+                      value: 'free',
+                      title: '🚚 Full Free Delivery',
+                      desc: 'Free shipping on all orders regardless of amount.',
+                    },
+                    {
+                      value: 'above_amount',
+                      title: '🎁 Free Above Amount',
+                      desc: 'Free shipping for orders above a minimum subtotal.',
+                    },
+                    {
+                      value: 'flat',
+                      title: '📦 Flat Shipping Fee',
+                      desc: 'Fixed shipping fee charged on every order.',
+                    },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleToggle('shippingType', opt.value as any)}
+                      className={cn(
+                        "p-4 rounded-xl border-2 text-left transition-all space-y-1",
+                        formData.shippingType === opt.value
+                          ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30'
+                          : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
+                      )}
+                    >
+                      <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">{opt.title}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Conditional Inputs */}
+                {formData.shippingType === 'above_amount' && (
+                  <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-950/50 bg-indigo-50/30 dark:bg-indigo-950/20 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Minimum Order Amount for Free Delivery (₹)
+                      </Label>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1.5">
+                        Orders equal to or greater than this get 100% Free Shipping.
+                      </p>
+                      <Input
+                        type="number"
+                        name="freeShippingThreshold"
+                        value={formData.freeShippingThreshold}
+                        onChange={(e) => setFormData(prev => ({ ...prev, freeShippingThreshold: Number(e.target.value) }))}
+                        placeholder="500"
+                        className="h-10 text-xs font-bold"
+                        disabled={isPending}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Shipping Fee for Orders Below Amount (₹)
+                      </Label>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1.5">
+                        Fee charged when subtotal is less than minimum amount.
+                      </p>
+                      <Input
+                        type="number"
+                        name="flatShippingFee"
+                        value={formData.flatShippingFee}
+                        onChange={(e) => setFormData(prev => ({ ...prev, flatShippingFee: Number(e.target.value) }))}
+                        placeholder="49"
+                        className="h-10 text-xs font-bold"
+                        disabled={isPending}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.shippingType === 'flat' && (
+                  <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-950/50 bg-indigo-50/30 dark:bg-indigo-950/20 max-w-sm mt-2">
+                    <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Flat Shipping Fee (₹)
+                    </Label>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1.5">
+                      Fixed delivery charge for every order.
+                    </p>
+                    <Input
+                      type="number"
+                      name="flatShippingFee"
+                      value={formData.flatShippingFee}
+                      onChange={(e) => setFormData(prev => ({ ...prev, flatShippingFee: Number(e.target.value) }))}
+                      placeholder="49"
+                      className="h-10 text-xs font-bold"
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
+
+                {formData.shippingType === 'free' && (
+                  <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-950 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>All orders on your store will feature 100% FREE Delivery!</span>
+                  </div>
+                )}
+              </div>
             </Section>
           </div>
         )}
