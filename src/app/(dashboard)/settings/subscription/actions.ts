@@ -148,33 +148,12 @@ export async function getAvailablePlans() {
 
   if (!dbPlans) return []
 
-  const { pricingPlans } = await import('@/config/pricing')
-
-  // Merge DB plans with Config features/details to ensure limits match code
-  return dbPlans.map(dbPlan => {
-    // Find matching config plan by name (normalized)
-    const configPlan = pricingPlans.find(p =>
-      p.id === dbPlan.name.toLowerCase() ||
-      p.id === dbPlan.id ||
-      p.name.toLowerCase() === dbPlan.name.toLowerCase()
-    )
-
-    if (configPlan) {
-      return {
-        ...dbPlan,
-        features: configPlan.features, // Use features from config (contains dynamic limits)
-        description: configPlan.description,
-        display_name: configPlan.display_name || dbPlan.display_name, // Prefer config display name if exists
-        // We keep DB ID and Price (for checkout) mostly, unless we want to override price visual too.
-        // But for checkout integrity, DB price should be used. 
-        // Although the user said "199/month", if DB says otherwise, we might have a mismatch.
-        // Let's assume DB price is correct or user will update DB.
-        // Actually, let's allow config to override display price for the UI cards if needed, but the checkout action uses DB price.
-        // To avoid confusion, let's keep DB price.
-      }
-    }
-    return dbPlan
-  })
+  return dbPlans.map(dbPlan => ({
+    ...dbPlan,
+    features: Array.isArray(dbPlan.features) ? dbPlan.features : [],
+    display_name: dbPlan.display_name || dbPlan.name,
+    tag_line: dbPlan.tag_line || '',
+  }))
 }
 
 
