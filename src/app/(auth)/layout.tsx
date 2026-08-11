@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster as Sonner } from "sonner"
 
 export default function AuthLayout({
   children,
@@ -7,8 +7,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="min-h-screen">
-      {children}
-      <Toaster />
+      <Sonner position="top-right" richColors={false} expand={false} gap={8} />
     </div>
   )
 }

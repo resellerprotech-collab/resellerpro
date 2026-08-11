@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Save } from 'lucide-react'
 import Link from 'next/link'
 import { updateCustomer } from '@/app/(dashboard)/customers/action'
@@ -51,7 +51,7 @@ function SubmitButton({ customerId }: { customerId: string }) {
 
 export default function EditCustomerForm({ customer, customerId }: EditCustomerFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
 
   const [state, formAction] = useFormState(updateCustomer, {
@@ -64,19 +64,12 @@ export default function EditCustomerForm({ customer, customerId }: EditCustomerF
       // Invalidate customers query
       queryClient.invalidateQueries({ queryKey: ['customers'] })
 
-      toast({
-        title: 'Customer Updated! ✅',
-        description: state.message,
-      })
+      toast.success(state.message || 'Customer updated successfully')
       router.push(`/customers/${customerId}`)
     } else if (state.message && !state.success) {
-      toast({
-        title: 'Error',
-        description: state.message,
-        variant: 'destructive',
-      })
+      toast.error(state.message)
     }
-  }, [state, router, toast, customerId, queryClient])
+  }, [state, router, customerId, queryClient])
 
   return (
     <Card>

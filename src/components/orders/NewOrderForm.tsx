@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SearchableSelect, SearchableSelectOption } from '@/components/ui/searchable-select'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Plus, Trash2, Save, Loader2, Package, AlertTriangle } from 'lucide-react'
 import { createOrder } from '@/app/(dashboard)/orders/actions'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
@@ -60,7 +60,7 @@ export function NewOrderForm({
   preSelectedCustomerId?: string
 }) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
   const { subscription } = usePlanLimits()
   const planName = subscription?.plan?.display_name || 'Free Plan'
@@ -80,8 +80,7 @@ export function NewOrderForm({
       setSelectedCustomerId(preSelectedCustomerId)
       const customer = customers.find((c) => c.id === preSelectedCustomerId)
       if (customer) {
-        toast({
-          title: 'Customer Selected',
+        toast.info('Customer selected', {
           description: `Creating order for ${customer.name}`,
         })
       }
@@ -144,20 +143,16 @@ export function NewOrderForm({
     if (!product) return
 
     if (product.stock_quantity === 0) {
-      toast({
-        title: 'Out of Stock',
-        description: `${product.name} is currently out of stock`,
-        variant: 'destructive',
+      toast.error('Product out of stock', {
+        description: `${product.name} is currently out of stock.`,
       })
       return
     }
 
     const existingItem = orderItems.find((item) => item.productId === productId)
     if (existingItem) {
-      toast({
-        title: 'Product already added',
-        description: 'Please update the quantity instead',
-        variant: 'destructive',
+      toast.warning('Product already added', {
+        description: 'Update the item quantity instead.',
       })
       return
     }
@@ -183,10 +178,8 @@ export function NewOrderForm({
     if (!item) return
 
     if (quantity > item.maxStock) {
-      toast({
-        title: 'Insufficient Stock',
-        description: `Only ${item.maxStock} units available for ${item.productName}`,
-        variant: 'destructive',
+      toast.warning('Insufficient stock', {
+        description: `Only ${item.maxStock} units available for ${item.productName}.`,
       })
 
       setOrderItems(
@@ -218,28 +211,22 @@ export function NewOrderForm({
     e.preventDefault()
 
     if (!selectedCustomerId) {
-      toast({
-        title: 'Error',
-        description: 'Please select a customer',
-        variant: 'destructive',
+      toast.error('Customer required', {
+        description: 'Please select a customer before continuing.',
       })
       return
     }
 
     if (orderItems.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Please add at least one product',
-        variant: 'destructive',
+      toast.error('No products added', {
+        description: 'Please add at least one product to the order.',
       })
       return
     }
 
     if (hasStockIssues) {
-      toast({
-        title: 'Stock Issues',
-        description: 'Some items exceed available stock. Please adjust quantities.',
-        variant: 'destructive',
+      toast.error('Stock quantities exceeded', {
+        description: 'Some items exceed available stock. Adjust quantities and try again.',
       })
       return
     }
@@ -264,10 +251,7 @@ export function NewOrderForm({
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['subscription'] })
 
-        toast({
-          title: 'Success',
-          description: result.message,
-        })
+        toast.success('Order created')
 
         queryClient.invalidateQueries({ queryKey: ['orders'] })
 
@@ -280,24 +264,16 @@ export function NewOrderForm({
           (result.message.toLowerCase().includes('reached') || result.message.toLowerCase().includes('exceeded'));
 
         if (isLimitError) {
-          toast({
-            title: "Limit Reached 🔒",
-            description: `You've reached your order limit on the ${planName}. Upgrade to grow your business!`,
-            variant: "default",
-            action: (
-              <Link
-                href="/settings/subscription"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3"
-              >
-                Upgrade
-              </Link>
-            ),
+          toast.warning('Order limit reached', {
+            description: `You have reached your order limit on the ${planName}.`,
+            action: {
+              label: 'Upgrade',
+              onClick: () => router.push('/settings/subscription'),
+            },
           })
         } else {
-          toast({
-            title: 'Error',
-            description: result.message,
-            variant: 'destructive',
+          toast.error('Unable to create order', {
+            description: result.message || 'Check your information and try again.',
           })
         }
       }

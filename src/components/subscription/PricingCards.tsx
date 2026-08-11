@@ -10,7 +10,7 @@ import { createCheckoutSession } from '@/app/(dashboard)/settings/subscription/a
 import { activateWithWallet } from '@/app/(dashboard)/settings/subscription/walletActions'
 import { PaymentMethodDialog } from './PaymentMethodDialog'
 import { ComingSoonDialog } from './ComingSoonDialog'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -34,7 +34,7 @@ type PricingCardsProps = {
 export function PricingCards({ plans, currentPlanName, walletBalance }: PricingCardsProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { toast } = useToast()
+
   const [isLoading, setIsLoading] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
@@ -61,17 +61,14 @@ export function PricingCards({ plans, currentPlanName, walletBalance }: PricingC
         const result = await activateWithWallet(selectedPlan.id)
 
         if (result.success) {
-          toast({
-            title: 'Subscription Activated! 🎉',
-            description: `You're now on the ${selectedPlan.display_name} plan.`,
+          toast.success('Subscription activated', {
+            description: `You are now on the ${selectedPlan.display_name} plan.`,
           })
           queryClient.invalidateQueries({ queryKey: ['subscription'] })
           router.refresh()
         } else {
-          toast({
-            title: 'Activation Failed',
+          toast.error('Unable to activate subscription', {
             description: result.message,
-            variant: 'destructive',
           })
         }
       } else if (method === 'razorpay' || method === 'wallet+razorpay') {
@@ -80,10 +77,8 @@ export function PricingCards({ plans, currentPlanName, walletBalance }: PricingC
         const session = await createCheckoutSession(selectedPlan.id, useWallet)
 
         if (!session.success) {
-          toast({
-            title: 'Checkout Failed',
+          toast.error('Checkout failed', {
             description: session.message,
-            variant: 'destructive',
           })
           setIsLoading(false)
           return
@@ -94,9 +89,8 @@ export function PricingCards({ plans, currentPlanName, walletBalance }: PricingC
           const result = await activateWithWallet(selectedPlan.id)
 
           if (result.success) {
-            toast({
-              title: 'Subscription Activated! 🎉',
-              description: `You're now on the ${selectedPlan.display_name} plan.`,
+            toast.success('Subscription activated', {
+              description: `You are now on the ${selectedPlan.display_name} plan.`,
             })
             queryClient.invalidateQueries({ queryKey: ['subscription'] })
             router.refresh()
@@ -129,27 +123,21 @@ export function PricingCards({ plans, currentPlanName, walletBalance }: PricingC
             )
 
             if (result.success) {
-              toast({
-                title: 'Payment Successful! 🎉',
-                description: `You're now on the ${selectedPlan.display_name} plan.`,
+              toast.success('Payment successful', {
+                description: `You are now on the ${selectedPlan.display_name} plan.`,
               })
               queryClient.invalidateQueries({ queryKey: ['subscription'] })
               router.refresh()
             } else {
-              toast({
-                title: 'Payment Verification Failed',
+              toast.error('Payment verification failed', {
                 description: result.message,
-                variant: 'destructive',
               })
             }
             setIsLoading(false)
           },
           modal: {
             ondismiss: function () {
-              toast({
-                title: 'Payment Cancelled',
-                description: 'You can try again anytime.',
-              })
+              toast.info('Payment cancelled')
               setIsLoading(false)
             },
           },
@@ -160,10 +148,8 @@ export function PricingCards({ plans, currentPlanName, walletBalance }: PricingC
       }
     } catch (error: any) {
       console.error('Payment error:', error)
-      toast({
-        title: 'Error',
-        description: error.message || 'Something went wrong',
-        variant: 'destructive',
+      toast.error('Something went wrong', {
+        description: error.message || 'Unable to process payment. Please try again.',
       })
       setIsLoading(false)
     }

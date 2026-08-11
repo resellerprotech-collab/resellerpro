@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { createCategoryAction } from '@/app/(dashboard)/categories/actions'
 import { Loader2, Upload, X } from 'lucide-react'
 import Image from 'next/image'
@@ -34,7 +34,7 @@ export function CreateCategoryModal({
   const [imageFile, setImageFile] = React.useState<File | null>(null)
   const [imagePreview, setImagePreview] = React.useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const { toast } = useToast()
+
 
   React.useEffect(() => {
     if (open) {
@@ -49,11 +49,7 @@ export function CreateCategoryModal({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
-      })
+      toast.error('Image must be less than 5MB')
       return
     }
 
@@ -74,11 +70,7 @@ export function CreateCategoryModal({
     e.preventDefault()
     
     if (!name.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Category name is required',
-        variant: 'destructive',
-      })
+      toast.error('Category name is required')
       return
     }
 
@@ -93,28 +85,17 @@ export function CreateCategoryModal({
       const result = await createCategoryAction(formData)
       
       if (!result.success) {
-        toast({
-          title: 'Error',
-          description: result.message || 'Failed to create category',
-          variant: 'destructive',
-        })
+        toast.error(result.message || 'Failed to create category')
         return
       }
 
-      toast({
-        title: 'Success',
-        description: `Category "${name.trim()}" created successfully.`,
-      })
+      toast.success(`Category "${name.trim()}" created`)
       
       onSuccess(name.trim())
       onOpenChange(false)
     } catch (error: any) {
       console.error(error)
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred.',
-        variant: 'destructive',
-      })
+      toast.error('An unexpected error occurred')
     } finally {
       setIsSubmitting(false)
     }

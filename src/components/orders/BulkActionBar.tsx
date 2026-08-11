@@ -12,7 +12,7 @@ import {
 import { CheckCircle2, X, Loader2, Truck } from 'lucide-react'
 import { bulkUpdateOrderStatus } from '@/app/(dashboard)/orders/actions'
 import { STATUS_FLOW, STATUS_CONFIG } from '@/config/order-status'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useRouter } from 'next/navigation'
@@ -34,7 +34,7 @@ export function BulkActionBar({
 }: BulkActionBarProps) {
     const [selectedStatus, setSelectedStatus] = useState<string>('')
     const [isPending, startTransition] = useTransition()
-    const { toast } = useToast()
+
     const router = useRouter()
     const queryClient = useQueryClient()
 
@@ -53,10 +53,8 @@ export function BulkActionBar({
 
     const handleBulkUpdate = async () => {
         if (!selectedStatus) {
-            toast({
-                title: 'Selection required',
-                description: 'Please select a status to apply to all selected orders.',
-                variant: 'destructive',
+            toast.warning('Selection required', {
+                description: 'Please select a status to apply to selected orders.',
             })
             return
         }
@@ -64,10 +62,7 @@ export function BulkActionBar({
         startTransition(async () => {
             const result = await bulkUpdateOrderStatus(selectedIds, selectedStatus)
             if (result.success) {
-                toast({
-                    title: 'Success',
-                    description: result.message,
-                })
+                toast.success('Orders updated')
 
                 // Invalidate React Query cache to update UI instantly
                 queryClient.invalidateQueries({ queryKey: ['orders'] })
@@ -76,10 +71,8 @@ export function BulkActionBar({
                 onClearSelection()
                 onSuccess?.()
             } else {
-                toast({
-                    title: 'Error',
-                    description: result.message,
-                    variant: 'destructive',
+                toast.error('Unable to update orders', {
+                    description: result.message || 'Check your selection and try again.',
                 })
             }
         })

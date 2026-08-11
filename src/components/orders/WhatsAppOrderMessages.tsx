@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MessageCircle, CheckCircle2, CreditCard, Truck, RefreshCw, Pencil, Crown } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { ProBadge } from '@/components/shared/ProBadge'
 import { WhatsAppTemplateEditor } from './WhatsAppTemplateEditor'
@@ -54,7 +54,7 @@ export function WhatsAppOrderMessages({
   expectedDeliveryDate,
   upiId,
 }: WhatsAppOrderMessagesProps) {
-  const { toast } = useToast()
+
   const router = useRouter()
   const { isPremium, isLoading: isCheckingSubscription } = useSubscription()
   
@@ -273,10 +273,8 @@ Best regards,
       const formattedPhone = formatWhatsAppNumber(customerPhone)
 
       if (!formattedPhone) {
-        toast({
-          title: 'Invalid Phone Number',
-          description: `Cannot send WhatsApp message. Phone: ${customerPhone || 'Not provided'}`,
-          variant: 'destructive',
+        toast.error('Invalid phone number', {
+          description: `Cannot send WhatsApp message to ${customerPhone || 'unprovided number'}.`,
         })
         setSending(false)
         return
@@ -285,11 +283,7 @@ Best regards,
       const message = generateMessage(template)
 
       if (!message) {
-        toast({
-          title: 'Error',
-          description: 'Failed to generate message template',
-          variant: 'destructive',
-        })
+        toast.error('Unable to generate message template')
         setSending(false)
         return
       }
@@ -308,16 +302,13 @@ Best regards,
         follow_up: 'Follow-up Message',
       }
 
-      toast({
-        title: 'WhatsApp Opened',
-        description: `${templateNames[template]} ready to send to ${customerName}`,
+      toast.success('WhatsApp opened', {
+        description: `${templateNames[template]} ready to send to ${customerName}.`,
       })
     } catch (error) {
       console.error('WhatsApp send error:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to open WhatsApp. Please try again.',
-        variant: 'destructive',
+      toast.error('Unable to open WhatsApp', {
+        description: 'Please check your connection and try again.',
       })
     } finally {
       setSending(false)

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/lib/toast";
 import { useLogFollowUpActivity } from "@/lib/react-query/hooks/useEnquiries";
 import {
     Send, ChevronDown, MessageCircle, Sparkles, Clock,
@@ -480,7 +480,6 @@ export function WhatsAppEnquiryMessage({
     followUpDate,
     followUpCount = 0,
 }: WhatsAppEnquiryMessageProps) {
-    const { toast } = useToast();
     const { mutate: logActivity, isPending } = useLogFollowUpActivity();
     const [customMessage, setCustomMessage] = useState("");
     const [showCustom, setShowCustom] = useState(false);
@@ -503,10 +502,8 @@ export function WhatsAppEnquiryMessage({
     const sendMessage = (message: string, templateName: string) => {
         const formattedPhone = formatWhatsAppNumber(customerPhone);
         if (!formattedPhone) {
-            toast({
-                title: "Invalid Phone Number",
+            toast.error("Invalid phone number", {
                 description: "Could not format the phone number for WhatsApp.",
-                variant: "destructive",
             });
             return;
         }
@@ -521,10 +518,8 @@ export function WhatsAppEnquiryMessage({
             whatsapp_message: message,
         }, {
             onSuccess: () => {
-                toast({
-                    title: "WhatsApp Opened!",
-                    description: `"${templateName}" message ready for ${customerName}`,
-                    className: "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900",
+                toast.success("WhatsApp opened", {
+                    description: `"${templateName}" message ready for ${customerName}.`,
                 });
             }
         });
@@ -540,7 +535,7 @@ export function WhatsAppEnquiryMessage({
 
     const handleCustomSend = () => {
         if (!customMessage.trim()) {
-            toast({ title: "Empty Message", description: "Please type a message first.", variant: "destructive" });
+            toast.warning("Empty message", { description: "Please type a message first." });
             return;
         }
         sendMessage(customMessage, "Custom Message");

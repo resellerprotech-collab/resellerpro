@@ -2,17 +2,16 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/lib/toast'
 import { Copy, Check } from 'lucide-react'
 
 export function CopyButton({ textToCopy }: { textToCopy: string }) {
-  const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(textToCopy)
     setIsCopied(true)
-    toast({ title: 'Copied to clipboard!' })
+    toast.success('Copied to clipboard')
     setTimeout(() => setIsCopied(false), 2000)
   }
 

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Spline_Sans, Inter } from 'next/font/google'
 import './globals.css'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster as Sonner } from 'sonner'
 import { ThemeProvider } from '../components/providers/theme-provider'
 import { Providers } from './providers'
 import { AuthProvider } from '@/components/providers/AuthProvider'
@@ -142,7 +142,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <OfflineBanner />
               {children}
               <Analytics />
-              <Toaster />
+              <Sonner
+                position="top-right"
+                richColors={false}
+                expand={false}
+                gap={8}
+                toastOptions={{
+                  classNames: {
+                    toast: 'rp-toast',
+                  },
+                }}
+              />
             </ThemeProvider>
           </AuthProvider>
         </Providers>

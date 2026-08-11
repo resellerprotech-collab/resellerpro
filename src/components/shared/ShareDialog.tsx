@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from '@/lib/toast'
 import { Check, Copy, MessageSquare, Send } from 'lucide-react'
 import { useState } from 'react'
 
@@ -45,7 +45,6 @@ export function ShareDialog({
   orderNumber,
   orderStatus,
 }: ShareDialogProps) {
-  const { toast } = useToast()
   const [isCopied, setIsCopied] = useState(false)
   
   const message = getMessageTemplate(orderStatus, customerName, orderNumber)
@@ -53,7 +52,7 @@ export function ShareDialog({
   const handleCopy = () => {
     navigator.clipboard.writeText(message)
     setIsCopied(true)
-    toast({ title: 'Message copied to clipboard!' })
+    toast.success('Message copied to clipboard')
     setTimeout(() => setIsCopied(false), 2000)
   }
 

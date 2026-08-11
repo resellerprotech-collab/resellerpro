@@ -14,7 +14,7 @@ import { exportToPDF } from '@/lib/utils/exportPDF'
 import { formatCurrency } from '@/lib/utils/formatters'
 import { formatDate } from '@/lib/utils/dateHelpers'
 import { Customer } from '@/types'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { ProBadge } from '@/components/shared/ProBadge'
 import { useRouter } from 'next/navigation'
@@ -59,7 +59,7 @@ export function ExportCustomers({ customers, businessName = 'ResellerPro', class
         generatedOn: new Date().toLocaleString('en-IN'),
         totalRecords: customers.length
       })
-      toast.success('✅ Customer database exported successfully!')
+      toast.success('Customer database exported')
     } catch (error) {
       console.error('Export error:', error)
       toast.error('Failed to export customer database')
@@ -91,7 +91,7 @@ export function ExportCustomers({ customers, businessName = 'ResellerPro', class
       }
 
       exportToPDF(summaryData, 'Customers_Summary_PDF')
-      toast.success('✅ Customer summary PDF exported successfully!')
+      toast.success('Customer summary PDF exported')
     } catch (error) {
       console.error('PDF Export error:', error)
       toast.error('Failed to export customer summary')

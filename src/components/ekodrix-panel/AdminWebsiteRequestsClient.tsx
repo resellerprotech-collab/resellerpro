@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { updateRequestStatusByAdmin, adminManageApiKey } from '@/app/actions/custom-website'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { CheckCircle, XCircle, Key, RefreshCw, Copy, Sparkles, Phone, Mail, Globe } from 'lucide-react'
 
 export interface WebsiteRequestItem {
@@ -82,7 +82,7 @@ export default function AdminWebsiteRequestsClient({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard!')
+    toast.success('Copied to clipboard')
   }
 
   const getStatusBadgeStyle = (status: string) => {

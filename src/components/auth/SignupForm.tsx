@@ -20,13 +20,13 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { signup } from '@/app/(auth)/signup/actions'
 
 export default function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
+
 
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -96,7 +96,7 @@ export default function SignupForm() {
     else if (formData.password.length > 72) errors.push('Password must not exceed 72 characters')
 
     if (errors.length > 0) {
-      toast({ title: 'Please check your details', description: errors[0], variant: 'destructive' })
+      toast.error('Check your details', { description: errors[0] })
       return false
     }
     return true
@@ -117,18 +117,18 @@ export default function SignupForm() {
       const result = await signup({ success: false, message: '' }, fd)
 
       if (!result.success) {
-        toast({ title: 'Signup Failed', description: result.message, variant: 'destructive' })
+        toast.error('Unable to create account', { description: result.message })
         setIsLoading(false)
         return
       }
 
-      toast({ title: '🎉 Account created!', description: "Let's set up your store." })
+      toast.success('Account created', { description: "Setting up your store..." })
 
       setTimeout(() => {
         window.location.href = result.redirectUrl || '/onboarding'
       }, 300)
     } catch (error: any) {
-      toast({ title: 'Signup Failed', description: error?.message || 'Unexpected error occurred.', variant: 'destructive' })
+      toast.error('Unable to create account', { description: error?.message || 'Something went wrong.' })
       setIsLoading(false)
     }
   }
