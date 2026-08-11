@@ -30,7 +30,18 @@ interface StorefrontClientProps {
   theme: ShopTheme | null
   cmsSections?: CmsSectionItem[]
 }
-
+function highlightOfferText(text: string) {
+  const parts = text.split(/(\d+%\s*OFF|₹[\d,]+(?:\.\d+)?)/gi)
+  return parts.map((part, i) =>
+    /(\d+%\s*OFF|₹[\d,]+)/i.test(part) ? (
+      <span key={i} style={{ color: 'var(--store-primary, #34d399)' }}>
+        {part}
+      </span>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  )
+}
 function getCategoryIcon(categoryName: string) {
   const name = categoryName.toLowerCase()
   if (name.includes('watch')) return <Watch className="w-5 h-5 text-slate-700" />
@@ -46,7 +57,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
   const [searchQuery, setSearchQuery] = useState('')
   const setShopSlug = useCartStore((s) => s.setShopSlug)
   const { toast } = useToast()
-  
+
   const categorySliderRef = useRef<HTMLDivElement>(null)
   const isCategoryHoveredRef = useRef(false)
   const activeCatIndexRef = useRef(0)
@@ -492,7 +503,7 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-md sm:text-2xl font-black font-bold text-slate-900 tracking-wider uppercase">Shop by Categories</h2>
           </div>
-          <div 
+          <div
             className="relative group/slider"
             onMouseEnter={() => { isCategoryHoveredRef.current = true }}
             onMouseLeave={() => { isCategoryHoveredRef.current = false }}
@@ -512,11 +523,10 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
             )}
 
             {/* Scrollable category list */}
-            <div 
+            <div
               ref={categorySliderRef}
-              className={`flex gap-2.5 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory scroll-smooth w-full ${
-                isCategoryOverflowing ? 'justify-start' : 'justify-center'
-              }`}
+              className={`flex gap-2.5 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory scroll-smooth w-full ${isCategoryOverflowing ? 'justify-start' : 'justify-center'
+                }`}
             >
               {sliderCategoriesToRender.map((cat, idx) => {
                 const hasImage = !!cat.image_url
@@ -525,21 +535,20 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
                   <Link
                     key={`${cat.name}-${idx}`}
                     href={`/store/${shopSlug}/shop?category=${encodeURIComponent(cat.name)}`}
-                    className={`snap-start shrink-0 flex flex-col justify-end p-2.5 sm:p-3.5 w-36 sm:w-60 aspect-[1.6/1] sm:aspect-[1.8/1] rounded-xl sm:rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md group relative overflow-hidden ${
-                      hasImage 
-                        ? "border-transparent text-white" 
-                        : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-700 hover:border-slate-200"
-                    }`}
+                    className={`snap-start shrink-0 flex flex-col justify-end p-2.5 sm:p-3.5 w-36 sm:w-60 aspect-[1.6/1] sm:aspect-[1.8/1] rounded-xl sm:rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md group relative overflow-hidden ${hasImage
+                      ? "border-transparent text-white"
+                      : "border-slate-100 bg-slate-50/50 hover:bg-slate-50 text-slate-700 hover:border-slate-200"
+                      }`}
                   >
                     {hasImage ? (
                       <>
                         {/* Category Image Background */}
-                        <Image 
-                          src={cat.image_url!} 
-                          alt={catDisplayName} 
-                          fill 
-                          className="object-cover absolute inset-0 group-hover:scale-115 transition-transform duration-500" 
-                          sizes="(max-width: 640px) 144px, 240px" 
+                        <Image
+                          src={cat.image_url!}
+                          alt={catDisplayName}
+                          fill
+                          className="object-cover absolute inset-0 group-hover:scale-115 transition-transform duration-500"
+                          sizes="(max-width: 640px) 144px, 240px"
                         />
                         {/* Dark Overlay for Readability */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-10" />
@@ -633,38 +642,64 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
             ))}
           </div>
         </section>
+{/* 5. Offers / Promotion Banner Strip */}
+{theme?.offerBannerEnabled !== false && (
+  <section className="mb-14">
+    <div
+      className="relative overflow-hidden text-white p-5 md:p-10 md:py-12 border border-white/5 shadow-2xl flex flex-col md:flex-row items-center justify-center md:justify-between text-center md:text-left gap-4 md:gap-8"
+      style={{
+        backgroundColor: 'var(--store-neutral-dark, #0b0f19)',
+        backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 40%)',
+        borderRadius: '22px',
+        WebkitMask:
+          'radial-gradient(circle 18px at 0 50%, #0000 98%, #000) 0 50%/51% 100% no-repeat, radial-gradient(circle 18px at 100% 50%, #0000 98%, #000) 100% 50%/51% 100% no-repeat',
+        mask:
+          'radial-gradient(circle 18px at 0 50%, #0000 98%, #000) 0 50%/51% 100% no-repeat, radial-gradient(circle 18px at 100% 50%, #0000 98%, #000) 100% 50%/51% 100% no-repeat',
+      }}
+    >
+      <div className="space-y-2 md:space-y-3 text-center md:text-left flex flex-col items-center md:items-start max-w-xl md:max-w-none mx-auto md:mx-0">
+        <span
+          className="inline-flex items-center gap-1.5 px-3.5 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest border text-white"
+          style={{
+            borderColor: 'var(--store-primary, #34d399)',
+            backgroundColor: 'color-mix(in srgb, var(--store-primary, #34d399) 10%, transparent)',
+          }}
+        >
+          {theme?.offerBannerBadge || 'Special Promotion'}
+        </span>
 
-        {/* 5. Offers / Promotion Banner Strip */}
-        {theme?.offerBannerEnabled !== false && (
-          <section className="mb-14">
-            <div
-              className="relative rounded-3xl md:rounded-2xl overflow-hidden text-white p-6 md:p-10 border border-slate-800/80 shadow-xl flex flex-col md:flex-row items-center justify-center md:justify-between text-center md:text-left gap-5 md:gap-6"
-              style={{ backgroundColor: 'var(--store-neutral-dark, #161618)' }}
-            >
-              <div className="space-y-3 md:space-y-2 text-center md:text-left flex flex-col items-center md:items-start max-w-xl md:max-w-none mx-auto md:mx-0">
-                <span className="inline-flex items-center justify-center px-4 py-1.5 md:px-3 md:py-1 rounded-full text-[10px] font-bold md:font-black uppercase tracking-wider md:tracking-widest bg-amber-500/10 md:bg-amber-400/20 text-amber-400 md:text-amber-300 border border-amber-500/30 md:border-amber-400/30">
-                  {theme?.offerBannerBadge || '⚡ Special Promotion'}
-                </span>
-                <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold md:font-black text-white tracking-tight leading-tight">
-                  {theme?.offerBannerTitle || theme?.bannerText || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
-                </h3>
-                <p className="text-xs text-slate-400 font-medium">
-                  {theme?.offerBannerSubtext || (
-                    <>Use code <span className="text-white font-extrabold bg-white/10 px-2 py-0.5 rounded">{theme?.offerBannerCode || 'SAVE10'}</span> at checkout.</>
-                  )}
-                </p>
-              </div>
-              <Link
-                href={`/store/${shopSlug}/shop`}
-                className="w-full md:w-auto px-8 py-3.5 text-white font-black text-xs uppercase tracking-wider md:tracking-normal transition-all shadow-lg shrink-0 active:scale-95 hover:opacity-90 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'var(--store-primary)', borderRadius: 'var(--store-btn-radius, 9999px)' }}
-              >
-                {theme?.offerBannerBtnText || 'Claim Offer Now'}
-              </Link>
-            </div>
-          </section>
-        )}
+        <h3 className="text-lg md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          {theme?.offerBannerTitle || theme?.bannerText || 'Limited Time Offer: Get 20% OFF on Orders Above ₹1,499'}
+        </h3>
 
+        <p className="text-[11px] md:text-sm text-slate-400 font-medium">
+          {theme?.offerBannerSubtext || (
+            <>
+              Use code{' '}
+              <span className="font-extrabold" style={{ color: 'var(--store-primary, #34d399)' }}>
+                {theme?.offerBannerCode || 'SAVE10'}
+              </span>{' '}
+              at checkout.
+            </>
+          )}
+        </p>
+      </div>
+
+      <Link
+        href={`/store/${shopSlug}/shop`}
+        className="w-full md:w-auto px-7 py-3 md:px-9 md:py-4 text-white font-black text-[11px] md:text-xs uppercase tracking-wider transition-all shadow-lg shrink-0 active:scale-95 hover:brightness-110 rounded-xl flex items-center justify-center"
+        style={{
+          background:
+            'linear-gradient(135deg, var(--store-primary, #34d399), color-mix(in srgb, var(--store-primary, #34d399) 70%, black))',
+          borderRadius: 'var(--store-btn-radius, 12px)',
+          boxShadow: '0 0 35px color-mix(in srgb, var(--store-primary, #34d399) 45%, transparent)',
+        }}
+      >
+        {theme?.offerBannerBtnText || 'Claim Offer Now'}
+      </Link>
+    </div>
+  </section>
+)}
         {/* 6. Why Choose Us (Trust Cards) */}
         <WhyChooseUs primaryColor={primaryColor} theme={theme} />
 
