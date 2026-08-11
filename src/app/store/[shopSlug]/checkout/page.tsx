@@ -120,7 +120,20 @@ function CheckoutPageInner({
   const [loading, setLoading] = useState(false)
 
   const subtotal = getSubtotal()
-  const shippingFee = subtotal >= 500 ? 0 : 49
+
+  const shippingType = theme?.shippingType || 'above_amount'
+  const freeThreshold = theme?.freeShippingThreshold ?? 500
+  const flatFee = theme?.flatShippingFee ?? 49
+
+  let shippingFee = 0
+  if (shippingType === 'free') {
+    shippingFee = 0
+  } else if (shippingType === 'flat') {
+    shippingFee = flatFee
+  } else {
+    shippingFee = subtotal >= freeThreshold ? 0 : flatFee
+  }
+
   const total = subtotal + shippingFee
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
