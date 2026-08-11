@@ -61,9 +61,9 @@ export async function middleware(request: NextRequest) {
 
   // 🌐 DOMAIN ROUTING ENGINE (Subdomains & Custom Domains)
   const isStaticFile = request.nextUrl.pathname.startsWith('/_next') ||
-                        request.nextUrl.pathname.includes('.') ||
-                        request.nextUrl.pathname.startsWith('/api/') ||
-                        request.nextUrl.pathname.startsWith('/auth/callback')
+    request.nextUrl.pathname.includes('.') ||
+    request.nextUrl.pathname.startsWith('/api/') ||
+    request.nextUrl.pathname.startsWith('/auth/callback')
 
   if (!isStaticFile) {
     let shopSlugToRewrite: string | null = null
@@ -82,30 +82,36 @@ export async function middleware(request: NextRequest) {
 
     // CASE 2: White-Label Custom Domain Routing (e.g. www.fashionhubstore.com or fashionhubstore.com)
     const isRootAppDomain = hostname === rootDomain ||
-                             hostname === `www.${rootDomain}` ||
-                             hostname === 'localhost' ||
-                             hostname === '127.0.0.1' ||
-                             Boolean(currentSubdomain)
+      hostname === `www.${rootDomain}` ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      Boolean(currentSubdomain)
 
     if (!isRootAppDomain && !shopSlugToRewrite) {
       const cleanCustomDomain = hostname.replace(/^www\./, '')
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('shop_slug')
-          .or(`custom_domain.eq.${cleanCustomDomain},custom_domain.eq.${hostname}`)
-          .maybeSingle()
+      if (cleanCustomDomain !== rootDomain && cleanCustomDomain !== `www.${rootDomain}`) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('shop_slug')
+            .or(`custom_domain.eq.${cleanCustomDomain},custom_domain.eq.${hostname}`)
+            .maybeSingle()
 
-        if (profile?.shop_slug) {
-          shopSlugToRewrite = profile.shop_slug
+          if (profile?.shop_slug) {
+            shopSlugToRewrite = profile.shop_slug
+          }
+        } catch (err) {
+          console.warn('[Middleware Custom Domain Error]:', err)
         }
-      } catch (err) {
-        console.warn('[Middleware Custom Domain Error]:', err)
       }
     }
 
-    // Execute Seamless URL Rewrite if store slug detected
-    if (shopSlugToRewrite && !request.nextUrl.pathname.startsWith('/store/')) {
+    // Check if path is a reserved system route (signin, signup, onboarding, dashboard, etc.)
+    const firstPathSegment = request.nextUrl.pathname.split('/')[1]
+    const isReservedRoute = RESERVED_SUBDOMAINS.includes(firstPathSegment)
+
+    // Execute Seamless URL Rewrite ONLY for store pages, NEVER for system routes
+    if (shopSlugToRewrite && !isReservedRoute && !request.nextUrl.pathname.startsWith('/store/')) {
       const storeUrl = request.nextUrl.clone()
       storeUrl.pathname = `/store/${shopSlugToRewrite}${request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname}`
       return NextResponse.rewrite(storeUrl)
@@ -161,7 +167,7 @@ export async function middleware(request: NextRequest) {
             try {
               const payload = JSON.parse(atob(session.access_token.split('.')[1]))
               if (payload.iat) issuedAt = payload.iat * 1000
-            } catch (e) {}
+            } catch (e) { }
           }
 
           if (!issuedAt) {
