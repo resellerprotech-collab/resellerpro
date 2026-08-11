@@ -29,14 +29,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { MoreVertical, Edit, Eye, Trash, Copy, Package, Loader2, AlertTriangle } from 'lucide-react'
 import { WhatsAppShare } from './WhatsAppShare'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 
 import type { Product } from '@/types'
 
 export function ProductCard({ product }: { product: Product }) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { toast } = useToast()
   const supabase = createClient()
 
   const [isDeleting, setIsDeleting] = useState(false)
@@ -61,10 +60,8 @@ export function ProductCard({ product }: { product: Product }) {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        toast({
-          title: 'Authentication Error',
-          description: 'You must be logged in to delete products',
-          variant: 'destructive',
+        toast.error('Authentication required', {
+          description: 'Please sign in to delete products.',
         })
         setIsDeleting(false)
         setShowDeleteDialog(false)
@@ -107,10 +104,8 @@ export function ProductCard({ product }: { product: Product }) {
 
       if (dbError) {
         console.error('Database error:', dbError)
-        toast({
-          title: 'Delete Failed',
-          description: dbError.message || 'Failed to delete product',
-          variant: 'destructive',
+        toast.error('Unable to delete product', {
+          description: dbError.message || 'Check network connection and try again.',
         })
         setIsDeleting(false)
         setShowDeleteDialog(false)
@@ -118,10 +113,7 @@ export function ProductCard({ product }: { product: Product }) {
       }
 
       // Success
-      toast({
-        title: 'Product Deleted ✓',
-        description: `"${product.name}" has been permanently deleted`,
-      })
+      toast.success('Product deleted')
 
       revalidateStorefrontAction()
 
@@ -130,10 +122,8 @@ export function ProductCard({ product }: { product: Product }) {
       router.refresh() // Refresh the page to show updated list
     } catch (error: any) {
       console.error('Unexpected error:', error)
-      toast({
-        title: 'Error',
-        description: error.message || 'Something went wrong',
-        variant: 'destructive',
+      toast.error('Unable to delete product', {
+        description: error.message || 'Something went wrong.',
       })
       setIsDeleting(false)
       setShowDeleteDialog(false)
@@ -147,10 +137,8 @@ export function ProductCard({ product }: { product: Product }) {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        toast({
-          title: 'Authentication Error',
-          description: 'You must be logged in',
-          variant: 'destructive',
+        toast.error('Authentication required', {
+          description: 'Please sign in to duplicate products.',
         })
         return
       }
@@ -174,27 +162,20 @@ export function ProductCard({ product }: { product: Product }) {
         .select()
 
       if (error) {
-        toast({
-          title: 'Duplicate Failed',
+        toast.error('Unable to duplicate product', {
           description: error.message,
-          variant: 'destructive',
         })
         return
       }
 
-      toast({
-        title: 'Product Duplicated ✓',
-        description: `Created a copy of "${product.name}"`,
-      })
+      toast.success('Product duplicated')
 
       // Invalidate react-query cache to refresh the list immediately
       queryClient.invalidateQueries({ queryKey: ['products'] })
       router.refresh()
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+      toast.error('Unable to duplicate product', {
+        description: error.message || 'Something went wrong.',
       })
     }
   }

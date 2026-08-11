@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Copy, ExternalLink, MessageCircle, Globe, Clock, Lock } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
 interface StoreShareWidgetProps {
@@ -12,7 +12,7 @@ interface StoreShareWidgetProps {
 }
 
 export function StoreShareWidget({ shopSlug, storeStatus = 'open' }: StoreShareWidgetProps) {
-  const { toast } = useToast()
+
   
   const displayHost = typeof window !== 'undefined' ? window.location.host : 'resellerpro.in'
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in')
@@ -22,7 +22,7 @@ export function StoreShareWidget({ shopSlug, storeStatus = 'open' }: StoreShareW
 
   const handleCopy = () => {
     navigator.clipboard.writeText(fullUrl)
-    toast({ title: 'Link Copied ✨', description: 'Store link copied to clipboard!' })
+    toast.success('Store link copied to clipboard')
     if (typeof window !== 'undefined') {
       localStorage.setItem('rp_store_shared', '1')
       window.dispatchEvent(new Event('rp_store_shared_updated'))

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Share2, ArrowRight, ShieldCheck, Tag, ShoppingBag, Box, CheckCircle2, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { ReviewSection } from '../shop/ReviewSection'
 
 interface PremiumProductViewProps {

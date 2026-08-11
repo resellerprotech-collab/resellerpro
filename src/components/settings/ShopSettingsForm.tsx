@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Switch } from '@/components/ui/switch'
 import {
   Loader2, Palette, Globe, Info, ExternalLink, Sparkles,
@@ -57,7 +57,7 @@ export default function ShopSettingsForm({
   categories = []
 }: ShopSettingsFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState('general')
   const [uploadingField, setUploadingField] = useState<string | null>(null)
@@ -560,7 +560,7 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Image must be less than 5MB', variant: 'destructive' })
+      toast.error('File too large', { description: 'Image must be less than 5MB.' })
       return
     }
 
@@ -575,9 +575,9 @@ export default function ShopSettingsForm({
           [badgeId]: { ...(prev.trustBadgeItems?.[badgeId] || {}), iconUrl: uploadedUrl }
         }
       }))
-      toast({ title: 'Icon Uploaded 🎉', description: 'Custom badge icon saved!' })
+      toast.success('Badge icon updated')
     } catch (err: any) {
-      toast({ title: 'Upload Failed', description: err.message, variant: 'destructive' })
+      toast.error('Unable to upload icon', { description: err.message })
     } finally {
       setUploadingField(null)
     }
@@ -598,10 +598,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -611,16 +609,11 @@ export default function ShopSettingsForm({
       const uploadedUrl = await uploadViaApi(file, fieldName)
 
       setFormData(prev => ({ ...prev, [fieldName]: uploadedUrl }))
-      toast({
-        title: 'Upload Successful 🎉',
-        description: 'Image uploaded and updated in settings.',
-      })
+      toast.success('Image uploaded')
     } catch (err: any) {
       console.error('Upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload image.',
-        variant: 'destructive',
+      toast.error('Unable to upload image', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -632,10 +625,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -674,16 +665,11 @@ export default function ShopSettingsForm({
         }
       })
 
-      toast({
-        title: replaceIndex !== undefined ? 'Banner Image Updated! 🎉' : 'Banner Added! 🎉',
-        description: replaceIndex !== undefined ? 'Banner image has been changed.' : 'New promotional banner uploaded successfully.',
-      })
+      toast.success(replaceIndex !== undefined ? 'Banner image updated' : 'Banner image added')
     } catch (err: any) {
       console.error('Upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload banner image.',
-        variant: 'destructive',
+      toast.error('Unable to upload banner', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -757,10 +743,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -799,16 +783,11 @@ export default function ShopSettingsForm({
           heroMobileImageUrl: updatedList[0]?.imageUrl || ''
         }
       })
-      toast({
-        title: 'Mobile Banner Added! 🎉',
-        description: 'New mobile banner uploaded successfully.',
-      })
+      toast.success('Mobile banner added')
     } catch (err: any) {
       console.error('Upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload image.',
-        variant: 'destructive',
+      toast.error('Unable to upload image', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -833,10 +812,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -874,16 +851,11 @@ export default function ShopSettingsForm({
           heroImages: updatedList.map(b => b.imageUrl)
         }
       })
-      toast({
-        title: 'Image Added! 🎉',
-        description: 'New product showcase image uploaded successfully.',
-      })
+      toast.success('Showcase image added')
     } catch (err: any) {
       console.error('Upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload image.',
-        variant: 'destructive',
+      toast.error('Unable to upload image', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -907,10 +879,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -946,16 +916,11 @@ export default function ShopSettingsForm({
         }
       }))
 
-      toast({
-        title: 'Upload Successful 🎉',
-        description: 'Promotional image uploaded successfully.',
-      })
+      toast.success('Promotional image uploaded')
     } catch (err: any) {
       console.error('Upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload promotional image.',
-        variant: 'destructive',
+      toast.error('Unable to upload image', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -1073,10 +1038,8 @@ export default function ShopSettingsForm({
     if (!file) return
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
+      toast.error('File too large', {
+        description: 'Image must be less than 5MB.',
       })
       return
     }
@@ -1101,16 +1064,11 @@ export default function ShopSettingsForm({
       const uploadedUrl = urlData.publicUrl
 
       updateTestimonial(index, 'avatarUrl', uploadedUrl)
-      toast({
-        title: 'Avatar Uploaded 🎉',
-        description: 'Customer image uploaded successfully.',
-      })
+      toast.success('Avatar uploaded')
     } catch (err: any) {
       console.error('Testimonial image upload error:', err)
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload image.',
-        variant: 'destructive',
+      toast.error('Unable to upload avatar', {
+        description: err.message || 'Check your file and try again.',
       })
     } finally {
       setUploadingField(null)
@@ -1135,10 +1093,10 @@ export default function ShopSettingsForm({
 
       const result = await updateShopSettings(data)
       if (result.success) {
-        toast({ title: 'Success ✨', description: 'Store settings saved!' })
+        toast.success('Settings saved', { description: 'Your store settings have been updated.' })
         router.refresh()
       } else {
-        toast({ title: 'Error', description: result.message || 'Failed to save', variant: 'destructive' })
+        toast.error('Unable to save settings', { description: result.message || 'Check your information and try again.' })
       }
     })
   }

@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { revalidateStorefrontAction } from '@/app/(dashboard)/products/actions'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { MoreVertical, Edit, Eye, Trash, Copy, Package } from 'lucide-react'
 import { WhatsAppShare } from './WhatsAppShare'
 
@@ -31,7 +31,7 @@ export function ProductRow({ product }: { product: Product }) {
   }
 
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
   const supabase = createClient()
 
@@ -42,10 +42,8 @@ export function ProductRow({ product }: { product: Product }) {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        toast({
-          title: 'Authentication Error',
-          description: 'You must be logged in',
-          variant: 'destructive',
+        toast.error('Authentication required', {
+          description: 'Please sign in to duplicate products.',
         })
         return
       }
@@ -69,18 +67,13 @@ export function ProductRow({ product }: { product: Product }) {
         .select()
 
       if (error) {
-        toast({
-          title: 'Duplicate Failed',
+        toast.error('Unable to duplicate product', {
           description: error.message,
-          variant: 'destructive',
         })
         return
       }
 
-      toast({
-        title: 'Product Duplicated ✓',
-        description: `Created a copy of "${product.name}"`,
-      })
+      toast.success('Product duplicated')
 
       revalidateStorefrontAction()
 
@@ -88,10 +81,8 @@ export function ProductRow({ product }: { product: Product }) {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['products-stats'] })
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+      toast.error('Unable to duplicate product', {
+        description: error.message || 'Something went wrong.',
       })
     }
   }
@@ -112,20 +103,15 @@ export function ProductRow({ product }: { product: Product }) {
 
       if (error) throw error
 
-      toast({
-        title: 'Product Deleted',
-        description: `"${product.name}" has been removed.`,
-      })
+      toast.success('Product deleted')
 
       revalidateStorefrontAction()
 
       queryClient.invalidateQueries({ queryKey: ['products'] })
       queryClient.invalidateQueries({ queryKey: ['products-stats'] }) // Refresh stats too
     } catch (error: any) {
-      toast({
-        title: 'Delete Failed',
-        description: error.message,
-        variant: 'destructive',
+      toast.error('Unable to delete product', {
+        description: error.message || 'Something went wrong.',
       })
     }
   }

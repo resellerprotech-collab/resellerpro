@@ -29,7 +29,7 @@ import {
   type TodoSuggestion,
 } from '@/app/(dashboard)/dashboard/todo-actions'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 
 interface TodoWidgetProps {
   todos: Todo[]
@@ -119,7 +119,7 @@ export function TodoWidget({ todos: initialTodos, suggestions }: TodoWidgetProps
     const result = await createTodo(text)
 
     if (result.success) {
-      toast.success('Task added!')
+      toast.success('Task added')
       startTransition(() => {
         router.refresh()
       })
@@ -136,7 +136,7 @@ export function TodoWidget({ todos: initialTodos, suggestions }: TodoWidgetProps
     const result = await toggleTodo(id, !completed)
 
     if (result.success) {
-      toast.success(completed ? 'Task reopened' : 'Task completed! 🎉', {
+      toast.success(completed ? 'Task reopened' : 'Task completed', {
         action: {
           label: 'Undo',
           onClick: () => handleToggleTodo(id, !completed),
@@ -204,7 +204,7 @@ export function TodoWidget({ todos: initialTodos, suggestions }: TodoWidgetProps
     )
 
     if (result.success) {
-      toast.success('Added to your tasks!')
+      toast.success('Task added')
       startTransition(() => {
         router.refresh()
       })
@@ -228,7 +228,7 @@ export function TodoWidget({ todos: initialTodos, suggestions }: TodoWidgetProps
       }
     }
 
-    toast.success(`${ids.length} task${ids.length > 1 ? 's' : ''} completed!`)
+    toast.success(`${ids.length} task${ids.length > 1 ? 's' : ''} completed`)
     router.refresh()
   }
 

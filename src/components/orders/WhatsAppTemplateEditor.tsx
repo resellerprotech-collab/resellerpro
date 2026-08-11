@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Loader2, Sparkles, RotateCcw, Copy, Check, MessageSquare, Info, Eye, EyeOff } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 
 type MessageTemplate = 'order_confirmation' | 'payment_reminder' | 'shipped_update' | 'delivered_confirmation' | 'follow_up'
 
@@ -95,7 +95,7 @@ export function WhatsAppTemplateEditor({
     setIsSaving(true)
     try {
       await onSave(customMessage)
-      toast.success('Template saved successfully!')
+      toast.success('Template saved')
       onClose()
     } catch (error) {
       console.error('Save error:', error)
@@ -154,7 +154,7 @@ export function WhatsAppTemplateEditor({
     navigator.clipboard.writeText(variable)
     setCopiedVar(variable)
     setTimeout(() => setCopiedVar(null), 2000)
-    toast.success('Copied!')
+    toast.success('Copied')
   }
 
   const characterCount = customMessage.length

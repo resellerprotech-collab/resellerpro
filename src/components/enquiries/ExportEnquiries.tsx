@@ -13,7 +13,7 @@ import { exportToCSV } from '@/lib/utils/export'
 import { exportToPDF } from '@/lib/utils/exportPDF'
 import { formatDate } from '@/lib/utils/dateHelpers'
 import { Enquiry } from '@/types'
-import { toast } from 'sonner'
+import { toast } from '@/lib/toast'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { ProBadge } from '@/components/shared/ProBadge'
 import { useRouter } from 'next/navigation'
@@ -53,7 +53,7 @@ export function ExportEnquiries({ enquiries, businessName = 'ResellerPro', class
         generatedOn: new Date().toLocaleString('en-IN'),
         totalRecords: enquiries.length
       })
-      toast.success('✅ Leads report exported successfully!')
+      toast.success('Leads report exported')
     } catch (error) {
       console.error('Export error:', error)
       toast.error('Failed to export leads report')
@@ -83,7 +83,7 @@ export function ExportEnquiries({ enquiries, businessName = 'ResellerPro', class
       }
 
       exportToPDF(summaryData, 'Enquiries_Summary_PDF')
-      toast.success('✅ Leads summary PDF exported successfully!')
+      toast.success('Leads summary PDF exported')
     } catch (error) {
       console.error('PDF Export error:', error)
       toast.error('Failed to export leads summary')

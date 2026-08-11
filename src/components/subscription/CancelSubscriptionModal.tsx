@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { cancelSubscription } from '@/app/(dashboard)/settings/subscription/actions'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Loader2 } from 'lucide-react'
 
 interface CancelSubscriptionModalProps {
@@ -26,30 +26,25 @@ export function CancelSubscriptionModal({
     currentPeriodEnd,
 }: CancelSubscriptionModalProps) {
     const [loading, setLoading] = useState(false)
-    const { toast } = useToast()
+
 
     const handleCancel = async () => {
         setLoading(true)
         try {
             const result = await cancelSubscription()
             if (result.success) {
-                toast({
-                    title: 'Subscription Cancelled',
+                toast.success('Subscription cancelled', {
                     description: 'Your subscription will end at the end of the current billing period.',
                 })
                 onClose()
             } else {
-                toast({
-                    title: 'Error',
-                    description: result.message || 'Failed to cancel subscription',
-                    variant: 'destructive',
+                toast.error('Unable to cancel subscription', {
+                    description: result.message || 'Please try again later.',
                 })
             }
         } catch (error) {
-            toast({
-                title: 'Error',
+            toast.error('Unable to cancel subscription', {
                 description: 'Something went wrong. Please try again.',
-                variant: 'destructive',
             })
         } finally {
             setLoading(false)

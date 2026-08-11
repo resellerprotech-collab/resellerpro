@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { deleteCustomer } from '@/app/(dashboard)/customers/action'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { useRouter } from 'next/navigation'
 import { Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 
 export default function DeleteCustomerButton({ customerId }: { customerId: string }) {
-  const { toast } = useToast()
+
   const router = useRouter()
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
@@ -31,10 +31,7 @@ export default function DeleteCustomerButton({ customerId }: { customerId: strin
       const result = await deleteCustomer(customerId)
 
       if (result.success) {
-        toast({
-          title: "Customer Deleted",
-          description: result.message,
-        })
+        toast.success(result.message || 'Customer deleted')
 
         // Invalidate queries to update lists if we are on a list page
         queryClient.invalidateQueries({ queryKey: ['customers'] })
@@ -50,11 +47,7 @@ export default function DeleteCustomerButton({ customerId }: { customerId: strin
         // Let's keep router.push for navigation safety but remove router.refresh()
         router.push("/customers")
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast.error(result.message || 'Failed to delete customer')
       }
     })
   }

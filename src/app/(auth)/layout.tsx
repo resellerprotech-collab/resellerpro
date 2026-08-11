@@ -6,7 +6,9 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen">
+    // Force light mode on auth pages regardless of system/user theme preference
+    // This prevents the black screen issue on dark-mode OS devices
+    <div className="light min-h-screen" style={{ colorScheme: 'light', backgroundColor: '#ffffff' }}>
       {children}
       <Toaster />
     </div>

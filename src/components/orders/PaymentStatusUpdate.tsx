@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { Loader2, CreditCard } from 'lucide-react'
 import { updatePaymentStatus } from '@/app/(dashboard)/orders/actions'
 import { useQueryClient } from '@tanstack/react-query'
@@ -41,7 +41,7 @@ export function PaymentStatusUpdate({
   currentPaymentMethod?: string
 }) {
   const router = useRouter()
-  const { toast } = useToast()
+
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [paymentStatus, setPaymentStatus] = useState(currentPaymentStatus)
@@ -51,10 +51,8 @@ export function PaymentStatusUpdate({
     e.preventDefault()
 
     if (paymentStatus === currentPaymentStatus && paymentMethod === currentPaymentMethod) {
-      toast({
-        title: 'No changes',
-        description: 'Payment details are already set to these values',
-        variant: 'destructive',
+      toast.info('No changes made', {
+        description: 'Payment details already match selected values.',
       })
       return
     }
@@ -70,18 +68,13 @@ export function PaymentStatusUpdate({
       const result = await updatePaymentStatus(formData)
 
       if (result.success) {
-        toast({
-          title: 'Success ✅',
-          description: result.message || 'Payment status updated successfully',
-        })
+        toast.success('Payment status updated')
         // Invalidate orders query & stats
         queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['orders-stats'] })
       } else {
-        toast({
-          title: 'Error',
-          description: result.message || 'Failed to update payment status',
-          variant: 'destructive',
+        toast.error('Unable to update payment status', {
+          description: result.message || 'Please try again later.',
         })
       }
     })

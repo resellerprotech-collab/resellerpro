@@ -24,7 +24,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/toast'
 import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus'
 
 function SubmitButton({ isLoading }: { isLoading: boolean }) {
@@ -61,7 +61,7 @@ const quotes = [
 ]
 
 export default function LoginForm() {
-  const { toast } = useToast()
+
   const searchParams = useSearchParams()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -146,25 +146,24 @@ export default function LoginForm() {
     if (isRedirecting.current) return
     isRedirecting.current = true
 
-    toast({
-      title: "Success",
-      description: "Login successful! Redirecting...",
+    toast.success('Signed in', {
+      description: 'Redirecting to dashboard...',
     })
 
     setTimeout(() => {
       window.location.href = url
     }, 100)
-  }, [toast])
+  }, [])
 
   useEffect(() => {
     const message = searchParams.get('message')
     if (message) {
       const isSuccess = message.toLowerCase().includes('success')
-      toast({
-        title: isSuccess ? 'Success' : 'Security Alert',
-        description: message,
-        variant: isSuccess ? 'default' : 'destructive',
-      })
+      if (isSuccess) {
+        toast.success(message)
+      } else {
+        toast.error('Security alert', { description: message })
+      }
 
       const url = new URL(window.location.href)
       url.searchParams.delete('message')
@@ -172,24 +171,21 @@ export default function LoginForm() {
     }
 
     if (searchParams.get('verified') === 'true') {
-      toast({
-        title: 'Email verified 🎉',
+      toast.success('Email verified', {
         description: 'Your account is verified. Please sign in.',
       })
       const url = new URL(window.location.href)
       url.searchParams.delete('verified')
       window.history.replaceState({}, '', url.pathname + url.search)
     }
-  }, [searchParams, toast])
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!isOnline) {
-      toast({
-        title: 'Offline',
-        description: 'Please check your internet connection',
-        variant: 'destructive',
+      toast.error('Offline', {
+        description: 'Please check your internet connection and try again.',
       })
       return
     }
@@ -210,18 +206,14 @@ export default function LoginForm() {
         performRedirect(result.redirectUrl)
       } else {
         setFormErrors(result.errors || {})
-        toast({
-          title: 'Sign in failed',
-          description: result.message,
-          variant: 'destructive',
+        toast.error('Unable to sign in', {
+          description: result.message || 'Check your credentials and try again.',
         })
       }
     } catch (error: any) {
       console.error('Login error:', error)
-      toast({
-        title: 'Sign in failed',
-        description: error?.message || 'Unexpected error occurred.',
-        variant: 'destructive',
+      toast.error('Unable to sign in', {
+        description: error?.message || 'Something went wrong. Please try again.',
       })
     } finally {
       setIsLoading(false)
@@ -231,32 +223,30 @@ export default function LoginForm() {
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (!isOnline) {
-      toast({ title: 'Offline', description: 'Please check your internet connection', variant: 'destructive' })
+      toast.error('Offline', { description: 'Check your internet connection.' })
       return
     }
     const cleanEmail = otpEmail.trim().toLowerCase()
     if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      toast({ title: 'Invalid Email', description: 'Please enter a valid email address', variant: 'destructive' })
+      toast.error('Invalid email', { description: 'Please enter a valid email address.' })
       return
     }
     setOtpLoading(true)
     try {
       const res = await sendLoginOtp(cleanEmail)
       if (res.success) {
-        toast({ title: '6-Digit Code Sent 🎉', description: res.message })
+        toast.success('Verification code sent', { description: res.message })
         setOtpStep('verify')
         setResendCooldown(60)
       } else if ((res as any).notFound) {
-        toast({
-          title: 'Account Not Found',
+        toast.error('Account not found', {
           description: res.message,
-          variant: 'destructive',
         })
       } else {
-        toast({ title: 'Could not send OTP', description: res.message, variant: 'destructive' })
+        toast.error('Unable to send code', { description: res.message })
       }
     } catch (error: any) {
-      toast({ title: 'Error', description: error?.message || 'Something went wrong', variant: 'destructive' })
+      toast.error('Unable to send code', { description: error?.message || 'Please try again.' })
     } finally {
       setOtpLoading(false)
     }
@@ -265,11 +255,11 @@ export default function LoginForm() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isOnline) {
-      toast({ title: 'Offline', description: 'Please check your internet connection', variant: 'destructive' })
+      toast.error('Offline', { description: 'Check your internet connection.' })
       return
     }
     if (!otpCode || otpCode.trim().length !== 6 || isRedirecting.current) {
-      toast({ title: 'Invalid Code', description: 'Please enter the 6-digit verification code.', variant: 'destructive' })
+      toast.error('Invalid code', { description: 'Please enter the 6-digit verification code.' })
       return
     }
 
@@ -279,11 +269,11 @@ export default function LoginForm() {
       if (res.success && res.redirectUrl) {
         performRedirect(res.redirectUrl)
       } else {
-        toast({ title: 'Verification Failed', description: res.message || 'Invalid or expired 6-digit OTP', variant: 'destructive' })
+        toast.error('Verification failed', { description: res.message || 'Invalid or expired code.' })
         setOtpLoading(false)
       }
     } catch (error: any) {
-      toast({ title: 'Error', description: error?.message || 'Verification failed', variant: 'destructive' })
+      toast.error('Verification failed', { description: error?.message || 'Please try again.' })
       setOtpLoading(false)
     }
   }
