@@ -19,9 +19,10 @@ const config = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-spline-sans)', 'var(--font-inter)', 'sans-serif'],
+        sans: ['"General Sans"', 'var(--font-spline-sans)', 'var(--font-inter)', 'sans-serif'],
         spline: ['var(--font-spline-sans)', 'sans-serif'],
         inter: ['var(--font-inter)', 'sans-serif'],
+        'general-sans': ['"General Sans"', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',

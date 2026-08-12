@@ -33,30 +33,6 @@ export default function AboutUsSections({
 }: AboutUsSectionsProps) {
   return (
     <div className="space-y-6">
-      {/* ─── ABOUT PAGE HEADER BANNER ─── */}
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50/30 to-card dark:from-indigo-950/20 dark:via-purple-950/10 dark:to-card border border-indigo-100 dark:border-indigo-900/40">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-950/40">
-            <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div>
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">About Page Content</h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Customize the story, image, and stats shown on your About Us page</p>
-          </div>
-        </div>
-        {formData.shop_slug && (
-          <a
-            href={`/store/${formData.shop_slug}/about`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 rounded-xl transition-colors shrink-0"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            View About Page
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
-      </div>
 
       {/* ─── ABOUT PAGE STORY SECTION ─── */}
       <Section icon={BookOpen} title="About Us Page - Story Section" pro={!isEligible}>

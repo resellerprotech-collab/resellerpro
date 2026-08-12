@@ -1,8 +1,13 @@
 @import url('https://api.fontshare.com/v2/css?f[]=switzer@1,2,3,4,5,6,7,8,9&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700,800,900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-general-sans {
+  font-family: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
 
 @layer base {
   :root {
@@ -191,6 +196,14 @@ select:-webkit-autofill:active {
   --width: 360px;
   --offset: 20px;
   font-family: inherit !important;
+  z-index: 99999 !important;
+}
+
+@media (max-width: 640px) {
+  [data-sonner-toaster] {
+    --width: calc(100vw - 24px) !important;
+    --offset: calc(env(safe-area-inset-top, 0px) + 64px) !important;
+  }
 }
 
 /* Base toast surface */

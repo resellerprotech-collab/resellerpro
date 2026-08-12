@@ -30,7 +30,7 @@ export default function Header() {
   const { isOnline } = useOfflineQueue() // ✅ Initialize hook globally
 
   return (
-    <header className="flex items-center justify-between pl-12 pr-2.5 lg:px-4 h-16 border-b gap-1.5 sm:gap-3 min-w-0">
+    <header className="flex items-center justify-between pl-14 pr-3 lg:px-4 h-14 sm:h-16 border-b border-slate-200/80 dark:border-slate-800/80 gap-2 sm:gap-3 min-w-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md lg:bg-background lg:backdrop-blur-none transition-all shadow-2xs lg:shadow-none">
       {/* Left Side: Offline Indicator */}
       <div className="hidden sm:flex items-center gap-2">
         {!isOnline && (
@@ -48,7 +48,7 @@ export default function Header() {
         {/* Quick Add */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" className="gap-1.5 h-9 px-2.5 sm:px-3 text-xs shrink-0">
+            <Button size="sm" className="gap-1.5 h-9 w-9 sm:w-auto p-0 sm:px-3 text-xs shrink-0 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white dark:text-white shadow-xs shadow-indigo-500/20 active:scale-95 transition-all">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Quick Add</span>
             </Button>
@@ -84,7 +84,7 @@ export default function Header() {
           variant="ghost"
           size="icon"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="h-9 w-9 shrink-0 flex items-center justify-center"
+          className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all active:scale-95"
         >
           <Sun className="h-4 w-4 sm:h-5 sm:w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-4 w-4 sm:h-5 sm:w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
