@@ -341,7 +341,6 @@ export default function OnboardingPage() {
         >
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-8 space-y-6">
             <div className="text-center space-y-2">
-              <span className="text-5xl block mb-2">🎉</span>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Your Online Store is Ready!</h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm">Everything is ready. You can now add your first product and start selling.</p>
             </div>

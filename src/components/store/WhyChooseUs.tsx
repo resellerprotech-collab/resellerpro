@@ -89,13 +89,12 @@ export function WhyChooseUs({ primaryColor = '#6366f1', theme }: WhyChooseUsProp
     <section className="py-12 bg-slate-50/70 border-y border-slate-100">
       <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
-       
-          <h2 className="text-xl md:text-3xl lg:text-4xl  text-black font-medium">
-            Built for Your Peace of Mind
+          <h2 className="text-xl md:text-3xl lg:text-4xl text-black font-medium">
+            {theme?.trustBadgesHeading || 'Built for Your Peace of Mind'}
           </h2>
-           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
-          Trusted by 5,000+ businesses and individuals worldwide
-        </p>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1.5 max-w-xl mx-auto">
+            {theme?.trustBadgesSubheading || 'Trusted by 5,000+ businesses and individuals worldwide'}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-stretch justify-center gap-4 sm:gap-6">

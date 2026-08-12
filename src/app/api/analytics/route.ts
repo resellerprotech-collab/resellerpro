@@ -163,6 +163,15 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized', details: authError?.message }, { status: 401 })
         }
 
+        // Fetch business name for export header in single DB query
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('business_name')
+            .eq('id', user.id)
+            .maybeSingle()
+
+        const businessName = profile?.business_name || 'ResellerPro'
+
         const searchParams = req.nextUrl.searchParams
         let from = searchParams.get('from') || undefined
         let to = searchParams.get('to') || undefined
@@ -327,6 +336,7 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
 
         return NextResponse.json({
+            businessName,
             orders: currentOrders,
             stats: {
                 currentRevenue,

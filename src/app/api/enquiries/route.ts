@@ -75,18 +75,22 @@ export async function GET(req: Request) {
 
     query = query.range(offset, offset + limit - 1)
 
-    const { data, error, count } = await query
+    const [{ data, error, count }, profileRes] = await Promise.all([
+        query,
+        supabase.from('profiles').select('business_name').eq('id', user.id).maybeSingle()
+    ])
 
     if (error) {
         console.error(error)
-        return NextResponse.json({ data: [], total: 0, page, limit }, { status: 500 })
+        return NextResponse.json({ data: [], total: 0, page, limit, businessName: 'ResellerPro' }, { status: 500 })
     }
 
     return NextResponse.json({
         data,
         total: count,
         page,
-        limit
+        limit,
+        businessName: profileRes.data?.business_name || 'ResellerPro'
     })
 }
 
