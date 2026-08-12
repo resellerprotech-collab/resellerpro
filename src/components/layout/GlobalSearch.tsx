@@ -88,10 +88,10 @@ export function GlobalSearch() {
                 className="relative group cursor-text"
                 onClick={() => setOpen(true)}
             >
-                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-muted-foreground group-hover:text-foreground transition-colors" />
-                <div className="flex h-9 sm:h-10 w-full rounded-lg border border-input bg-background pl-8 sm:pl-10 pr-2 sm:pr-4 text-xs sm:text-sm text-muted-foreground ring-offset-background group-hover:border-accent transition-colors items-center truncate">
+                <Search className="absolute left-2.5 sm:left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                <div className="flex h-9 sm:h-10 w-full rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-slate-100/70 dark:bg-slate-800/60 lg:bg-background pl-8 sm:pl-10 pr-2 sm:pr-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover:border-indigo-500/40 transition-all items-center truncate shadow-2xs">
                     <span className="truncate hidden sm:inline">Search orders, customers...</span>
-                    <span className="truncate sm:hidden">Search...</span>
+                    <span className="truncate sm:hidden font-medium text-slate-500 dark:text-slate-400">Search...</span>
                 </div>
             </div>
 

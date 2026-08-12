@@ -181,7 +181,7 @@ export function AnalyticsClient() {
                         <CardTitle className="text-xl font-bold">Sales & Profit Trend</CardTitle>
                         <CardDescription>Performance trajectories over time</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[300px] sm:h-[400px] p-2 sm:p-6 pt-0">
+                    <CardContent className="h-[300px] sm:h-[400px] p-2 sm:py-6 px-2 pt-0">
                         <SalesProfitChart
                             orders={orders}
                             dateRange={{
@@ -198,7 +198,7 @@ export function AnalyticsClient() {
                             <CardTitle className="text-xl font-bold">Revenue by Category</CardTitle>
                             <CardDescription>Top category performance</CardDescription>
                         </CardHeader>
-                        <CardContent className="h-[300px] sm:h-[400px] p-2 sm:p-6 pt-0">
+                        <CardContent className="h-[300px] sm:h-[400px] p-2 sm:py-6 px-2 pt-0">
                             <RevenueByCategoryChart orders={orders} />
                         </CardContent>
                     </Card>

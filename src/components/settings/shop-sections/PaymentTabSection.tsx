@@ -31,31 +31,39 @@ export default function PaymentTabSection({
           </p>
 
           {/* Live Status Matrix Summary Card */}
-          <div className="p-3.5 sm:p-4 rounded-xl border border-indigo-100 dark:border-indigo-950/50 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
+          <div className="p-3 sm:p-4 rounded-xl border border-indigo-100 dark:border-indigo-950/50 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
             <div className="flex items-center gap-2">
               <h5 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">Active Checkout Configuration</h5>
             </div>
-            <div className="text-[11px] font-medium">
+            <div className="text-[11px] font-medium leading-relaxed">
               {planName?.toLowerCase() === 'free' ? (
-                <p className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
-                  Free Plan ➔ Store Checkout locked to <u>WhatsApp Order Only</u>. Upgrade subscription to enable Online Payment &amp; COD.
-                </p>
+                <div className="flex items-start gap-2 text-amber-700 dark:text-amber-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1" />
+                  <div>
+                    Free Plan ➔ Store Checkout locked to <u className="underline underline-offset-2">WhatsApp Order Only</u>. Upgrade subscription to enable Online Payment &amp; COD.
+                  </div>
+                </div>
               ) : !formData.enableOnlinePayment ? (
-                <p className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
-                  Online Payment OFF ➔ Checkout shows <u>WhatsApp Order Only</u> (Online Payment &amp; COD hidden).
-                </p>
+                <div className="flex items-start gap-2 text-amber-700 dark:text-amber-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1" />
+                  <div>
+                    Online Payment OFF ➔ Checkout shows <u className="underline underline-offset-2">WhatsApp Order Only</u> (Online Payment &amp; COD hidden).
+                  </div>
+                </div>
               ) : !formData.enableCod ? (
-                <p className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" />
-                  Online Payment ON + COD OFF ➔ Checkout shows <u>Online Payment</u> &amp; <u>WhatsApp Order</u>.
-                </p>
+                <div className="flex items-start gap-2 text-indigo-700 dark:text-indigo-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-1" />
+                  <div>
+                    Online Payment ON + COD OFF ➔ Checkout shows <u className="underline underline-offset-2">Online Payment</u> &amp; <u className="underline underline-offset-2">WhatsApp Order</u>.
+                  </div>
+                </div>
               ) : (
-                <p className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                  Online Payment ON + COD ON ➔ Checkout shows <u>Online Payment</u>, <u>COD</u> &amp; <u>WhatsApp Order</u>.
-                </p>
+                <div className="flex items-start gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1" />
+                  <div>
+                    Online Payment ON + COD ON ➔ Checkout shows <u className="underline underline-offset-2">Online Payment</u>, <u className="underline underline-offset-2">COD</u> &amp; <u className="underline underline-offset-2">WhatsApp Order</u>.
+                  </div>
+                </div>
               )}
             </div>
           </div>

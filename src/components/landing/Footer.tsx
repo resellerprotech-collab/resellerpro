@@ -13,7 +13,6 @@ import {
   FileText,
   Phone,
   Headphones,
-  Heart,
   Facebook,
   Twitter,
   Linkedin,
@@ -211,16 +210,13 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
-          <div>
+          <div className="hidden sm:block flex-1" />
+
+          <div className="text-center flex-1">
             © 2025 ResellerPro. All rights reserved.
           </div>
 
-          <div className="flex items-center gap-1">
-            <Heart className="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
-            <span>Made with <span className="text-blue-600 font-medium">passion</span> for resellers</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center sm:justify-end gap-2 flex-1">
             <a href="#" className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <Facebook className="w-4 h-4" />
             </a>
