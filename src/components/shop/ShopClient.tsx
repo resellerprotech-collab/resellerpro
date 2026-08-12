@@ -254,7 +254,7 @@ export function ShopClient({ profile, products, categories }: ShopClientProps) {
             <div className="my-20 py-12 bg-white rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40 px-8 relative overflow-hidden">
                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
                <div className="absolute bottom-0 left-0 w-80 h-80 bg-pink-500/5 rounded-full blur-3xl -z-10" />
-              <h3 className="text-center text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Why Shop With Us</h3>
+              <h3 className="text-center text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">{theme.trustBadgesHeading || 'Why Shop With Us'}</h3>
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-8 text-center z-10 relative">
                 {theme.trustBadges.map((badgeId: string) => {
                   const bdg = trustBadgeIcons[badgeId]

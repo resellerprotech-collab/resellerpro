@@ -9,12 +9,14 @@ export function useAnalytics(
     if (params.to) queryString.set('to', params.to)
 
     return useQuery({
-        queryKey: ['analytics', params],
+        queryKey: ['analytics', params.from || 'default', params.to || 'default'],
         queryFn: async () => {
             const res = await fetch(`/api/analytics?${queryString.toString()}`)
             if (!res.ok) throw new Error('Failed to fetch analytics')
             return res.json()
         },
-        enabled: options?.enabled ?? true,  // Default to true if not specified
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes for instant page switching
+        gcTime: 10 * 60 * 1000, // Keep in memory 10 mins
+        enabled: options?.enabled ?? true,
     })
 }

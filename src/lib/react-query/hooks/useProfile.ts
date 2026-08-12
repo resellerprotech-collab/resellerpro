@@ -9,5 +9,7 @@ export function useProfile(initialData?: any) {
             return res.json()
         },
         initialData: initialData,
+        staleTime: 5 * 60 * 1000, // 5 minutes cache
+        gcTime: 10 * 60 * 1000,
     })
 }

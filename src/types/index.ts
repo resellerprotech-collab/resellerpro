@@ -105,6 +105,8 @@ export interface ShopTheme {
   testimonialsSubheading?: string
   testimonials?: Array<{ name: string; text: string; rating: number; avatarUrl?: string; imageUrl?: string; role?: string }>
   trustBadgesEnabled?: boolean
+  trustBadgesHeading?: string
+  trustBadgesSubheading?: string
   trustBadges?: string[]
   trustBadgeItems?: Record<string, { id?: string; title?: string; description?: string; iconUrl?: string }>
   chatWidgetEnabled?: boolean

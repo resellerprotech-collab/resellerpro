@@ -13,9 +13,11 @@ export function useEnquiries(queryString: string) {
         queryFn: async () => {
             const res = await fetch(`/api/enquiries?${queryString}`);
             if (!res.ok) throw new Error("Failed to fetch enquiries");
-            return res.json() as Promise<Enquiry[]>;
+            return res.json() as Promise<{ data: Enquiry[]; total: number; businessName?: string } | Enquiry[]>;
         },
         placeholderData: keepPreviousData,
+        staleTime: 2 * 60 * 1000, // 2 minutes instant cache
+        gcTime: 5 * 60 * 1000,
     });
 }
 

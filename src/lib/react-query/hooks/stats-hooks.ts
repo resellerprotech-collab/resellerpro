@@ -42,5 +42,7 @@ export function useEnquiriesStats() {
             if (!res.ok) throw new Error('Failed to fetch enquiry stats')
             return res.json()
         },
+        staleTime: 2 * 60 * 1000, // 2 minutes instant cache
+        gcTime: 5 * 60 * 1000,
     })
 }

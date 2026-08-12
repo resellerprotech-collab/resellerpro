@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEnquiries } from "@/lib/react-query/hooks/useEnquiries";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { useToast } from "@/hooks/use-toast";
 import { LimitReachedModal } from "@/components/subscription/LimitReachedModal";
 import { useEnquiriesStats } from "@/lib/react-query/hooks/stats-hooks";
 import { Pagination } from "@/components/shared/Pagination";
@@ -22,7 +20,6 @@ import {
     MessageSquare,
     Clock,
     CheckCircle2,
-    XCircle,
     Inbox,
     Lock,
     AlertTriangle,
@@ -30,11 +27,9 @@ import {
     Calendar,
 } from "lucide-react";
 import { ExportEnquiries } from '@/components/enquiries/ExportEnquiries';
-import { StatsCard } from "@/components/shared/StatsCard"
-import { Enquiry } from "@/types"
-import { createClient } from '@/lib/supabase/client';
+import { StatsCard } from "@/components/shared/StatsCard";
+import { Enquiry } from "@/types";
 import { RequireVerification } from "../shared/RequireVerification";
-import Link from "next/link";
 
 export function EnquiriesClient() {
     const router = useRouter();
@@ -45,33 +40,8 @@ export function EnquiriesClient() {
     const statusFilter = searchParams.get("status") || "all";
     const followUpFilter = searchParams.get("follow_up") || "";
     const [page, setPage] = useState(1);
-    const [businessName, setBusinessName] = useState<string>('ResellerPro');
-    const { toast } = useToast();
 
-    const { canCreateEnquiry, subscription, checkLimit, limitModalProps } = usePlanLimits();
-    const planName = subscription?.plan?.display_name || 'Free Plan';
-
-    // Fetch business name from user profile
-    useEffect(() => {
-        async function fetchBusinessName() {
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('business_name')
-                    .eq('id', user.id)
-                    .single()
-
-                if (profile?.business_name) {
-                    setBusinessName(profile.business_name)
-                }
-            }
-        }
-
-        fetchBusinessName()
-    }, []);
+    const { canCreateEnquiry, checkLimit, limitModalProps } = usePlanLimits();
 
     // Data Fetching
     const params = new URLSearchParams(searchParams.toString());
@@ -84,6 +54,7 @@ export function EnquiriesClient() {
     // Handle both old array format (safety) and new object format
     const enquiries = (Array.isArray(enquiriesData) ? enquiriesData : (enquiriesData as any)?.data || []) as Enquiry[];
     const totalCount = Array.isArray(enquiriesData) ? enquiriesData.length : ((enquiriesData as any)?.total || 0);
+    const businessName = (enquiriesData as any)?.businessName || 'ResellerPro';
     const totalPages = Math.ceil(totalCount / 20);
 
     // Stats Calculation
