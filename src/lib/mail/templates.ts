@@ -245,65 +245,80 @@ export const templates = {
     }
   },
 
-  // ─── 🔑 AMAZON/GOOGLE LEVEL OTP VERIFICATION EMAIL ────────────────────────
+  // ─── 🔑 PROFESSIONAL OTP VERIFICATION EMAIL ──────────────────────────────
   otpCode: (otp: string): EmailTemplate => ({
-    subject: `🔑 ${otp} is your ResellerPro Security Code`,
+    subject: `Your ResellerPro verification code is ${otp}`,
     text: `Your ResellerPro verification code is: ${otp}. This code is valid for 5 minutes. Do not share this code with anyone.`,
     html: `
-      <div style="background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 36px 12px; width: 100%; box-sizing: border-box;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.1);">
-          ${BRAND_HEADER}
-
-          <!-- Body -->
+      <div style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 40px 16px; width: 100%; box-sizing: border-box;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);">
+          
+          <!-- Header -->
           <tr>
-            <td style="padding: 36px; text-align: center;">
-              
-              <!-- Lock Badge -->
-              <div style="margin: 0 auto 20px auto; width: 60px; height: 60px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);">
-                <span style="font-size: 28px; line-height: 60px;">🔒</span>
-              </div>
-
-              <h1 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">
-                Identity Verification
-              </h1>
-
-              <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.6; color: #475569; max-width: 380px; margin-left: auto; margin-right: auto;">
-                Use the single-use security code below to log in or verify your action on <strong>ResellerPro</strong>.
-              </p>
-
-              <!-- Premium OTP Code Card -->
-              <div style="background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed #cbd5e1; border-radius: 16px; padding: 26px 18px; margin: 0 auto 28px auto; max-width: 340px;">
-                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 2px; margin-bottom: 10px;">
-                  ONE-TIME VERIFICATION CODE
-                </div>
-                <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco, monospace; font-size: 40px; font-weight: 900; color: #2563eb; letter-spacing: 12px; line-height: 1; padding-left: 12px;">
-                  ${otp}
-                </div>
-                <div style="margin-top: 16px; font-size: 12px; font-weight: 700; color: #dc2626; display: inline-block; background: #fef2f2; border: 1px solid #fecaca; padding: 5px 16px; border-radius: 20px;">
-                  ⏱️ Code expires in 5 minutes
-                </div>
-              </div>
-
-              <!-- Security Notice -->
-              <div style="background-color: #fffbe6; border: 1px solid #fef08a; border-radius: 12px; padding: 14px 18px; text-align: left; margin-bottom: 24px;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <tr>
-                    <td width="26" style="vertical-align: top; padding-right: 10px; font-size: 18px;">💡</td>
-                    <td style="font-size: 12px; line-height: 1.5; color: #713f12; font-weight: 500;">
-                      <strong>Security Tip:</strong> Never share this code with anyone. ResellerPro support will never ask for your verification code.
-                    </td>
-                  </tr>
-                </table>
-              </div>
-
-              <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
-                If you didn't request this verification code, please ignore this email.
-              </p>
-
+            <td style="padding: 28px 32px; border-bottom: 1px solid #f1f5f9;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="vertical-align: middle; padding-right: 10px;">
+                    <img src="${LOGO_URL}" alt="ResellerPro" width="36" height="36" style="display: block; border: none; width: 36px; height: 36px; object-fit: contain;" />
+                  </td>
+                  <td style="vertical-align: middle;">
+                    <span style="font-size: 19px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">ResellerPro</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
-          ${BRAND_FOOTER}
+          <!-- Body -->
+          <tr>
+            <td style="padding: 32px; text-align: left;">
+              <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+                Verification Code
+              </h1>
+
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                Use the verification code below to complete your sign-in to ResellerPro.
+              </p>
+
+              <!-- OTP Code Block -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px 16px; margin-bottom: 24px; text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 1.5px; margin-bottom: 10px;">
+                  ONE-TIME SECURITY CODE
+                </div>
+                <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Monaco, monospace; font-size: 36px; font-weight: 800; color: #2563eb; letter-spacing: 10px; line-height: 1; padding-left: 10px;">
+                  ${otp}
+                </div>
+                <div style="margin-top: 14px; font-size: 12px; font-weight: 500; color: #64748b;">
+                  This code expires in 5 minutes
+                </div>
+              </div>
+
+              <!-- Information Callout Box -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #64748b;">
+                  <strong style="color: #334155;">Security Notice:</strong> Never share this code with anyone. ResellerPro staff will never ask for your verification code.
+                </p>
+              </div>
+
+              <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                If you did not request this verification code, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 32px; background-color: #fafafa; border-top: 1px solid #f1f5f9; text-align: center;">
+              <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: #64748b;">
+                ResellerPro — E-Commerce Operating System
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+                This is an automated security email sent to your account.<br/>
+                © 2026 ResellerPro. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </div>
     `,
@@ -451,6 +466,86 @@ export const templates = {
           </tr>
 
           ${BRAND_FOOTER}
+        </table>
+      </div>
+    `,
+  }),
+
+  // ─── 🔐 PROFESSIONAL PASSWORD RESET EMAIL ──────────────────────────────────
+  passwordReset: (resetLink: string): EmailTemplate => ({
+    subject: `Reset your ResellerPro password`,
+    text: `We received a request to reset your ResellerPro password.\n\nReset your password using the link below:\n${resetLink}\n\nThis link is valid for 60 minutes. If you did not request this, please ignore this email.`,
+    html: `
+      <div style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 40px 16px; width: 100%; box-sizing: border-box;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 28px 32px; border-bottom: 1px solid #f1f5f9;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="vertical-align: middle; padding-right: 10px;">
+                    <img src="${LOGO_URL}" alt="ResellerPro" width="36" height="36" style="display: block; border: none; width: 36px; height: 36px; object-fit: contain;" />
+                  </td>
+                  <td style="vertical-align: middle;">
+                    <span style="font-size: 19px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">ResellerPro</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 32px; text-align: left;">
+              <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+                Reset your password
+              </h1>
+
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                We received a request to reset the password for your ResellerPro account. Click the button below to set a new password.
+              </p>
+
+              <!-- Action Button -->
+              <div style="margin: 0 0 28px 0;">
+                <a href="${resetLink}" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block; letter-spacing: -0.1px;">
+                  Reset Password
+                </a>
+              </div>
+
+              <!-- Information Callout Box -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #64748b;">
+                  <strong style="color: #334155;">Security Note:</strong> This password reset link is valid for 60 minutes. If you did not request a password reset, you can safely ignore this email — your account remains secure.
+                </p>
+              </div>
+
+              <!-- Plain Text Link -->
+              <div style="border-top: 1px solid #f1f5f9; padding-top: 18px;">
+                <p style="margin: 0 0 6px 0; font-size: 12px; color: #94a3b8;">
+                  If you're having trouble clicking the button, copy and paste the URL below into your browser:
+                </p>
+                <p style="margin: 0; font-size: 12px; line-height: 1.4; word-break: break-all;">
+                  <a href="${resetLink}" style="color: #2563eb; text-decoration: underline;">${resetLink}</a>
+                </p>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 32px; background-color: #fafafa; border-top: 1px solid #f1f5f9; text-align: center;">
+              <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: #64748b;">
+                ResellerPro — E-Commerce Operating System
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+                This is an automated security email sent to your account.<br/>
+                © 2026 ResellerPro. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </div>
     `,

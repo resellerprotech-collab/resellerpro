@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { MailService } from '@/lib/mail'
 import { z } from 'zod'
 
 const ForgotPasswordSchema = z.object({
@@ -26,38 +28,76 @@ export async function sendResetEmail(email: string) {
         }
     }
 
+    const cleanEmail = email.trim().toLowerCase()
+
     try {
-        // Use simple redirect without PKCE - this works cross-browser!
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'http://localhost:3000'}/reset-password`,
-        })
+        // Check if email is registered in profiles
+        const adminSupabase = await createAdminClient()
+        const { data: profile } = await adminSupabase
+            .from('profiles')
+            .select('id')
+            .ilike('email', cleanEmail)
+            .maybeSingle()
 
-        if (error) {
-            console.error('Password reset error:', error)
-
-            // Handle specific errors
-            if (error.message.includes('rate limit') || error.message.includes('request this after')) {
-                return {
-                    success: false,
-                    message: 'Too many reset requests. Please wait 60 seconds before trying again.',
-                }
-            }
-
+        if (!profile) {
             return {
                 success: false,
-                message: 'Failed to send reset email. Please try again.',
+                message: 'Email not registered.',
+            }
+        }
+
+        const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '')
+        const redirectUrl = `${appUrl}/reset-password`
+
+        // 1️⃣ Generate recovery link via Supabase Admin API
+        const { data, error: linkError } = await adminSupabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: cleanEmail,
+            options: {
+                redirectTo: redirectUrl
+            }
+        })
+
+        if (!linkError && data?.properties?.action_link) {
+            const resetLink = data.properties.action_link
+
+            // 2️⃣ Send password reset email directly via Nodemailer (Gmail SMTP)
+            const mailResult = await MailService.sendPasswordReset(cleanEmail, resetLink)
+
+            if (mailResult.success) {
+                return {
+                    success: true,
+                    message: 'Password reset link has been sent to your email. Please check your inbox.',
+                }
+            } else {
+                console.error('MailService password reset send error:', mailResult.error)
+            }
+        } else {
+            console.warn('Generate recovery link error:', linkError?.message)
+        }
+
+        // Fallback: Trigger default Supabase auth reset email
+        const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+            redirectTo: redirectUrl,
+        })
+
+        if (fallbackError) {
+            console.error('Password reset fallback error:', fallbackError)
+            return {
+                success: false,
+                message: 'Failed to send reset email. Please check your SMTP settings or try again.',
             }
         }
 
         return {
             success: true,
-            message: 'Password reset link has been sent to your email. Please check your inbox and open the link in THIS browser (not a different one).',
+            message: 'Password reset link has been sent to your email. Please check your inbox.',
         }
-    } catch (error) {
-        console.error('Unexpected error:', error)
+    } catch (error: any) {
+        console.error('Unexpected reset password error:', error)
         return {
             success: false,
-            message: 'An unexpected error occurred. Please try again later.',
+            message: error?.message || 'An unexpected error occurred. Please try again later.',
         }
     }
 }
