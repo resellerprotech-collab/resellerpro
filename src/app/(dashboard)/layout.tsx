@@ -166,7 +166,7 @@ export default async function DashboardLayout({
           {/* Also pass it to the Header component */}
           <Header />
 
-          <main className="flex-1 overflow-y-auto p-2 sm:p-6 lg:pb-6">
+          <main className="flex-1 overflow-y-auto p-2 sm:p-6 pb-40 lg:pb-6">
             {children}
           </main>
         </div>

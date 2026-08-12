@@ -1070,7 +1070,7 @@ export default function ShopSettingsForm({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-2 md:pb-0">
+      <form onSubmit={handleSubmit} className="space-y-6 pb-30 md:pb-0">
         <div id="shop-settings-active-section" className="relative overflow-hidden min-h-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
