@@ -91,14 +91,14 @@ export default function Sidebar({ user }: { user: UserData }) {
   return (
     <>
       {/* Menu button (top-left on mobile) */}
-      <div className="lg:hidden fixed top-3.5 left-2.5 z-50">
+      <div className="lg:hidden fixed top-2.5 sm:top-3.5 left-2.5 z-50">
         <Button
           variant="outline"
           size="icon"
           onClick={() => setMobileMenuOpen(true)}
-          className="h-9 w-9 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xs"
+          className="h-9 w-9 rounded-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
         >
-          <Menu className="h-4 w-4" />
+          <Menu className="h-4 w-4 text-slate-700 dark:text-slate-200" />
         </Button>
       </div>
 

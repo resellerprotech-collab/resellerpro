@@ -174,6 +174,16 @@ export default function ProfileForm({ user }: { user: UserData }) {
       .slice(0, 2)
   }
 
+  const memberSinceDate = user?.created_at ? new Date(user.created_at) : null
+  const isValidDate = memberSinceDate && !isNaN(memberSinceDate.getTime())
+  const memberSinceStr = isValidDate
+    ? memberSinceDate.toLocaleDateString('en-IN', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Business Logo Section */}
@@ -384,37 +394,41 @@ export default function ProfileForm({ user }: { user: UserData }) {
         </div>
       </div>
 
-      {/* Account Info */}
-      <div className="pt-4 border-t">
-        <p className="text-sm text-muted-foreground">
-          Member since: {new Date(user.created_at).toLocaleDateString('en-IN', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-          })}
-        </p>
-      </div>
-
-      {/* Submit Button */}
-      <div className="flex justify-end gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Changes'
+      {/* Account Info & Submit Actions */}
+      <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          {memberSinceStr && (
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Member since: {memberSinceStr}
+            </p>
           )}
-        </Button>
+        </div>
+
+        <div className="flex items-center justify-end gap-2.5 sm:gap-3 w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isPending}
+            className="flex-1 sm:flex-none h-9 text-xs font-medium"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 sm:flex-none h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   )

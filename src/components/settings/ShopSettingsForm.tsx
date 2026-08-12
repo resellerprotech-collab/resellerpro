@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/lib/toast'
@@ -8,8 +8,9 @@ import {
   Loader2, Palette, Globe, ExternalLink, Sparkles,
   Crown, Lock, Layout, Share2, Search, Eye, Rocket, ArrowRight,
   MapPin, Shield, CreditCard, PanelTop, Zap, MessageCircle, Quote,
-  Mail, BookOpen, Megaphone, Tag
+  Mail, BookOpen, Megaphone, Tag, ChevronUp, ChevronLeft, ChevronRight, LayoutGrid
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { updateShopSettings } from '@/app/(dashboard)/settings/actions'
 import Link from 'next/link'
@@ -66,7 +67,10 @@ export default function ShopSettingsForm({
 
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState('general')
+  const [slideDirection, setSlideDirection] = useState<number>(1)
+  const [isMobileGridOpen, setIsMobileGridOpen] = useState<boolean>(false)
   const [uploadingField, setUploadingField] = useState<string | null>(null)
+  const bottomNavRef = useRef<HTMLDivElement>(null)
 
   const [storeUrlPrefix, setStoreUrlPrefix] = useState('resellerpro.in/store/')
 
@@ -811,6 +815,51 @@ export default function ShopSettingsForm({
     { id: 'footer', label: 'Footer', icon: MapPin },
   ]
 
+  const handleSelectTab = (tabId: string) => {
+    const currentIndex = tabs.findIndex(t => t.id === activeTab)
+    const nextIndex = tabs.findIndex(t => t.id === tabId)
+    if (nextIndex !== currentIndex && nextIndex !== -1) {
+      setSlideDirection(nextIndex > currentIndex ? 1 : -1)
+    }
+    setActiveTab(tabId)
+    sessionStorage.setItem('resellerpro_shop_tab', tabId)
+    setIsMobileGridOpen(false)
+
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setTimeout(() => {
+        const el = document.getElementById('shop-settings-active-section')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 50)
+    }
+  }
+
+  const currentTabIdx = tabs.findIndex(t => t.id === activeTab)
+  const currentTab = tabs[currentTabIdx >= 0 ? currentTabIdx : 0]
+  const CurrentTabIcon = currentTab.icon
+
+  const handlePrevTab = () => {
+    if (currentTabIdx > 0) {
+      handleSelectTab(tabs[currentTabIdx - 1].id)
+    }
+  }
+
+  const handleNextTab = () => {
+    if (currentTabIdx < tabs.length - 1) {
+      handleSelectTab(tabs[currentTabIdx + 1].id)
+    }
+  }
+
+  useEffect(() => {
+    if (bottomNavRef.current) {
+      const activeEl = bottomNavRef.current.querySelector('[data-active="true"]') as HTMLElement
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      }
+    }
+  }, [activeTab])
+
   return (
     <div className="space-y-6">
       {/* ═══════════════ PREMIUM UPSELL ═══════════════ */}
@@ -969,7 +1018,34 @@ export default function ShopSettingsForm({
       )}
 
       {/* ═══════════════ TAB NAVIGATION ═══════════════ */}
-      <div className="overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 py-1">
+      {/* Mobile View: 3-Column Grid of Boxes */}
+      <div id="shop-settings-mobile-grid" className="block md:hidden scroll-mt-6">
+        <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-inner">
+          {tabs.map(tab => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleSelectTab(tab.id)}
+                className={cn(
+                  "flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all duration-200 cursor-pointer select-none min-h-[70px] gap-1.5 active:scale-95 text-center",
+                  isActive
+                    ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-md shadow-slate-200/60 dark:shadow-indigo-600/30 border border-slate-200/80 dark:border-indigo-500/40 ring-1 ring-indigo-500/20"
+                    : "bg-white/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white/80 dark:hover:bg-slate-800/80 border-transparent"
+                )}
+              >
+                <Icon className={cn("w-4 h-4 transition-colors shrink-0", isActive ? "text-indigo-600 dark:text-white" : "text-slate-400 dark:text-slate-500")} />
+                <span className="text-[11px] leading-tight line-clamp-2">{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Desktop View: Horizontal Scrollable Slide Bar */}
+      <div className="hidden md:block overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 py-1">
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md min-w-max shadow-inner">
           {tabs.map(tab => {
             const Icon = tab.icon
@@ -978,7 +1054,7 @@ export default function ShopSettingsForm({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => { setActiveTab(tab.id); sessionStorage.setItem('resellerpro_shop_tab', tab.id); }}
+                onClick={() => handleSelectTab(tab.id)}
                 className={cn(
                   "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer select-none",
                   isActive
@@ -994,189 +1070,204 @@ export default function ShopSettingsForm({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ═══════════════ TAB: GENERAL ═══════════════ */}
-        {activeTab === 'general' && (
-          <GeneralTabSection
-            formData={formData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            handleFileUpload={handleFileUpload}
-            storeUrlPrefix={storeUrlPrefix}
-            uploadingField={uploadingField}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+      <form onSubmit={handleSubmit} className="space-y-2 md:pb-0">
+        <div id="shop-settings-active-section" className="relative overflow-hidden min-h-[300px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: -35 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 35 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
+            >
+              {/* ═══════════════ TAB: GENERAL ═══════════════ */}
+              {activeTab === 'general' && (
+                <GeneralTabSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  handleFileUpload={handleFileUpload}
+                  storeUrlPrefix={storeUrlPrefix}
+                  uploadingField={uploadingField}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: PAYMENT METHODS ═══════════════ */}
-        {activeTab === 'payment' && (
-          <PaymentTabSection
-            formData={formData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            planName={planName}
-            isPending={isPending}
-          />
-        )}
+              {/* ═══════════════ TAB: PAYMENT METHODS ═══════════════ */}
+              {activeTab === 'payment' && (
+                <PaymentTabSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  planName={planName}
+                  isPending={isPending}
+                />
+              )}
 
-        {/* ═══════════════ TAB: DESIGN ═══════════════ */}
-        {activeTab === 'appearance' && (
-          <AppearanceTabSection
-            formData={formData}
-            setFormData={setFormData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-          />
-        )}
+              {/* ═══════════════ TAB: DESIGN ═══════════════ */}
+              {activeTab === 'appearance' && (
+                <AppearanceTabSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                />
+              )}
 
-        {/* ═══════════════ TAB: HERO BANNER ═══════════════ */}
-        {activeTab === 'hero' && (
-          <HeroTabSection
-            formData={formData}
-            setFormData={setFormData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            handleMultipleBannersUpload={handleMultipleBannersUpload}
-            updateBannerItem={updateBannerItem}
-            removeBannerItem={removeBannerItem}
-            handleMultipleMobileImagesUpload={handleMultipleMobileImagesUpload}
-            updateMobileBannerItem={updateMobileBannerItem}
-            removeMobileHeroImage={removeMobileHeroImage}
-            handleMultipleImagesUpload={handleMultipleImagesUpload}
-            updateShowcaseBannerItem={updateShowcaseBannerItem}
-            removeHeroImage={removeHeroImage}
-            categoryList={categoryList}
-            productList={productList}
-            categories={categories}
-            products={products}
-            uploadingField={uploadingField}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: HERO BANNER ═══════════════ */}
+              {activeTab === 'hero' && (
+                <HeroTabSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  handleMultipleBannersUpload={handleMultipleBannersUpload}
+                  updateBannerItem={updateBannerItem}
+                  removeBannerItem={removeBannerItem}
+                  handleMultipleMobileImagesUpload={handleMultipleMobileImagesUpload}
+                  updateMobileBannerItem={updateMobileBannerItem}
+                  removeMobileHeroImage={removeMobileHeroImage}
+                  handleMultipleImagesUpload={handleMultipleImagesUpload}
+                  updateShowcaseBannerItem={updateShowcaseBannerItem}
+                  removeHeroImage={removeHeroImage}
+                  categoryList={categoryList}
+                  productList={productList}
+                  categories={categories}
+                  products={products}
+                  uploadingField={uploadingField}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: PROMOTIONAL SECTION ═══════════════ */}
-        {activeTab === 'promo' && (
-          <PromoTabSection
-            formData={formData}
-            setFormData={setFormData}
-            handleToggle={handleToggle}
-            handlePromoFileUpload={handlePromoFileUpload}
-            updatePromoItem={updatePromoItem}
-            categoryList={categoryList}
-            productList={productList}
-            uploadingField={uploadingField}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: PROMOTIONAL SECTION ═══════════════ */}
+              {activeTab === 'promo' && (
+                <PromoTabSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleToggle={handleToggle}
+                  handlePromoFileUpload={handlePromoFileUpload}
+                  updatePromoItem={updatePromoItem}
+                  categoryList={categoryList}
+                  productList={productList}
+                  uploadingField={uploadingField}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: OFFER BANNER ═══════════════ */}
-        {activeTab === 'offer-banner' && (
-          <OfferBannerSection
-            formData={formData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: OFFER BANNER ═══════════════ */}
+              {activeTab === 'offer-banner' && (
+                <OfferBannerSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: NEWSLETTER ═══════════════ */}
-        {activeTab === 'newsletter' && (
-          <NewsletterBannerSection
-            formData={formData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: NEWSLETTER ═══════════════ */}
+              {activeTab === 'newsletter' && (
+                <NewsletterBannerSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: TESTIMONIALS ═══════════════ */}
-        {activeTab === 'testimonials' && (
-          <TestimonialsSection
-            formData={formData}
-            setFormData={setFormData}
-            handleToggle={handleToggle}
-            updateTestimonial={updateTestimonial}
-            handleTestimonialAvatarUpload={handleTestimonialAvatarUpload}
-            uploadingField={uploadingField}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: TESTIMONIALS ═══════════════ */}
+              {activeTab === 'testimonials' && (
+                <TestimonialsSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleToggle={handleToggle}
+                  updateTestimonial={updateTestimonial}
+                  handleTestimonialAvatarUpload={handleTestimonialAvatarUpload}
+                  uploadingField={uploadingField}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: TRUST BADGES ═══════════════ */}
-        {activeTab === 'trust-badges' && (
-          <TrustBadgesSection
-            formData={formData}
-            setFormData={setFormData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            updateTrustBadgeItem={updateTrustBadgeItem}
-            handleBadgeIconUpload={handleBadgeIconUpload}
-            uploadingField={uploadingField}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: TRUST BADGES ═══════════════ */}
+              {activeTab === 'trust-badges' && (
+                <TrustBadgesSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  updateTrustBadgeItem={updateTrustBadgeItem}
+                  handleBadgeIconUpload={handleBadgeIconUpload}
+                  uploadingField={uploadingField}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: ABOUT US ═══════════════ */}
-        {activeTab === 'about-us' && (
-          <AboutUsSections
-            formData={formData}
-            setFormData={setFormData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            handleFileUpload={handleFileUpload}
-            uploadingField={uploadingField}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: ABOUT US ═══════════════ */}
+              {activeTab === 'about-us' && (
+                <AboutUsSections
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  handleFileUpload={handleFileUpload}
+                  uploadingField={uploadingField}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: CUSTOMER POLICIES ═══════════════ */}
-        {activeTab === 'policies' && (
-          <PoliciesTabSection
-            formData={formData}
-            setFormData={setFormData}
-            selectedPolicyKey={selectedPolicyKey}
-            setSelectedPolicyKey={setSelectedPolicyKey}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: CUSTOMER POLICIES ═══════════════ */}
+              {activeTab === 'policies' && (
+                <PoliciesTabSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  selectedPolicyKey={selectedPolicyKey}
+                  setSelectedPolicyKey={setSelectedPolicyKey}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: SOCIAL & CHAT ═══════════════ */}
-        {activeTab === 'social' && (
-          <SocialTabSection
-            formData={formData}
-            handleChange={handleChange}
-            handleToggle={handleToggle}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: SOCIAL & CHAT ═══════════════ */}
+              {activeTab === 'social' && (
+                <SocialTabSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  handleToggle={handleToggle}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: SEO ═══════════════ */}
-        {activeTab === 'seo' && (
-          <SeoTabSection
-            formData={formData}
-            handleChange={handleChange}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: SEO ═══════════════ */}
+              {activeTab === 'seo' && (
+                <SeoTabSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
 
-        {/* ═══════════════ TAB: FOOTER ═══════════════ */}
-        {activeTab === 'footer' && (
-          <FooterTabSection
-            formData={formData}
-            handleChange={handleChange}
-            isPending={isPending}
-            isEligible={isEligible}
-          />
-        )}
+              {/* ═══════════════ TAB: FOOTER ═══════════════ */}
+              {activeTab === 'footer' && (
+                <FooterTabSection
+                  formData={formData}
+                  handleChange={handleChange}
+                  isPending={isPending}
+                  isEligible={isEligible}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+
 
         {/* ═══════════════ SAVE BAR ═══════════════ */}
         <div className="fixed md:sticky bottom-16 md:bottom-[-32px] left-0 right-0 md:left-auto md:right-auto bg-white dark:bg-slate-900 border-t md:border border-slate-200 dark:border-slate-800 px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row items-center justify-between gap-2.5 md:gap-4 z-40 md:z-30 rounded-t-2xl md:rounded-2xl shadow-xl md:-mx-6">

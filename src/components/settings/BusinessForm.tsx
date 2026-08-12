@@ -239,19 +239,24 @@ export default function BusinessForm({ business }: { business: BusinessData }) {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4">
+      <div className="flex items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.back()}
           disabled={isPending}
+          className="flex-1 sm:flex-none h-9 text-xs font-medium"
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="flex-1 sm:flex-none h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+        >
           {isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               Saving...
             </>
           ) : (

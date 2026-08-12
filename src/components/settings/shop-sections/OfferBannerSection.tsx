@@ -31,85 +31,85 @@ export default function OfferBannerSection({
         disabled={!isEligible}
       />
       {formData.offerBannerEnabled && (
-        <div className="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label>Badge Label</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Badge Label</Label>
               <Input
                 name="offerBannerBadge"
                 value={formData.offerBannerBadge}
                 onChange={handleChange}
                 placeholder="⚡ Special Promotion"
                 disabled={isPending || !isEligible}
-                className="mt-1.5"
+                className="mt-1 h-9 text-xs"
               />
             </div>
             <div>
-              <Label>Coupon Code</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Coupon Code</Label>
               <Input
                 name="offerBannerCode"
                 value={formData.offerBannerCode}
                 onChange={handleChange}
                 placeholder="SAVE10"
                 disabled={isPending || !isEligible}
-                className="mt-1.5"
+                className="mt-1 h-9 text-xs"
               />
             </div>
           </div>
 
           <div>
-            <Label>Offer Headline</Label>
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Offer Headline</Label>
             <Input
               name="offerBannerTitle"
               value={formData.offerBannerTitle}
               onChange={handleChange}
               placeholder="Limited Time Offer: Get 10% OFF on Orders Above ₹1,499"
               disabled={isPending || !isEligible}
-              className="mt-1.5"
+              className="mt-1 h-9 text-xs"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label>Subtext / Instructions</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Subtext / Instructions</Label>
               <Input
                 name="offerBannerSubtext"
                 value={formData.offerBannerSubtext}
                 onChange={handleChange}
                 placeholder="Use code SAVE10 at checkout."
                 disabled={isPending || !isEligible}
-                className="mt-1.5"
+                className="mt-1 h-9 text-xs"
               />
             </div>
             <div>
-              <Label>Button Text</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Button Text</Label>
               <Input
                 name="offerBannerBtnText"
                 value={formData.offerBannerBtnText}
                 onChange={handleChange}
                 placeholder="Claim Offer Now"
                 disabled={isPending || !isEligible}
-                className="mt-1.5"
+                className="mt-1 h-9 text-xs"
               />
             </div>
           </div>
 
           {/* Banner Live Preview Box */}
-          <div className="mt-3 p-4 rounded-2xl bg-slate-900 border border-slate-800 text-white space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live Preview</p>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-slate-950 border border-slate-800">
-              <div className="space-y-1 text-center sm:text-left">
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
+          <div className="mt-3 p-3 sm:p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-white space-y-1.5">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Live Preview</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-lg bg-slate-950 border border-slate-800">
+              <div className="space-y-0.5 text-center sm:text-left">
+                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30">
                   {formData.offerBannerBadge || '⚡ Special Promotion'}
                 </span>
-                <p className="text-sm font-black text-white leading-tight">
+                <p className="text-xs font-bold text-white leading-tight">
                   {formData.offerBannerTitle || 'Limited Time Offer: Get 10% OFF on Orders Above ₹1,499'}
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[10px] text-slate-400">
                   {formData.offerBannerSubtext || `Use code ${formData.offerBannerCode || 'SAVE10'} at checkout.`}
                 </p>
               </div>
-              <span className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl whitespace-nowrap shadow-sm">
+              <span className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg whitespace-nowrap shadow-xs">
                 {formData.offerBannerBtnText || 'Claim Offer Now'}
               </span>
             </div>
