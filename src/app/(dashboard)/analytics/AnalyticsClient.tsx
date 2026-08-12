@@ -1,13 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangePicker } from '@/components/analytics/DateRangePicker'
 import { SalesProfitChart } from '@/components/analytics/SalesProfitChart'
 import { RevenueByCategoryChart } from '@/components/analytics/RevenueByCategoryChart'
-import { PaymentStatusChart } from '@/components/analytics/PaymentStatusChart'
-import { OrderStatusChart } from '@/components/analytics/OrderStatusChart'
 import { ExportButton } from '@/components/analytics/ExportButton'
 import { LockedChart } from '@/components/analytics/LockedChart'
 import { FreePlanBanner } from '@/components/analytics/FreePlanBanner'
@@ -21,7 +18,6 @@ import {
     User,
     Percent,
     Clock,
-    Loader2,
     Crown,
     ArrowUpRight,
     ArrowDownRight,
@@ -29,89 +25,40 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Progress } from '@/components/ui/progress'
 import { format, subDays } from 'date-fns'
 import { useAnalytics } from '@/lib/react-query/hooks/useAnalytics'
-import { createClient } from '@/lib/supabase/client'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 import { AnalyticsSkeleton } from '@/components/shared/skeletons/AnalyticsSkeleton'
 import { motion } from 'framer-motion'
 
+// Constants
+const FREE_PLAN_MAX_DAYS = 7
+
+const DEFAULT_STATS = {
+    currentRevenue: 0,
+    currentProfit: 0,
+    profitMargin: 0,
+    currentOrderCount: 0,
+    currentAvgOrderValue: 0,
+    pendingOrdersValue: 0,
+    revenueChange: '0%',
+    profitChange: '0%',
+    orderCountChange: '0',
+    avgOrderValueChange: '0%',
+    profitMarginChange: '0%',
+}
+
 export function AnalyticsClient() {
     const searchParams = useSearchParams()
-    const router = useRouter()
     const { isPremium, isLoading: isCheckingSubscription } = useSubscription()
 
-    // Free users: max 7 days, Premium: unlimited
-    const FREE_PLAN_MAX_DAYS = 7
+    const urlFrom = searchParams.get('from') || undefined
+    const urlTo = searchParams.get('to') || undefined
 
-    // Don't even read URL params until we know subscription status
-    const [actualFrom, setActualFrom] = useState<string | undefined>(undefined)
-    const [actualTo, setActualTo] = useState<string | undefined>(undefined)
-    const [isReady, setIsReady] = useState(false)
+    // Start analytics fetch IMMEDIATELY on mount in parallel with subscription check
+    const { data, isLoading, error } = useAnalytics({ from: urlFrom, to: urlTo })
 
-    // Calculate dates ONLY after subscription check completes
-    useEffect(() => {
-        if (isCheckingSubscription) {
-            setIsReady(false)
-            return
-        }
-
-        const urlFrom = searchParams.get('from') || undefined
-        const urlTo = searchParams.get('to') || undefined
-
-        if (isPremium) {
-            setActualFrom(urlFrom)
-            setActualTo(urlTo)
-            setIsReady(true)
-        } else {
-            const today = new Date()
-            const limitDate = subDays(today, FREE_PLAN_MAX_DAYS)
-            const restrictedFrom = limitDate.toISOString().split('T')[0]
-            const restrictedTo = today.toISOString().split('T')[0]
-
-            setActualFrom(restrictedFrom)
-            setActualTo(restrictedTo)
-            setIsReady(true)
-
-            if (urlFrom !== restrictedFrom || urlTo !== restrictedTo) {
-                const params = new URLSearchParams(searchParams.toString())
-                params.set('from', restrictedFrom)
-                params.set('to', restrictedTo)
-                router.replace(`/analytics?${params.toString()}`)
-            }
-        }
-    }, [isCheckingSubscription, isPremium, searchParams, router])
-
-    const [businessName, setBusinessName] = useState<string>('ResellerPro')
-
-    useEffect(() => {
-        async function fetchBusinessName() {
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('business_name')
-                    .eq('id', user.id)
-                    .single()
-
-                if (profile?.business_name) {
-                    setBusinessName(profile.business_name)
-                }
-            }
-        }
-
-        fetchBusinessName()
-    }, [])
-
-    const { data, isLoading, error } = useAnalytics(
-        { from: actualFrom, to: actualTo },
-        { enabled: isReady }
-    )
-
-    if (isCheckingSubscription || !isReady || isLoading) {
+    if (isCheckingSubscription || isLoading) {
         return <AnalyticsSkeleton />
     }
 
@@ -123,22 +70,16 @@ export function AnalyticsClient() {
         )
     }
 
-    const { orders = [], stats, topProducts = [], topCustomers = [], dateRanges } = data || {}
+    const {
+        orders = [],
+        stats,
+        topProducts = [],
+        topCustomers = [],
+        dateRanges,
+        businessName = 'ResellerPro'
+    } = data || {}
 
-    const safeStats = stats || {
-        currentRevenue: 0,
-        currentProfit: 0,
-        profitMargin: 0,
-        currentOrderCount: 0,
-        currentAvgOrderValue: 0,
-        pendingOrdersValue: 0,
-        revenueChange: '0%',
-        profitChange: '0%',
-        orderCountChange: '0',
-        avgOrderValueChange: '0%',
-        profitMarginChange: '0%',
-    }
-
+    const safeStats = stats || DEFAULT_STATS
     const maxProductRevenue = topProducts[0]?.revenue || 1
     const maxCustomerSpending = topCustomers[0]?.spending || 1
 
@@ -154,8 +95,8 @@ export function AnalyticsClient() {
                         <div className="flex items-center gap-2 text-muted-foreground font-medium">
                             <Calendar className="w-4 h-4" />
                             <p className="text-sm">
-                                {dateRanges?.hasFilter && actualFrom && actualTo
-                                    ? `${format(new Date(actualFrom), 'MMM dd')} - ${format(new Date(actualTo), 'MMM dd, yyyy')}`
+                                {dateRanges?.hasFilter && urlFrom && urlTo
+                                    ? `${format(new Date(urlFrom), 'MMM dd')} - ${format(new Date(urlTo), 'MMM dd, yyyy')}`
                                     : 'Performance Overview'
                                 }
                             </p>
@@ -165,7 +106,7 @@ export function AnalyticsClient() {
                         <DateRangePicker disabled={!isPremium} />
                         <ExportButton
                             orders={orders}
-                            dateRange={{ from: actualFrom, to: actualTo }}
+                            dateRange={{ from: urlFrom, to: urlTo }}
                             businessName={businessName}
                         />
                     </div>
@@ -179,7 +120,7 @@ export function AnalyticsClient() {
                 </motion.div>
             )}
 
-            {/* Key Metrics Grid - 2 cols on mobile, 3 on desktop */}
+            {/* Key Metrics Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <StatsCard
                     title="Revenue"
@@ -244,8 +185,8 @@ export function AnalyticsClient() {
                         <SalesProfitChart
                             orders={orders}
                             dateRange={{
-                                from: dateRanges?.hasFilter && actualFrom ? actualFrom : new Date(new Date().setDate(new Date().getDate() - 29)).toISOString(),
-                                to: dateRanges?.hasFilter && actualTo ? actualTo : new Date().toISOString()
+                                from: dateRanges?.hasFilter && urlFrom ? urlFrom : subDays(new Date(), 29).toISOString().split('T')[0],
+                                to: dateRanges?.hasFilter && urlTo ? urlTo : new Date().toISOString().split('T')[0]
                             }}
                         />
                     </CardContent>
@@ -363,8 +304,6 @@ function TopPerformersCard({
     showUpgradeCTA?: boolean
     totalCount?: number
 }) {
-    const router = useRouter()
-
     return (
         <Card className="border-slate-200/60 shadow-sm overflow-hidden rounded-3xl">
             <CardHeader className="flex flex-row items-center gap-4 p-6 sm:p-8">
@@ -398,10 +337,12 @@ function TopPerformersCard({
                         <Button
                             variant="outline"
                             className="w-full h-12 rounded-2xl font-bold border-amber-200 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700 shadow-sm"
-                            onClick={() => router.push('/settings/subscription#pricing')}
+                            asChild
                         >
-                            <Crown className="mr-2 h-4 w-4 fill-amber-400 text-amber-500" />
-                            Unlock {totalCount - 5} More {title.split(' ').pop()}
+                            <Link href="/settings/subscription#pricing">
+                                <Crown className="mr-2 h-4 w-4 fill-amber-400 text-amber-500" />
+                                Unlock {totalCount - 5} More {title.split(' ').pop()}
+                            </Link>
                         </Button>
                     ) : (
                         <Button variant="secondary" className="w-full h-12 rounded-2xl font-bold bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50" asChild>
