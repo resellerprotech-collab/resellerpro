@@ -33,17 +33,16 @@ export default function ForgotPasswordPage() {
       const result = await sendResetEmail(targetEmail)
 
       if (result.success) {
-        
         // Show immediate success toast
         toast({
-          title: "Success! 📧",
-          description: "Check your email for the reset link.",
+          title: "Password reset link sent",
+          description: "A recovery link has been sent to your email address. Please check your inbox.",
         })
 
         // Give the user a moment to see the success state, then redirect
         setTimeout(() => {
-          router.push(`/signin?message=Success! Check your email (${targetEmail}) for the reset link.`)
-        }, 3000)
+          router.push('/signin?message=Password reset link sent to your email address.')
+        }, 2500)
       } else {
         setErrorMessage(result.message)
         toast({

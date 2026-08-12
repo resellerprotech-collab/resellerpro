@@ -17,13 +17,15 @@ export function RequireVerification({
     className,
     autoOpen = false
 }: RequireVerificationProps) {
-    const { isVerified, openVerificationModal } = useVerification()
+    const { isVerified, userDismissed, openVerificationModal } = useVerification()
 
+    // Only auto-open once on mount (if autoOpen=true, not yet verified, and user hasn't dismissed)
     React.useEffect(() => {
-        if (autoOpen && !isVerified) {
+        if (autoOpen && !isVerified && !userDismissed) {
             openVerificationModal()
         }
-    }, [autoOpen, isVerified, openVerificationModal])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     if (isVerified) {
         return <>{children}</>

@@ -23,39 +23,79 @@ export function ResetPasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  // Check for recovery session in URL hash
+  // Check for recovery session in URL (code, token_hash, or hash fragment)
   useEffect(() => {
+    if (success || isSubmitting) return
+
     const checkRecoverySession = async () => {
       const supabase = createClient()
 
-      // First check URL hash for access_token (this is how Supabase sends it)
-      const hashFragment = window.location.hash
-      const hashParams = new URLSearchParams(hashFragment.substring(1))
-      const type = hashParams.get('type')
+      try {
+        // 1. Check query parameters (PKCE code or token_hash)
+        const code = searchParams.get('code')
+        const tokenHash = searchParams.get('token_hash') || searchParams.get('token')
+        const typeParam = searchParams.get('type')
 
-      if (type === 'recovery') {
-        // Recovery link detected - session should be automatically set
-        // Wait a moment for Supabase to process it
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
+        if (code) {
+          console.log('[RESET-PASSWORD] Exchanging code for session...')
+          const { error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code)
+          if (exchangeErr) {
+            console.error('[RESET-PASSWORD] Code exchange error:', exchangeErr)
+          }
+        } else if (tokenHash && (typeParam === 'recovery' || typeParam === 'email_change' || !typeParam)) {
+          console.log('[RESET-PASSWORD] Verifying OTP token hash...')
+          const { error: verifyErr } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery'
+          })
+          if (verifyErr) {
+            console.error('[RESET-PASSWORD] OTP verification error:', verifyErr)
+          }
+        }
 
-      // Now verify we have a valid session
-      const { data: { session }, error } = await supabase.auth.getSession()
+        // 2. Check hash parameters (Implicit flow: #access_token=...&refresh_token=...)
+        const hashFragment = typeof window !== 'undefined' ? window.location.hash : ''
+        if (hashFragment && hashFragment.includes('access_token')) {
+          const hashParams = new URLSearchParams(hashFragment.substring(1))
+          const access_token = hashParams.get('access_token')
+          const refresh_token = hashParams.get('refresh_token')
 
-      if (error || !session) {
-        setVerificationError(
-          'No password reset session found. Please click the reset link from your email again. IMPORTANT: The link must open in the SAME browser where you are viewing this message.'
-        )
+          if (access_token && refresh_token) {
+            console.log('[RESET-PASSWORD] Setting session from hash...')
+            await supabase.auth.setSession({
+              access_token,
+              refresh_token
+            })
+          }
+        }
+
+        // Wait brief moment for session state to settle
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // 3. Verify active session exists
+        const { data: { session }, error } = await supabase.auth.getSession()
+
+        if (error || !session) {
+          console.warn('[RESET-PASSWORD] No session found after checking all auth parameters')
+          setVerificationError(
+            'No password reset session found. Please click the reset link from your email again. IMPORTANT: The link must open in the SAME browser where you are viewing this message.'
+          )
+          setIsVerifying(false)
+          return
+        }
+
+        // Valid session exists!
+        setVerificationError(null)
         setIsVerifying(false)
-        return
+      } catch (err: any) {
+        console.error('[RESET-PASSWORD] Verification exception:', err)
+        setVerificationError('Failed to verify reset link. Please request a new link.')
+        setIsVerifying(false)
       }
-
-      // Valid session exists
-      setIsVerifying(false)
     }
 
     checkRecoverySession()
-  }, [])
+  }, [searchParams, success, isSubmitting])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,14 +133,14 @@ export function ResetPasswordForm() {
       }
 
       setSuccess(true)
+      setIsSubmitting(false)
 
       // 🧹 Explicitly sign out to destroy the recovery session
-      // This prevents the middleware from auto-redirecting to /dashboard
       await supabase.auth.signOut()
 
       setTimeout(() => {
-        router.push('/signin?message=Password updated successfully!')
-      }, 2000)
+        router.push('/signin?message=Password updated successfully! Please sign in with your new password.')
+      }, 1500)
 
     } catch (error: any) {
       console.error('Unexpected error:', error)
@@ -109,13 +149,36 @@ export function ResetPasswordForm() {
     }
   }
 
-  if (isVerifying) {
+  if (isVerifying && !success) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
             <p className="text-muted-foreground">Verifying password reset session...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-emerald-600">Password Updated</CardTitle>
+            <CardDescription>
+              Your password has been successfully updated.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950 dark:border-emerald-900">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <AlertDescription className="text-emerald-800 dark:text-emerald-200 font-medium">
+                Password updated successfully! Redirecting to sign in...
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>

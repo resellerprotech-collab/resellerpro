@@ -155,4 +155,12 @@ export class MailService {
             ...template
         }, { type: 'instant_reseller_order_alert', orderId: data.orderId })
     }
+
+    static async sendPasswordReset(email: string, resetLink: string) {
+        const template = templates.passwordReset(resetLink)
+        return this.send({
+            to: email,
+            ...template
+        }, { type: 'password_reset' })
+    }
 }

@@ -15,7 +15,6 @@ import { toast } from '@/lib/toast'
 import { verifyOtp } from '@/app/actions/verify-otp'
 import { sendVerificationOtp, getRecentOtpStatus } from '@/app/actions/send-verification-otp'
 import { Loader2, CheckCircle2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 interface VerifyEmailModalProps {
     open: boolean
@@ -26,7 +25,6 @@ interface VerifyEmailModalProps {
 
 export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: VerifyEmailModalProps) {
 
-    const router = useRouter()
     const [step, setStep] = useState<'send' | 'verify'>('send')
     const [otp, setOtp] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -83,7 +81,7 @@ export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: Veri
                 if (res.alreadyVerified) {
                     toast.info('Your email is already verified')
                     onOpenChange(false)
-                    router.refresh()
+                    if (onVerified) onVerified()
                     return
                 }
                 toast.error(res.message || 'Failed to send verification code')
@@ -105,8 +103,7 @@ export function VerifyEmailModal({ open, onOpenChange, email, onVerified }: Veri
             if (res.success) {
                 toast.success('Email verified successfully')
                 onOpenChange(false)
-                router.refresh()
-                if (onVerified) onVerified()
+                if (onVerified) onVerified() // VerificationProvider handles router.refresh()
             } else {
                 toast.error(res.message || 'Verification failed')
             }

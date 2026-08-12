@@ -2,7 +2,6 @@
 
 import { useVerification } from '@/components/auth/VerificationProvider'
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface VerifiedPageGuardProps {
     children: React.ReactNode
@@ -10,15 +9,15 @@ interface VerifiedPageGuardProps {
 }
 
 export function VerifiedPageGuard({ children, fallback }: VerifiedPageGuardProps) {
-    const { isVerified, openVerificationModal, checkVerification } = useVerification()
-    const router = useRouter()
+    const { isVerified, userDismissed, openVerificationModal } = useVerification()
 
     useEffect(() => {
-        // If not verified, open modal immediately
-        if (!isVerified) {
+        // Only open modal once on mount if not verified and user hasn't dismissed
+        if (!isVerified && !userDismissed) {
             openVerificationModal()
         }
-    }, [isVerified, openVerificationModal])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     if (isVerified) {
         return <>{children}</>
