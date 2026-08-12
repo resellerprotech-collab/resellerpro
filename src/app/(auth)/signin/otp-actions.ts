@@ -20,7 +20,19 @@ export async function sendLoginOtp(email: string) {
     }
 
     try {
-        await OtpService.sendOtp(email)
+        const normalizedEmail = email.trim().toLowerCase()
+        const supabase = await createAdminClient()
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('email', normalizedEmail)
+            .maybeSingle()
+
+        if (!profile) {
+            return { success: false, message: 'Email not registered.', notFound: true }
+        }
+
+        await OtpService.sendOtp(normalizedEmail)
         return { success: true, message: 'OTP sent to your email.' }
     } catch (error: any) {
         console.error('OTP Send Error:', error)

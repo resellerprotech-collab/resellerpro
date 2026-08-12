@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertCircle, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ShieldAlert, ArrowRight, X } from 'lucide-react'
 import { useVerification } from '@/components/auth/VerificationProvider'
 
 interface VerificationBannerProps {
@@ -17,34 +16,51 @@ export function VerificationBanner({ email, isVerified }: VerificationBannerProp
     if (isVerified || !isVisible) return null
 
     return (
-        <>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-900 px-4 py-3 relative">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
-                        <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                            Please verify your email address to unlock all features.
-                        </p>
-                    </div>
+        <div className="relative w-full bg-slate-900 dark:bg-slate-950 border-b border-slate-800 px-4 py-2.5">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
 
-                    <div className="flex items-center gap-3">
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={openVerificationModal}
-                            className="bg-white border-yellow-300 text-yellow-800 hover:bg-yellow-50 hover:text-yellow-900 dark:bg-transparent dark:border-yellow-700 dark:text-yellow-400 dark:hover:bg-yellow-900/50 h-8 text-xs font-semibold"
-                        >
-                            Verify Now
-                        </Button>
-                        <button
-                            onClick={() => setIsVisible(false)}
-                            className="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-200"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
+                {/* Left — icon + text */}
+                <div className="flex items-start sm:items-center gap-2.5 pr-8 sm:pr-0">
+                    <ShieldAlert className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5 sm:mt-0" />
+                    <p className="text-xs sm:text-sm text-slate-300 leading-snug">
+                        <span className="font-semibold text-white">Email not verified.</span>
+                        {' '}
+                        <span className="hidden sm:inline">Verify <span className="text-slate-400">{email}</span> to unlock all features.</span>
+                        <span className="sm:hidden">Verify your email to unlock all features.</span>
+                    </p>
+                </div>
+
+                {/* Right — action */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                    <button
+                        onClick={openVerificationModal}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors duration-150 whitespace-nowrap"
+                    >
+                        Verify now
+                        <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+
+                    {/* Divider */}
+                    <span className="h-4 w-px bg-slate-700 hidden sm:block" />
+
+                    <button
+                        onClick={() => setIsVisible(false)}
+                        aria-label="Dismiss"
+                        className="text-slate-500 hover:text-slate-300 transition-colors duration-150 p-0.5 rounded"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
                 </div>
             </div>
-        </>
+
+            {/* Mobile dismiss — top-right corner */}
+            <button
+                onClick={() => setIsVisible(false)}
+                aria-label="Dismiss"
+                className="absolute top-2.5 right-3 sm:hidden text-slate-500 hover:text-slate-300 transition-colors duration-150"
+            >
+                <X className="h-3.5 w-3.5" />
+            </button>
+        </div>
     )
 }

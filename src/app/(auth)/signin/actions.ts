@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
@@ -110,9 +111,24 @@ export async function login(
     })
 
     if (error) {
-      // SECURITY: Always return the same generic error message
-      // Don't reveal whether the email exists or if the password is wrong
-      // This prevents username enumeration attacks
+      try {
+        const adminSupabase = await createAdminClient()
+        const { data: profile } = await adminSupabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+
+        if (!profile) {
+          return {
+            success: false,
+            message: 'Email not registered.',
+          }
+        }
+      } catch (checkErr) {
+        console.error('Error checking profile existence:', checkErr)
+      }
+
       return {
         success: false,
         message: 'Invalid credentials.',

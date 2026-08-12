@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 interface VerificationContextType {
     isVerified: boolean
     email: string
+    userDismissed: boolean
     openVerificationModal: () => void
     closeVerificationModal: () => void
     checkVerification: () => boolean // Returns true if verified, else opens modal
@@ -36,15 +37,26 @@ export function VerificationProvider({
 }: VerificationProviderProps) {
     const [isVerified, setIsVerified] = useState(initialVerified)
     const [isOpen, setIsOpen] = useState(false)
+    const [userDismissed, setUserDismissed] = useState(false)
     const router = useRouter()
 
     // Sync with prop updates (e.g. after server revalidation)
     useEffect(() => {
         setIsVerified(initialVerified)
+        if (initialVerified) setUserDismissed(false)
     }, [initialVerified])
 
-    const openVerificationModal = () => setIsOpen(true)
+    const openVerificationModal = () => {
+        setUserDismissed(false)
+        setIsOpen(true)
+    }
     const closeVerificationModal = () => setIsOpen(false)
+
+    // Called when user closes dialog without verifying
+    const handleOpenChange = (open: boolean) => {
+        if (!open) setUserDismissed(true)
+        setIsOpen(open)
+    }
 
     const checkVerification = () => {
         if (isVerified) return true
@@ -54,6 +66,7 @@ export function VerificationProvider({
 
     const handleVerified = () => {
         setIsVerified(true)
+        setUserDismissed(false)
         router.refresh() // Refresh server components to update gated content on server side too
     }
 
@@ -61,6 +74,7 @@ export function VerificationProvider({
         <VerificationContext.Provider value={{
             isVerified,
             email,
+            userDismissed,
             openVerificationModal,
             closeVerificationModal,
             checkVerification,
@@ -69,7 +83,7 @@ export function VerificationProvider({
             {children}
             <VerifyEmailModal
                 open={isOpen}
-                onOpenChange={setIsOpen}
+                onOpenChange={handleOpenChange}
                 email={email}
                 onVerified={handleVerified}
             />
