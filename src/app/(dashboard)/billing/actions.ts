@@ -450,3 +450,23 @@ export async function cancelSubscription() {
 
   return { success: true }
 }
+
+// --------------------
+// Get billing history / invoices
+// --------------------
+export async function getBillingHistory() {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data: transactions } = await supabase
+    .from('payment_transactions')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'success')
+    .order('created_at', { ascending: false })
+
+  return transactions || []
+}
+
