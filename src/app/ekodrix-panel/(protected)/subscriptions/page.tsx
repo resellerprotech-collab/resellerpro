@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useCallback, useEffect, useState, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -129,6 +129,9 @@ function SubscriptionsContent() {
           Sync Records
         </Button>
       </div>
+
+      {/* Dynamic Subscription Plan Manager */}
+      <EkodrixPlanManager />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -319,6 +322,8 @@ function SubscriptionsContent() {
     </div>
   )
 }
+
+import { EkodrixPlanManager } from '@/components/ekodrix-panel/EkodrixPlanManager'
 
 export default function EkodrixSubscriptionsPage() {
   return (
