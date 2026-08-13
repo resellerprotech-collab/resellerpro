@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -92,7 +92,27 @@ export function CreatableSelect({
             className="h-11 border-none focus:ring-0"
           />
           <CommandList>
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
+            <CommandEmpty>
+              <div className="py-4 text-center space-y-2">
+                <p className="text-xs text-muted-foreground">{emptyMessage}</p>
+                {onCreateOption && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50 font-bold gap-1"
+                    onClick={() => {
+                      onCreateOption(searchQuery.trim())
+                      setOpen(false)
+                      setSearchQuery('')
+                    }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {searchQuery.trim() ? `Create "${searchQuery.trim()}"` : '+ Add New Category'}
+                  </Button>
+                )}
+              </div>
+            </CommandEmpty>
             <CommandGroup>
               {filteredOptions.map((option) => (
                 <CommandItem
@@ -128,10 +148,29 @@ export function CreatableSelect({
                   }}
                   className="cursor-pointer text-white bg-blue-600 data-[selected='true']:bg-blue-700 data-[selected='true']:text-white hover:bg-blue-700 focus:bg-blue-700 font-medium mt-1 flex items-center justify-center py-2 rounded-md"
                 >
+                  <Plus className="w-4 h-4 mr-1.5" />
                   Create "{searchQuery.trim()}"
                 </CommandItem>
               )}
             </CommandGroup>
+            {onCreateOption && !showCreateOption && options.length > 0 && (
+              <div className="p-1 border-t border-slate-100">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-bold gap-1.5 h-9"
+                  onClick={() => {
+                    onCreateOption('')
+                    setOpen(false)
+                    setSearchQuery('')
+                  }}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  + Add New Category
+                </Button>
+              </div>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
