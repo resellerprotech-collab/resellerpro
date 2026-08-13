@@ -1070,7 +1070,7 @@ export default function ShopSettingsForm({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 pb-30 md:pb-0">
+      <form onSubmit={handleSubmit} className="space-y-6 pb-48 md:pb-0">
         <div id="shop-settings-active-section" className="relative overflow-hidden min-h-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
@@ -1270,8 +1270,8 @@ export default function ShopSettingsForm({
 
 
         {/* ═══════════════ SAVE BAR ═══════════════ */}
-        <div className="fixed md:sticky bottom-16 md:bottom-[-32px] left-0 right-0 md:left-auto md:right-auto bg-white dark:bg-slate-900 border-t md:border border-slate-200 dark:border-slate-800 px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row items-center justify-between gap-2.5 md:gap-4 z-40 md:z-30 rounded-t-2xl md:rounded-2xl shadow-xl md:-mx-6">
-          <div className="text-xs text-slate-500 dark:text-slate-400 w-full md:w-auto text-center md:text-left">
+        <div className="fixed md:sticky bottom-0 left-0 right-0 md:left-auto md:right-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t md:border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 md:px-6 md:py-4 flex items-center justify-between gap-2 md:gap-4 z-40 md:z-30 rounded-t-2xl md:rounded-2xl shadow-2xl md:-mx-6">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
             {formData.shop_slug && isEligible && (
               <a href={`/store/${formData.shop_slug}`} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline inline-flex items-center gap-1.5 py-0.5">
                 <Eye className="w-3.5 h-3.5" /> Preview Store <ExternalLink className="w-3 h-3" />
