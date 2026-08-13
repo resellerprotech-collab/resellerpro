@@ -89,7 +89,7 @@ export function AnalyticsClient() {
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-500 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
                             Business Health
                         </h1>
                         <div className="flex items-center gap-2 text-muted-foreground font-medium">
@@ -176,9 +176,9 @@ export function AnalyticsClient() {
 
             {/* Charts Grid */}
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="border-slate-200/60 shadow-sm overflow-hidden rounded-3xl">
+                <Card className="border-slate-200/60 dark:border-slate-800 shadow-sm overflow-hidden rounded-3xl bg-card text-card-foreground">
                     <CardHeader className="p-6 sm:p-8">
-                        <CardTitle className="text-xl font-bold">Sales & Profit Trend</CardTitle>
+                        <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">Sales & Profit Trend</CardTitle>
                         <CardDescription>Performance trajectories over time</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px] sm:h-[400px] p-2 sm:py-6 px-2 pt-0">
@@ -193,9 +193,9 @@ export function AnalyticsClient() {
                 </Card>
 
                 {isPremium ? (
-                    <Card className="border-slate-200/60 shadow-sm overflow-hidden rounded-3xl">
+                    <Card className="border-slate-200/60 dark:border-slate-800 shadow-sm overflow-hidden rounded-3xl bg-card text-card-foreground">
                         <CardHeader className="p-6 sm:p-8">
-                            <CardTitle className="text-xl font-bold">Revenue by Category</CardTitle>
+                            <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">Revenue by Category</CardTitle>
                             <CardDescription>Top category performance</CardDescription>
                         </CardHeader>
                         <CardContent className="h-[300px] sm:h-[400px] p-2 sm:py-6 px-2 pt-0">
@@ -261,26 +261,26 @@ function StatsCard({
     gradient?: string
 }) {
     return (
-        <Card className="border-slate-200/60 shadow-sm overflow-hidden rounded-3xl relative group">
+        <Card className="border-slate-200/60 dark:border-slate-800 shadow-sm overflow-hidden rounded-3xl relative group bg-card text-card-foreground">
             <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 group-hover:opacity-100 transition-opacity`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{title}</p>
-                <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-100">
-                    <Icon className="h-3.5 w-3.5 text-slate-600" />
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{title}</p>
+                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200/60 dark:border-slate-700">
+                    <Icon className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
                 </div>
             </CardHeader>
             <CardContent className="relative space-y-2">
-                <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{value}</div>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                    <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${trend === 'up' ? 'bg-emerald-50 text-emerald-600' :
-                        trend === 'down' ? 'bg-red-50 text-red-600' :
-                            'bg-slate-50 text-slate-500'
+                    <div className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black ${trend === 'up' ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-800/40' :
+                        trend === 'down' ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200/40 dark:border-red-800/40' :
+                            'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/40 dark:border-slate-700'
                         }`}>
                         {trend === 'up' && <ArrowUpRight className="w-2.5 h-2.5" />}
                         {trend === 'down' && <ArrowDownRight className="w-2.5 h-2.5" />}
                         {change}
                     </div>
-                    {label && <span className="text-[10px] font-bold text-slate-400 truncate max-w-[50px]">{label}</span>}
+                    {label && <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[70px]">{label}</span>}
                 </div>
             </CardContent>
         </Card>
@@ -305,13 +305,13 @@ function TopPerformersCard({
     totalCount?: number
 }) {
     return (
-        <Card className="border-slate-200/60 shadow-sm overflow-hidden rounded-3xl">
+        <Card className="border-slate-200/60 dark:border-slate-800 shadow-sm overflow-hidden rounded-3xl bg-card text-card-foreground">
             <CardHeader className="flex flex-row items-center gap-4 p-6 sm:p-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
                     <Icon className="h-6 w-6" />
                 </div>
                 <div>
-                    <CardTitle className="text-xl font-bold">{title}</CardTitle>
+                    <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">{title}</CardTitle>
                     <CardDescription className="text-xs">{description}</CardDescription>
                 </div>
             </CardHeader>
@@ -319,10 +319,10 @@ function TopPerformersCard({
                 {items.map((item, index) => (
                     <div key={`${item.name}-${index}`} className="group">
                         <div className="flex justify-between text-sm mb-2 px-1">
-                            <span className="font-bold text-slate-700 truncate max-w-[200px]">{item.name}</span>
-                            <span className="text-slate-400 text-xs font-semibold">{item.value}</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[200px]">{item.name}</span>
+                            <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{item.value}</span>
                         </div>
-                        <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100 p-0.5 relative">
+                        <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200/60 dark:border-slate-700 p-0.5 relative">
                             <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${item.progress}%` }}
@@ -336,7 +336,7 @@ function TopPerformersCard({
                     {showUpgradeCTA ? (
                         <Button
                             variant="outline"
-                            className="w-full h-12 rounded-2xl font-bold border-amber-200 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700 shadow-sm"
+                            className="w-full h-12 rounded-2xl font-bold border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100/50 text-amber-700 dark:text-amber-300 shadow-sm"
                             asChild
                         >
                             <Link href="/settings/subscription#pricing">
@@ -345,7 +345,7 @@ function TopPerformersCard({
                             </Link>
                         </Button>
                     ) : (
-                        <Button variant="secondary" className="w-full h-12 rounded-2xl font-bold bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50" asChild>
+                        <Button variant="secondary" className="w-full h-12 rounded-2xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/50 dark:border-slate-700" asChild>
                             <Link href={viewAllHref}>
                                 View Detailed List <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
