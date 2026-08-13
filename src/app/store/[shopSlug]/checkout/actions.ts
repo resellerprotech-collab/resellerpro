@@ -247,6 +247,31 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: itemsError.message }
   }
 
+  // Update linked customer's total_orders and total_spent stats
+  if (customerId) {
+    try {
+      const { data: custData } = await supabase
+        .from('customers')
+        .select('total_orders, total_spent')
+        .eq('id', customerId)
+        .single()
+
+      const currentOrders = Number(custData?.total_orders || 0)
+      const currentSpent = Number(custData?.total_spent || 0)
+
+      await supabase
+        .from('customers')
+        .update({
+          total_orders: currentOrders + 1,
+          total_spent: currentSpent + input.total,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', customerId)
+    } catch (custUpdateErr) {
+      console.warn('Customer stats update warning:', custUpdateErr)
+    }
+  }
+
   // 4. Send instant email notifications to Reseller and Customer
   try {
     const { data: resellerProfile } = await supabase
