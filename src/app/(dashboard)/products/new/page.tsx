@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CreatableSelect } from '@/components/ui/creatable-select'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, Save, Upload, X, Loader2, WifiOff, Lock, Video, Music } from 'lucide-react'
+import { ArrowLeft, Save, Upload, X, Loader2, WifiOff, Lock, Video, Music, Plus } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
@@ -501,7 +501,22 @@ export default function NewProductPage() {
               {/* Category, Badge, and Stock */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="category">Category</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-bold p-0 px-1.5 flex items-center gap-1"
+                      onClick={() => {
+                        setNewCategoryName('')
+                        setIsCategoryModalOpen(true)
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Category</span>
+                    </Button>
+                  </div>
                   <CreatableSelect
                     options={categories}
                     value={category}
