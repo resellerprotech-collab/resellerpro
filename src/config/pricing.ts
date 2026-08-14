@@ -14,11 +14,11 @@ export const PLAN_LIMITS = {
     products: 30,
   },
   professional: {
-    orders: 100,
-    enquiries: 200,
+    orders: Infinity,
+    enquiries: Infinity,
     customers: Infinity,
     productImages: 5,
-    products: 50,
+    products: Infinity,
   },
   business: {
     orders: Infinity,
