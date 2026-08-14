@@ -114,6 +114,10 @@ export async function POST(req: Request) {
     }
 
     const { PLAN_LIMITS } = await import('@/config/pricing')
+    const { getCurrentSubscriptionPeriod } = await import('@/lib/subscription-period')
+
+    const { periodStartISO, periodEndISO, periodEnd } = await getCurrentSubscriptionPeriod(user.id, subscription)
+
     const planData = subscription.plan;
     const planNameRaw = (Array.isArray(planData) ? planData[0]?.name : planData?.name)?.toLowerCase() || 'free';
     const planKey = (Object.keys(PLAN_LIMITS).includes(planNameRaw) ? planNameRaw : 'free') as keyof typeof PLAN_LIMITS
@@ -124,10 +128,16 @@ export async function POST(req: Request) {
             .from('enquiries')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
+            .gte('created_at', periodStartISO)
+            .lt('created_at', periodEndISO)
 
         if ((count || 0) >= limits.enquiries) {
+            const formattedResetDate = periodEnd.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+            })
             return NextResponse.json({
-                error: `You've reached your total limit of ${limits.enquiries} enquiries on the ${planKey} plan. Upgrade to receive more!`
+                error: `You've reached your enquiry limit of ${limits.enquiries} for the current plan period. Your limit will reset on ${formattedResetDate}.`
             }, { status: 403 })
         }
     }

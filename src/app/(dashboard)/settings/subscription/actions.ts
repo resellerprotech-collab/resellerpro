@@ -61,6 +61,10 @@ export async function getSubscriptionData() {
   if (!subscription) return null
 
   const { PLAN_LIMITS } = await import('@/config/pricing')
+  const { getCurrentSubscriptionPeriod } = await import('@/lib/subscription-period')
+
+  // Calculate current subscription period
+  const { periodStartISO, periodEndISO, periodStart, periodEnd } = await getCurrentSubscriptionPeriod(user.id, subscription)
 
   // Re-calculate plan info after potential downgrade
   const planData = subscription.plan
@@ -71,27 +75,29 @@ export async function getSubscriptionData() {
   const limits = PLAN_LIMITS[planKey]
 
   // --- FETCH USAGE ---
-  // Count total records instead of monthly (requested change)
-
-  // 1. Orders (Total)
+  // 1. Orders (Filtered by subscription period)
   const { count: ordersCount } = await supabase
     .from('orders')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+    .gte('created_at', periodStartISO)
+    .lt('created_at', periodEndISO)
 
-  // 2. Enquiries (Total)
+  // 2. Enquiries (Filtered by subscription period)
   const { count: enquiriesCount } = await supabase
     .from('enquiries')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+    .gte('created_at', periodStartISO)
+    .lt('created_at', periodEndISO)
 
-  // 3. Products (Total)
+  // 3. Products (Total catalog capacity)
   const { count: productsCount } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
-  // 4. Customers (Total active)
+  // 4. Customers (Total active capacity)
   const { count: customersCount } = await supabase
     .from('customers')
     .select('*', { count: 'exact', head: true })
@@ -122,9 +128,11 @@ export async function getSubscriptionData() {
     customers: checkLimit(usage.customers, limits.customers),
   }
 
-  // Legacy return fields for backward compatibility with existing UI (shows order limit mainly)
+  // Legacy return fields for backward compatibility with existing UI
   return {
     ...subscription,
+    periodStart: periodStartISO,
+    periodEnd: periodEndISO,
     orders_this_month: usage.orders,
     usage_percentage: metrics.orders.percentage,
     is_limit_reached: metrics.orders.isReached,
