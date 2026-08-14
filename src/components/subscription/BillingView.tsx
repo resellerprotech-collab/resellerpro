@@ -84,7 +84,11 @@ export function BillingView({
       </div>
 
       {/* 4. Plan Usage Section */}
-      <PlanUsageSection metrics={subscription?.metrics || {}} />
+      <PlanUsageSection
+        metrics={subscription?.metrics || {}}
+        periodStart={subscription?.periodStart}
+        periodEnd={subscription?.periodEnd}
+      />
 
       {/* 5. Unlock More Banner */}
       {!isPro && <UnlockProBanner onUpgradeClick={handleOpenPlans} />}

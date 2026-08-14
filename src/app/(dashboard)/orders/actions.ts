@@ -28,6 +28,9 @@ async function canCreateOrder() {
   }
 
   const { PLAN_LIMITS } = await import('@/config/pricing')
+  const { getCurrentSubscriptionPeriod } = await import('@/lib/subscription-period')
+
+  const { periodStartISO, periodEndISO, periodEnd } = await getCurrentSubscriptionPeriod(user.id, subscription)
 
   // Determine plan name
   const planData = subscription.plan
@@ -42,18 +45,24 @@ async function canCreateOrder() {
     return { allowed: true }
   }
 
-  // Check usage (All-time total as requested)
-  const { count: totalOrders } = await supabase
+  // Check usage within current subscription period
+  const { count: periodOrders } = await supabase
     .from('orders')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+    .gte('created_at', periodStartISO)
+    .lt('created_at', periodEndISO)
 
-  const currentCount = totalOrders || 0
+  const currentCount = periodOrders || 0
 
   if (currentCount >= orderLimit) {
+    const formattedResetDate = periodEnd.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
     return {
       allowed: false,
-      reason: `You've reached your total limit of ${orderLimit} orders on the ${planKey} plan. Upgrade to increase your limit!`,
+      reason: `You've reached your order limit of ${orderLimit} for the current plan period. Your limit will reset on ${formattedResetDate}.`,
       currentCount,
       limit: orderLimit,
     }
