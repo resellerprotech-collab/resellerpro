@@ -118,9 +118,9 @@ function CheckoutPageInner({
 
   const subtotal = getSubtotal()
 
-  const shippingType = theme?.shippingType || 'above_amount'
-  const freeThreshold = theme?.freeShippingThreshold ?? 500
-  const flatFee = theme?.flatShippingFee ?? 49
+  const shippingType = theme?.shippingType || 'free'
+  const freeThreshold = theme?.freeShippingThreshold ?? 0
+  const flatFee = theme?.flatShippingFee ?? 0
 
   let shippingFee = 0
   if (shippingType === 'free') {

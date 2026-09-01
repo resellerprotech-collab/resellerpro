@@ -20,9 +20,9 @@ export function CartDrawer() {
     freeShippingThreshold: number
     flatShippingFee: number
   }>({
-    shippingType: 'above_amount',
-    freeShippingThreshold: 500,
-    flatShippingFee: 49,
+    shippingType: 'free',
+    freeShippingThreshold: 0,
+    flatShippingFee: 0,
   })
 
   useEffect(() => {
@@ -37,9 +37,9 @@ export function CartDrawer() {
         if (data?.shop_theme) {
           const theme = data.shop_theme as any
           setShippingConfig({
-            shippingType: theme.shippingType || 'above_amount',
-            freeShippingThreshold: theme.freeShippingThreshold ?? 500,
-            flatShippingFee: theme.flatShippingFee ?? 49,
+            shippingType: theme.shippingType || 'free',
+            freeShippingThreshold: theme.freeShippingThreshold ?? 0,
+            flatShippingFee: theme.flatShippingFee ?? 0,
           })
         }
       })

@@ -236,9 +236,9 @@ export default function ShopSettingsForm({
     storeStatus: theme.storeStatus || 'open',
     vacationMessage: theme.vacationMessage || '',
     // Delivery & Shipping Fee Settings
-    shippingType: theme.shippingType || 'above_amount',
-    freeShippingThreshold: theme.freeShippingThreshold ?? 500,
-    flatShippingFee: theme.flatShippingFee ?? 49,
+    shippingType: theme.shippingType || 'free',
+    freeShippingThreshold: theme.freeShippingThreshold ?? 0,
+    flatShippingFee: theme.flatShippingFee ?? 0,
     // Testimonials
     testimonialsEnabled: theme.testimonialsEnabled || false,
     testimonialsHeading: theme.testimonialsHeading || 'What Our Customers Say',
