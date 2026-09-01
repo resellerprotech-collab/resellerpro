@@ -42,7 +42,7 @@ export async function placeOrder(input: PlaceOrderInput) {
   // Strictly filter by storeUserId to guarantee multi-tenant cross-store isolation
   const { data: dbProducts, error: dbProductsError } = await supabase
     .from('products')
-    .select('id, cost_price, selling_price, user_id, is_active, stock_quantity, stock_status')
+    .select('id, cost_price, selling_price, user_id, stock_quantity, stock_status')
     .in('id', productIds)
     .eq('user_id', input.storeUserId)
 
@@ -61,9 +61,7 @@ export async function placeOrder(input: PlaceOrderInput) {
     if (!dbProd) {
       return { error: `Product "${item.name}" is no longer available.` }
     }
-    if (dbProd.is_active === false) {
-      return { error: `Product "${item.name}" is currently unavailable.` }
-    }
+
     if (dbProd.stock_status === 'out_of_stock') {
       return { error: `Product "${item.name}" is currently out of stock.` }
     }
