@@ -70,7 +70,7 @@ export class CommerceProductsService {
       .from('products')
       .select('category')
       .eq('user_id', storeId)
-      .eq('is_active', true)
+      .neq('stock_status', 'out_of_stock')
 
     if (error || !data) return []
 

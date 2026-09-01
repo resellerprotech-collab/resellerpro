@@ -32,7 +32,7 @@ export class CommerceCheckoutService {
 
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, name, selling_price, stock_quantity, stock_status, is_active, image_url')
+      .select('id, name, selling_price, stock_quantity, stock_status, image_url')
       .eq('user_id', storeId)
       .in('id', productIds)
 
@@ -47,7 +47,7 @@ export class CommerceCheckoutService {
 
     for (const item of items) {
       const product = productMap.get(item.product_id)
-      if (!product || !product.is_active) {
+      if (!product || product.stock_status === 'out_of_stock') {
         outOfStockItems.push({ product_id: item.product_id, reason: 'Product unavailable' })
         continue
       }

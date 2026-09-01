@@ -25,7 +25,6 @@ export class CommerceAnalyticsService {
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', storeId)
-      .eq('is_active', true)
 
     // 3. Customer Count
     const { count: customerCount } = await supabase
