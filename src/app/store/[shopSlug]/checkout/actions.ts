@@ -153,6 +153,7 @@ export async function placeOrder(input: PlaceOrderInput) {
     customer_id: customerId,
     status: 'pending',
     payment_method: input.paymentMethod,
+    payment_method_v2: input.paymentMethod === 'cod' ? 'cod' : input.paymentMethod === 'upi' ? 'upi' : 'online',
     payment_status: 'unpaid',
     subtotal: input.subtotal,
     shipping_cost: input.shippingFee,

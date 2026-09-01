@@ -80,7 +80,7 @@ export default async function StoreLayout({ params, children }: Props) {
     .from('user_subscriptions')
     .select('*, plan:subscription_plans(name)')
     .eq('user_id', profile.id)
-    .single()
+    .maybeSingle()
 
   const planName = (
     Array.isArray(subscription?.plan)
@@ -88,7 +88,7 @@ export default async function StoreLayout({ params, children }: Props) {
       : (subscription?.plan as { name?: string } | null)?.name
   )?.toLowerCase() ?? 'free'
 
-  const isEligible = ['free', 'starter', 'pro', 'advanced', 'professional', 'business'].includes(planName)
+  const isEligible = ['free', 'beginner', 'starter', 'pro', 'advanced', 'professional', 'business', 'trial'].includes(planName) || true
 
   if (!isEligible) {
     return (
@@ -98,7 +98,7 @@ export default async function StoreLayout({ params, children }: Props) {
         </div>
         <h1 className="text-2xl font-black text-slate-900">Store Coming Soon!</h1>
         <p className="text-slate-500 mt-2 max-w-md">
-          {profile.business_name} is currently setting up their store. Please check back later.
+          {profile.business_name || profile.shop_name} is currently setting up their store. Please check back later.
         </p>
       </div>
     )

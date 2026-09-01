@@ -70,53 +70,50 @@ function CheckoutPageInner({
   const enableCod = theme?.enableCod !== false
 
   const availableMethods: Array<{
-    id: 'cod' | 'upi' | 'card' | 'whatsapp' | 'razorpay'
+    id: 'cod' | 'upi' | 'card' | 'razorpay'
     title: string
     description: string
     icon: any
   }> = []
 
-  if (!isPaidUser || !enableOnline) {
-    // Free User store owner OR Online Payment OFF ➔ WhatsApp order only.
-    availableMethods.push({
-      id: 'whatsapp',
-      title: theme?.whatsappOrderTitle || 'Place Order via WhatsApp',
-      description: theme?.whatsappOrderDescription || 'Direct order & support on WhatsApp',
-      icon: MessageCircle,
-    })
-  } else {
-    // Online Payment ON ➔ Online Payment option
+  // 1. Online Payment (UPI / Razorpay Gateway)
+  if (enableOnline) {
     const rawTitle = theme?.onlinePaymentTitle
     const displayTitle = (!rawTitle || rawTitle === 'Card Payment') ? 'Online Payment' : rawTitle
 
-    availableMethods.push({
-      id: 'razorpay',
-      title: displayTitle,
-      description: theme?.onlinePaymentDescription || 'Credit/Debit Card, NetBanking & UPI',
-      icon: CreditCard,
-    })
+    // Check if seller has Razorpay API Key ID configured on a Paid/Pro Plan
+    const hasRazorpay = isPaidUser && !!theme?.razorpayKeyId
 
-    // Cash on Delivery (COD) if enabled
-    if (enableCod) {
+    if (hasRazorpay) {
       availableMethods.push({
-        id: 'cod',
-        title: theme?.codTitle || 'Cash on Delivery (COD)',
-        description: theme?.codDescription || 'Pay cash on delivery',
-        icon: Truck,
+        id: 'razorpay',
+        title: displayTitle,
+        description: theme?.onlinePaymentDescription || 'Credit/Debit Card, NetBanking & UPI',
+        icon: CreditCard,
+      })
+    } else {
+      // Free Plan or Direct UPI payment option
+      availableMethods.push({
+        id: 'upi',
+        title: displayTitle || 'Pay via UPI / GPay',
+        description: theme?.onlinePaymentDescription || 'Pay via Google Pay, PhonePe, Paytm or UPI ID',
+        icon: Smartphone,
       })
     }
+  }
 
-    // Place Order via WhatsApp option
+  // 2. Cash on Delivery (COD) if enabled
+  if (enableCod) {
     availableMethods.push({
-      id: 'whatsapp',
-      title: theme?.whatsappOrderTitle || 'Place Order via WhatsApp',
-      description: theme?.whatsappOrderDescription || 'Direct order & support on WhatsApp',
-      icon: MessageCircle,
+      id: 'cod',
+      title: theme?.codTitle || 'Cash on Delivery (COD)',
+      description: theme?.codDescription || 'Pay cash on delivery',
+      icon: Truck,
     })
   }
 
-  const initialMethod = availableMethods[0].id
-  const [payment, setPayment] = useState<'razorpay' | 'cod' | 'upi' | 'card' | 'whatsapp'>(initialMethod)
+  const initialMethod = availableMethods[0]?.id || 'cod'
+  const [payment, setPayment] = useState<'razorpay' | 'cod' | 'upi' | 'card'>(initialMethod)
   const [loading, setLoading] = useState(false)
 
   const subtotal = getSubtotal()
@@ -142,7 +139,7 @@ function CheckoutPageInner({
   })
 
   useEffect(() => {
-    if (!availableMethods.some(m => m.id === payment)) {
+    if (availableMethods.length > 0 && !availableMethods.some(m => m.id === payment)) {
       setPayment(availableMethods[0].id)
       setValue('paymentMethod', availableMethods[0].id)
     }
@@ -484,7 +481,7 @@ function CheckoutPageInner({
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-900">100% Authentic</p>
-                    <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Direct WhatsApp order</p>
+                    <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Direct store checkout</p>
                   </div>
                 </div>
               </div>
@@ -564,15 +561,8 @@ function CheckoutPageInner({
                   type="submit"
                   form="checkout-form"
                   disabled={loading}
-                  style={payment === 'whatsapp'
-                    ? { borderRadius: 'var(--store-btn-radius, 12px)' }
-                    : { backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }
-                  }
-                  className={`hidden lg:flex w-full h-14 ${
-                    payment === 'whatsapp'
-                      ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
-                      : 'hover:opacity-95 shadow-indigo-500/20'
-                  } text-white font-bold text-base items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 cursor-pointer`}
+                  style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
+                  className="hidden lg:flex w-full h-14 hover:opacity-95 text-white font-bold text-base items-center justify-center gap-2.5 transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
@@ -581,18 +571,18 @@ function CheckoutPageInner({
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      {payment === 'whatsapp' ? (
-                        <MessageCircle className="w-5 h-5 fill-white text-emerald-500" />
-                      ) : payment === 'cod' ? (
+                      {payment === 'cod' ? (
                         <Truck className="w-5 h-5" />
+                      ) : payment === 'upi' ? (
+                        <Smartphone className="w-5 h-5" />
                       ) : (
                         <Lock className="w-5 h-5" />
                       )}
                       {payment === 'razorpay' || payment === 'card'
-                        ? 'Pay Online'
-                        : payment === 'cod'
-                        ? 'Place Order (Cash on Delivery)'
-                        : 'Place Order via WhatsApp'}
+                        ? 'Pay Online (Razorpay)'
+                        : payment === 'upi'
+                        ? 'Place Order & Pay via UPI'
+                        : 'Place Order (Cash on Delivery)'}
                     </span>
                   )}
                 </button>
@@ -614,15 +604,8 @@ function CheckoutPageInner({
             type="submit"
             form="checkout-form"
             disabled={loading}
-            style={payment === 'whatsapp'
-              ? { borderRadius: 'var(--store-btn-radius, 12px)' }
-              : { backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }
-            }
-            className={`flex-1 h-12 ${
-              payment === 'whatsapp'
-                ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
-                : 'hover:opacity-95 shadow-indigo-500/20'
-            } text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] disabled:opacity-70 cursor-pointer`}
+            style={{ backgroundColor: primaryColor, borderRadius: 'var(--store-btn-radius, 12px)' }}
+            className="flex-1 h-12 hover:opacity-95 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-70 cursor-pointer"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -631,18 +614,18 @@ function CheckoutPageInner({
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                {payment === 'whatsapp' ? (
-                  <MessageCircle className="w-4.5 h-4.5 fill-white text-emerald-500" />
-                ) : payment === 'cod' ? (
+                {payment === 'cod' ? (
                   <Truck className="w-4.5 h-4.5" />
+                ) : payment === 'upi' ? (
+                  <Smartphone className="w-4.5 h-4.5" />
                 ) : (
                   <Lock className="w-4.5 h-4.5" />
                 )}
                 {payment === 'razorpay' || payment === 'card'
-                  ? 'Pay Online'
-                  : payment === 'cod'
-                  ? 'Place Order (COD)'
-                  : 'Place Order via WhatsApp'}
+                  ? 'Pay Online (Razorpay)'
+                  : payment === 'upi'
+                  ? 'Place Order (UPI)'
+                  : 'Place Order (COD)'}
               </span>
             )}
           </button>
