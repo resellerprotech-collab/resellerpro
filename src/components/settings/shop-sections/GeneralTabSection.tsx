@@ -164,7 +164,7 @@ export default function GeneralTabSection({
                   id="freeShippingThreshold"
                   name="freeShippingThreshold"
                   type="number"
-                  value={formData.freeShippingThreshold ?? 500}
+                  value={formData.freeShippingThreshold ?? 0}
                   onChange={handleChange}
                   placeholder="500"
                   className="text-xs"
@@ -178,7 +178,7 @@ export default function GeneralTabSection({
                   id="flatShippingFee"
                   name="flatShippingFee"
                   type="number"
-                  value={formData.flatShippingFee ?? 49}
+                  value={formData.flatShippingFee ?? 0}
                   onChange={handleChange}
                   placeholder="49"
                   className="text-xs"
@@ -196,7 +196,7 @@ export default function GeneralTabSection({
                 id="flatShippingFee"
                 name="flatShippingFee"
                 type="number"
-                value={formData.flatShippingFee ?? 49}
+                value={formData.flatShippingFee ?? 0}
                 onChange={handleChange}
                 placeholder="49"
                 className="text-xs"

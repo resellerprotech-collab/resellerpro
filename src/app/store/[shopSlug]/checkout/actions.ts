@@ -94,7 +94,32 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: 'Pricing mismatch detected. Please refresh your page and try again.' }
   }
 
-  const serverShippingFee = serverSubtotal >= 500 ? 0 : 49
+  // Fetch store theme to calculate correct shipping fee
+  const { data: storeProfile, error: profileError } = await supabase
+    .from('profiles')
+    .select('shop_theme')
+    .eq('id', input.storeUserId)
+    .single()
+
+  if (profileError) {
+    console.error('Fetch profile error:', profileError)
+    return { error: 'Failed to fetch store settings. Please try again.' }
+  }
+
+  const theme = storeProfile?.shop_theme as any
+  const shippingType = theme?.shippingType || 'free'
+  const freeThreshold = theme?.freeShippingThreshold ?? 0
+  const flatFee = theme?.flatShippingFee ?? 0
+
+  let serverShippingFee = 0
+  if (shippingType === 'free') {
+    serverShippingFee = 0
+  } else if (shippingType === 'flat') {
+    serverShippingFee = flatFee
+  } else {
+    serverShippingFee = serverSubtotal >= freeThreshold ? 0 : flatFee
+  }
+
   if (serverShippingFee !== input.shippingFee) {
     return { error: 'Shipping fee mismatch detected. Please try again.' }
   }
