@@ -52,10 +52,13 @@ export default async function StorePage({ params }: Props) {
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
 
-  const products: Product[] = (rawProducts || []).map((p) => ({
-    ...p,
-    price: p.selling_price,
-  }))
+  const products: Product[] = (rawProducts || []).map((p) => {
+    const { cost_price, ...safeProduct } = p
+    return {
+      ...safeProduct,
+      price: p.selling_price,
+    }
+  })
 
   // Fetch managed categories from DB
   const { data: dbCategories } = await supabase

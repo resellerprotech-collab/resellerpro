@@ -8,6 +8,7 @@ import { StoreProductCard } from '@/components/store/StoreProductCard'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
 import type { Product, Profile, ShopTheme } from '@/types'
 
 interface ShopClientProps {
@@ -58,6 +59,7 @@ export function ShopClient({
 
   useEffect(() => {
     setShopSlug(shopSlug)
+    useWishlistStore.getState().setShopSlug(shopSlug)
     trackEvent({ userId: profile.id, eventType: 'store_view' })
   }, [shopSlug, profile.id, setShopSlug])
 

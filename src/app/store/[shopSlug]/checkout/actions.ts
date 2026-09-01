@@ -35,14 +35,41 @@ export async function placeOrder(input: PlaceOrderInput) {
 
   // 1. Fetch product prices and cost prices from DB to compute total_cost and validate subtotal
   const productIds = input.items.map((item) => item.productId)
+  if (productIds.length === 0) {
+    return { error: 'Your cart is empty.' }
+  }
+
+  // Strictly filter by storeUserId to guarantee multi-tenant cross-store isolation
   const { data: dbProducts, error: dbProductsError } = await supabase
     .from('products')
-    .select('id, cost_price, selling_price')
+    .select('id, cost_price, selling_price, user_id, is_active, stock_quantity, stock_status')
     .in('id', productIds)
+    .eq('user_id', input.storeUserId)
 
   if (dbProductsError) {
     console.error('Fetch products error:', dbProductsError)
     return { error: dbProductsError.message }
+  }
+
+  if (!dbProducts || dbProducts.length !== productIds.length) {
+    return { error: 'One or more items in your cart do not belong to this store or are no longer available.' }
+  }
+
+  // Validate stock and active status
+  for (const item of input.items) {
+    const dbProd = dbProducts.find((p) => p.id === item.productId)
+    if (!dbProd) {
+      return { error: `Product "${item.name}" is no longer available.` }
+    }
+    if (dbProd.is_active === false) {
+      return { error: `Product "${item.name}" is currently unavailable.` }
+    }
+    if (dbProd.stock_status === 'out_of_stock') {
+      return { error: `Product "${item.name}" is currently out of stock.` }
+    }
+    if (typeof dbProd.stock_quantity === 'number' && dbProd.stock_quantity > 0 && dbProd.stock_quantity < item.quantity) {
+      return { error: `Insufficient stock for "${item.name}". Only ${dbProd.stock_quantity} remaining.` }
+    }
   }
 
   const costMap = new Map<string, number>()

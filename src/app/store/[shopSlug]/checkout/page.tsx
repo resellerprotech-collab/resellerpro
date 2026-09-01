@@ -63,7 +63,11 @@ function CheckoutPageInner({
   isPaidUser = true,
 }: CheckoutPageProps) {
   const router = useRouter()
-  const { items, getSubtotal, clearCart } = useCartStore()
+  const { items, getSubtotal, clearCart, setShopSlug } = useCartStore()
+
+  useEffect(() => {
+    setShopSlug(shopSlug)
+  }, [shopSlug, setShopSlug])
 
   const primaryColor = theme?.primaryColor || '#4f46e5'
   const enableOnline = theme?.enableOnlinePayment !== false
