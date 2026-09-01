@@ -16,6 +16,7 @@ import { WhyChooseUs } from '@/components/store/WhyChooseUs'
 import { WhatsAppWidget } from '@/components/store/WhatsAppWidget'
 import { trackEvent } from '@/lib/analytics'
 import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
 import { toast } from '@/lib/toast'
 import type { Product, Profile, ShopTheme, HeroBannerItem } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -141,9 +142,10 @@ export function StorefrontClient({ profile, products, categories, theme, cmsSect
 
   const [promoBannerIndex, setPromoBannerIndex] = useState(0)
 
-  // Set shop context in cart
+  // Set shop context in cart and wishlist
   useEffect(() => {
     setShopSlug(shopSlug)
+    useWishlistStore.getState().setShopSlug(shopSlug)
     trackEvent({ userId: profile.id, eventType: 'store_view' })
   }, [shopSlug, profile.id, setShopSlug])
 

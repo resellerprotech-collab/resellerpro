@@ -70,7 +70,11 @@ export function SearchModal({ isOpen, onClose, shopSlug, onSearchSubmit }: Searc
               .limit(20)
 
             if (prods) {
-              setAllProducts(prods as Product[])
+              const safeProds = prods.map(({ cost_price, ...p }) => ({
+                ...p,
+                price: p.selling_price,
+              }))
+              setAllProducts(safeProds as Product[])
             }
           }
         } catch (err) {

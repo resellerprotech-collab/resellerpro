@@ -10,6 +10,7 @@ import {
   Video, Music, Maximize2, X, Copy, ChevronRight, Box
 } from 'lucide-react'
 import { useCartStore } from '@/store/useCartStore'
+import { useWishlistStore } from '@/store/useWishlistStore'
 import { trackEvent } from '@/lib/analytics'
 import { toast } from '@/lib/toast'
 import { StoreHeader } from '@/components/store/StoreHeader'
@@ -54,6 +55,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
 
   useEffect(() => {
     setShopSlug(shopSlug)
+    useWishlistStore.getState().setShopSlug(shopSlug)
     trackEvent({ userId: profile.id, eventType: 'product_view', productId: product.id })
   }, [product.id, profile.id, shopSlug, setShopSlug])
 

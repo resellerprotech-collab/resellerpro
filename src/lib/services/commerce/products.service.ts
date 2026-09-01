@@ -33,8 +33,11 @@ export class CommerceProductsService {
     const { data, count, error } = await query
     if (error) throw error
 
+    // Strip cost_price from public headless API responses
+    const sanitizedProducts = (data || []).map(({ cost_price, ...p }) => p)
+
     return {
-      products: data || [],
+      products: sanitizedProducts,
       total: count || 0,
       limit,
       offset
@@ -54,7 +57,8 @@ export class CommerceProductsService {
       .single()
 
     if (error || !data) return null
-    return data
+    const { cost_price, ...sanitized } = data
+    return sanitized
   }
 
   /**

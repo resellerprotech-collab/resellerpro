@@ -103,9 +103,11 @@ export default async function PublicProductPage({ params }: Props) {
   const protocol = headerList.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https')
   const productPageUrl = `${protocol}://${host}/p/${id}`
 
+  const { cost_price: _cost, ...safeProduct } = product
+
   return (
     <PremiumProductView 
-      product={product} 
+      product={safeProduct as any} 
       businessName={businessName} 
       businessPhone={businessPhone}
       businessLogo={businessLogo}

@@ -78,8 +78,12 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const theme = profile.shop_theme as ShopTheme | null
 
-  const enriched: Product = { ...product, price: product.selling_price }
-  const relatedEnriched: Product[] = (related || []).map((p) => ({ ...p, price: p.selling_price }))
+  const { cost_price: _mainCost, ...safeMainProduct } = product
+  const enriched: Product = { ...safeMainProduct, price: product.selling_price }
+  const relatedEnriched: Product[] = (related || []).map((p) => {
+    const { cost_price, ...safeP } = p
+    return { ...safeP, price: p.selling_price }
+  })
 
   return (
     <ProductDetailClient

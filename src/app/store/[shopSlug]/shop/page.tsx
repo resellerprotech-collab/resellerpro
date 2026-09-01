@@ -47,10 +47,13 @@ export default async function DedicatedShopPage({ params }: Props) {
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
 
-  const products: Product[] = (rawProducts || []).map((p) => ({
-    ...p,
-    price: p.selling_price,
-  }))
+  const products: Product[] = (rawProducts || []).map((p) => {
+    const { cost_price, ...safeProduct } = p
+    return {
+      ...safeProduct,
+      price: p.selling_price,
+    }
+  })
 
   const categories = Array.from(
     new Map(
