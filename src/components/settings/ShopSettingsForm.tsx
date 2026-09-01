@@ -141,7 +141,7 @@ export default function ShopSettingsForm({
     upi_name: profile.upi_name || '',
     upi_instructions: profile.upi_instructions || '',
     // Payment Options Management
-    enableOnlinePayment: theme.enableOnlinePayment === true,
+    enableOnlinePayment: theme.enableOnlinePayment !== false,
     onlinePaymentTitle: (!theme.onlinePaymentTitle || theme.onlinePaymentTitle === 'Card Payment') ? 'Online Payment' : theme.onlinePaymentTitle,
     onlinePaymentDescription: theme.onlinePaymentDescription || 'Credit/Debit Card, NetBanking & UPI',
     razorpayKeyId: theme.razorpayKeyId || '',
