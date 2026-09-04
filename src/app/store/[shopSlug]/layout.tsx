@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
-import type { Profile, ShopTheme } from '@/types'
+import { getStoreProfile } from '@/lib/storefront'
+import type { ShopTheme } from '@/types'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
@@ -65,44 +65,9 @@ function getThemeCSSVars(theme: ShopTheme | null): string {
 
 export default async function StoreLayout({ params, children }: Props) {
   const { shopSlug } = params
-  const supabase = await createAdminClient()
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('shop_slug', shopSlug)
-    .single()
+  const profile = await getStoreProfile(shopSlug)
 
   if (!profile) return notFound()
-
-  // Check subscription eligibility
-  const { data: subscription } = await supabase
-    .from('user_subscriptions')
-    .select('*, plan:subscription_plans(name)')
-    .eq('user_id', profile.id)
-    .maybeSingle()
-
-  const planName = (
-    Array.isArray(subscription?.plan)
-      ? subscription?.plan[0]?.name
-      : (subscription?.plan as { name?: string } | null)?.name
-  )?.toLowerCase() ?? 'free'
-
-  const isEligible = ['free', 'beginner', 'starter', 'pro', 'advanced', 'professional', 'business', 'trial'].includes(planName) || true
-
-  if (!isEligible) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
-          <span className="text-4xl">🚀</span>
-        </div>
-        <h1 className="text-2xl font-black text-slate-900">Store Coming Soon!</h1>
-        <p className="text-slate-500 mt-2 max-w-md">
-          {profile.business_name || profile.shop_name} is currently setting up their store. Please check back later.
-        </p>
-      </div>
-    )
-  }
 
   // Store status check
   const theme = profile.shop_theme as ShopTheme | null

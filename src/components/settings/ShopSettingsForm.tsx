@@ -529,26 +529,7 @@ export default function ShopSettingsForm({
 
     setUploadingField('heroMobileImages')
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `heroMobileImages-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) {
-        throw error
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, 'heroMobile')
 
       setFormData(prev => {
         const currentList: HeroBannerItem[] = prev.heroMobileBanners || (prev.heroMobileImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
@@ -598,26 +579,7 @@ export default function ShopSettingsForm({
 
     setUploadingField('heroImages')
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `heroImages-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) {
-        throw error
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, 'heroImages')
 
       setFormData(prev => {
         const currentList: HeroBannerItem[] = prev.heroShowcaseBanners || (prev.heroImages || []).map((img: string) => ({ imageUrl: img, link: '#products', clickAction: 'shop' }))
@@ -665,26 +627,7 @@ export default function ShopSettingsForm({
 
     setUploadingField(targetField)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${targetField}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) {
-        throw error
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, targetField)
 
       setFormData(prev => ({
         ...prev,
@@ -744,21 +687,7 @@ export default function ShopSettingsForm({
     const fieldKey = `testimonial_avatar_${index}`
     setUploadingField(fieldKey)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `testimonial-avatar-${index}-${Date.now()}.${fileExt}`
-      const filePath = `${profile.id}/${fileName}`
-
-      const { error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-      if (error) throw error
-
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      const uploadedUrl = urlData.publicUrl
+      const uploadedUrl = await uploadViaApi(file, 'testimonials')
 
       updateTestimonial(index, 'avatarUrl', uploadedUrl)
       toast.success('Avatar uploaded')

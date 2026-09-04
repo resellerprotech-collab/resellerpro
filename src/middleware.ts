@@ -123,6 +123,29 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // ⚡ CPU OPTIMIZATION 1: Skip all auth checks for public storefront paths.
+  // Storefront pages (/store/*) are public — buyers (from Meta Ads etc.) do not need
+  // session validation. Returning immediately avoids 1-3 outbound Supabase API calls.
+  if (request.nextUrl.pathname.startsWith('/store/')) {
+    return response
+  }
+
+  // ⚡ CPU OPTIMIZATION 2: Skip auth network calls for unauthenticated visitors on public pages.
+  // If no Supabase auth cookies exist, the visitor is guaranteed to be anonymous.
+  // Only call supabase.auth.getUser() if auth cookies exist OR if accessing a protected page.
+  const hasAuthCookies = request.cookies.getAll().some(
+    c => c.name.startsWith('sb-') && (c.name.includes('-auth-token') || c.name.includes('auth'))
+  )
+
+  const isProtectedPath =
+    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/onboarding') ||
+    request.nextUrl.pathname.includes('/settings')
+
+  if (!hasAuthCookies && !isProtectedPath) {
+    return response
+  }
+
   // 🔌 OFFLINE-FIRST: Try to get user from session
   let user = null
   let isOffline = false

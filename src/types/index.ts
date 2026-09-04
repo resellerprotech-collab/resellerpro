@@ -205,6 +205,7 @@ export interface Profile {
   business_email?: string | null
   business_phone?: string | null
   business_address?: string | null
+  store_mode?: 'standard' | 'headless'
   created_at: string
   updated_at: string
 }
