@@ -5,7 +5,7 @@ import { getStoreProfile } from '@/lib/storefront'
 import type { ShopTheme, Product } from '@/types'
 import { StorefrontClient } from './StorefrontClient'
 
-export const revalidate = 86400 // ISR: 24h cache — reduces Fluid CPU. Use revalidatePath() on product/theme mutations for instant refresh.
+export const revalidate = 60 // ISR: 1-minute cache window — ultra-fast Edge performance with instant 60s freshness
 
 interface Props {
   params: { shopSlug: string }
