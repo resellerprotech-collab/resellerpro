@@ -6,7 +6,7 @@ import { ProductDetailClient } from './ProductDetailClient'
 import type { Product, ShopTheme } from '@/types'
 import { CommerceProductsService } from '@/lib/services/commerce/products.service'
 
-export const revalidate = 3600 // ISR: Static Edge CDN caching with instant on-demand purging via revalidatePath
+export const revalidate = 60 // ISR: 1-minute cache window — ultra-fast Edge performance with instant 60s freshness
 
 const STOREFRONT_PRODUCT_COLUMNS = 'id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, tags, created_at, updated_at'
 
