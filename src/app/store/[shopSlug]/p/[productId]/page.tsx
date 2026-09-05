@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getStoreProfile } from '@/lib/storefront'
 import { ProductDetailClient } from './ProductDetailClient'
 import type { Product, ShopTheme } from '@/types'
+import { CommerceProductsService } from '@/lib/services/commerce/products.service'
 
 export const revalidate = 3600 // ISR: Static Edge CDN caching with instant on-demand purging via revalidatePath
+
+const STOREFRONT_PRODUCT_COLUMNS = 'id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, is_active, tags, created_at, updated_at'
 
 interface Props {
   params: { shopSlug: string; productId: string }
@@ -29,36 +33,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-import { CommerceProductsService } from '@/lib/services/commerce/products.service'
-
 export default async function ProductDetailPage({ params }: Props) {
   const resolvedParams = await Promise.resolve(params)
   const { shopSlug, productId } = resolvedParams
-  const supabase = await createAdminClient()
 
-  // Get profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('shop_slug', shopSlug)
-    .single()
-
+  // Deduplicated profile fetch via React.cache
+  const profile = await getStoreProfile(shopSlug)
   if (!profile) return notFound()
 
-  // Get product with full options & variants
-  const product = await CommerceProductsService.getProductById(profile.id, productId)
+  const supabase = await createAdminClient()
 
-  if (!product) return notFound()
+  // Get product with full options & variants
+  const rawProduct = await CommerceProductsService.getProductById(profile.id, productId)
+
+  if (!rawProduct) return notFound()
 
   // Get related products (same category if available, otherwise latest from store)
   let relatedQuery = supabase
     .from('products')
-    .select('*')
+    .select(STOREFRONT_PRODUCT_COLUMNS)
     .eq('user_id', profile.id)
     .neq('id', productId)
 
-  if (product.category) {
-    relatedQuery = relatedQuery.eq('category', product.category)
+  if (rawProduct.category) {
+    relatedQuery = relatedQuery.eq('category', rawProduct.category)
   }
 
   let { data: related } = await relatedQuery.limit(4)
@@ -66,7 +64,7 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!related || related.length === 0) {
     const { data: fallbackRelated } = await supabase
       .from('products')
-      .select('*')
+      .select(STOREFRONT_PRODUCT_COLUMNS)
       .eq('user_id', profile.id)
       .neq('id', productId)
       .limit(4)
@@ -75,12 +73,21 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const theme = profile.shop_theme as ShopTheme | null
 
-  const { cost_price: _mainCost, ...safeMainProduct } = product
-  const enriched: Product = { ...safeMainProduct, price: product.selling_price }
-  const relatedEnriched: Product[] = (related || []).map((p) => {
-    const { cost_price, ...safeP } = p
-    return { ...safeP, price: p.selling_price }
-  })
+  const enriched: Product = {
+    ...(rawProduct as any),
+    cost_price: 0,
+    profit: 0,
+    profit_margin: 0,
+    price: rawProduct.selling_price,
+  }
+
+  const relatedEnriched: Product[] = (related || []).map((p: any) => ({
+    ...p,
+    cost_price: 0,
+    profit: 0,
+    profit_margin: 0,
+    price: p.selling_price,
+  }))
 
   return (
     <ProductDetailClient

@@ -171,6 +171,26 @@ export default function EditProductForm({ product }: { product: any }) {
 
     for (let i = 0; i < images.length; i++) {
       const file = images[i]
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', `products/${userId}`)
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        const data = await res.json()
+        if (res.ok && data.success && data.url) {
+          uploadedUrls.push(data.url)
+          continue
+        }
+      } catch (apiErr) {
+        console.warn('[Edit Product Upload] Cloudinary API upload failed, falling back to direct storage:', apiErr)
+      }
+
+      // Fallback to direct Supabase Storage
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}-${i}-${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${userId}/${fileName}`

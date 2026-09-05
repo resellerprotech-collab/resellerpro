@@ -1,22 +1,18 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getStoreProfile } from '@/lib/storefront'
 import type { ShopTheme, Product } from '@/types'
 import { StorefrontClient } from './StorefrontClient'
 
-export const revalidate = 3600 // ISR: background revalidation every hour, instant on-demand via revalidatePath
+export const revalidate = 86400 // ISR: 24h cache — reduces Fluid CPU. Use revalidatePath() on product/theme mutations for instant refresh.
 
 interface Props {
   params: { shopSlug: string }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const supabase = await createAdminClient()
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('shop_name, business_name, shop_description, shop_theme')
-    .eq('shop_slug', params.shopSlug)
-    .single()
+  const profile = await getStoreProfile(params.shopSlug)
 
   if (!profile) return { title: 'Store Not Found | ResellerPro' }
   const theme = profile.shop_theme as ShopTheme | null
@@ -35,27 +31,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StorePage({ params }: Props) {
   const { shopSlug } = params
-  const supabase = await createAdminClient()
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('shop_slug', shopSlug)
-    .single()
+  const profile = await getStoreProfile(shopSlug)
 
   if (!profile) return notFound()
 
-  // Fetch active products
+  const supabase = await createAdminClient()
+
+  // Fetch active products with explicit storefront columns (zero cost_price overhead)
   const { data: rawProducts } = await supabase
     .from('products')
-    .select('*')
+    .select('id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, is_active, tags, created_at, updated_at')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
 
-  const products: Product[] = (rawProducts || []).map((p) => {
-    const { cost_price, ...safeProduct } = p
+  const products: Product[] = (rawProducts || []).map((p: any) => {
     return {
-      ...safeProduct,
+      ...p,
+      cost_price: 0,
+      profit: 0,
+      profit_margin: 0,
       price: p.selling_price,
     }
   })

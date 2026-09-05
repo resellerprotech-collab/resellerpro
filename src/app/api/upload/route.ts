@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadImageToCloudinary } from '@/lib/cloudinary'
+import { compressImage } from '@/lib/image-compress'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     const fileName = `${folder}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
     const filePath = `${folder}/${fileName}`
 
-    // 1. Try Cloudinary Upload First (if CLOUDINARY_CLOUD_NAME is set)
+    // 1. Try Cloudinary Upload First (with automated Sharp compression)
     if (process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
       const cloudinaryResult = await uploadImageToCloudinary(buffer, fileName, folder)
       if (cloudinaryResult.success && cloudinaryResult.url) {
@@ -27,13 +28,19 @@ export async function POST(req: NextRequest) {
           success: true,
           provider: 'cloudinary',
           url: cloudinaryResult.url,
-          filePath: cloudinaryResult.publicId || filePath
+          filePath: cloudinaryResult.publicId || filePath,
+          originalSize: cloudinaryResult.originalSize,
+          compressedSize: cloudinaryResult.compressedSize,
+          compressionRatio: cloudinaryResult.compressionRatio,
         })
       }
       console.warn('[Upload Route] Cloudinary failed or skipped, falling back to Supabase Storage:', cloudinaryResult.error)
     }
 
-    // 2. Fallback to Supabase Storage
+    // 2. Fallback to Supabase Storage (also compressed with Sharp)
+    const compressed = await compressImage(buffer, fileName)
+    const compressedFilePath = `${folder}/${fileName.replace(/\.[^/.]+$/, '')}.${compressed.extension}`
+
     const supabase = await createAdminClient()
 
     // Ensure bucket exists
@@ -44,11 +51,11 @@ export async function POST(req: NextRequest) {
       await supabase.storage.createBucket('product-images', { public: true })
     }
 
-    // Upload file using Admin Client (bypasses RLS)
+    // Upload compressed file using Admin Client (bypasses RLS)
     const { error: uploadError } = await supabase.storage
       .from('product-images')
-      .upload(filePath, buffer, {
-        contentType: file.type || 'image/png',
+      .upload(compressedFilePath, compressed.buffer, {
+        contentType: compressed.contentType,
         cacheControl: '3600',
         upsert: true
       })
@@ -61,12 +68,16 @@ export async function POST(req: NextRequest) {
     // 3. Get Public URL
     const { data: urlData } = supabase.storage
       .from('product-images')
-      .getPublicUrl(filePath)
+      .getPublicUrl(compressedFilePath)
 
     return NextResponse.json({
       success: true,
+      provider: 'supabase',
       url: urlData.publicUrl,
-      filePath
+      filePath: compressedFilePath,
+      originalSize: compressed.originalSize,
+      compressedSize: compressed.compressedSize,
+      compressionRatio: compressed.compressionRatio,
     })
   } catch (err: any) {
     console.error('API Upload Exception:', err)
