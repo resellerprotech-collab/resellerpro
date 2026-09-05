@@ -31,16 +31,41 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
   const isUPI = method === 'upi' || method === 'online' || method === 'razorpay' || method === 'card'
 
   const items = order.order_items ?? []
-  const itemSummary = items.map((i) => `${i.product_name} (Qty: ${i.quantity})`).join(', ')
+
+  const formattedItemsList = items.map((i) => {
+    let text = `• *${i.product_name}* × ${i.quantity}`
+    if (i.variant_name) {
+      text += ` (${i.variant_name})`
+    }
+    const itemTotal = ((i as any).total_price || ((i as any).unit_selling_price || (i as any).unit_price || 0) * (i.quantity || 1))
+    text += ` — ₹${itemTotal.toLocaleString('en-IN')}`
+
+    const img = (i as any).product_image || (i as any).image_url || (i as any).image
+    if (img && typeof img === 'string' && img.trim()) {
+      text += `\n  🖼️ Image: ${img.trim()}`
+    }
+    return text
+  }).join('\n\n')
+
+  const deliveryAddress = [
+    order.shipping_name || order.customer_name,
+    order.shipping_line1,
+    order.shipping_line2,
+    [order.shipping_city, order.shipping_state, order.shipping_pincode].filter(Boolean).join(', ')
+  ].filter(Boolean).join(', ')
 
   const waMessage = [
-    `Hi ${storeName},`,
-    `I just placed an order on your store.`,
+    `Hi *${storeName}*,`,
+    `I just placed an order on your store! 🎉`,
     ``,
-    `Order #${orderNumber}`,
-    itemSummary ? `Items: ${itemSummary}` : null,
+    `📦 *Order #${orderNumber}*`,
+    `💰 *Total Amount:* ₹${totalAmount.toLocaleString('en-IN')} (${method === 'cod' ? 'Cash on Delivery' : 'Online / UPI'})`,
     ``,
-    `Please confirm my order & product availability. Thank you!`,
+    `🛍️ *Ordered Item(s):*`,
+    formattedItemsList || '  (items not available)',
+    ``,
+    deliveryAddress ? `📍 *Delivery Address:*\n${deliveryAddress}\n` : null,
+    `Please confirm my order & dispatch details. Thank you! 🙏`,
   ].filter((line): line is string => line !== null).join('\n')
 
   const waLink = waClean

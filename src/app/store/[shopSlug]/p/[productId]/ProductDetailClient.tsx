@@ -39,11 +39,45 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const images: string[] = product.images?.length
-    ? product.images
-    : product.image_url
-    ? [product.image_url]
-    : []
+  const [imgError, setImgError] = useState(false)
+
+  const images: string[] = useMemo(() => {
+    const result: string[] = []
+    const rawImages: any = product.images
+    const mainUrl: any = product.image_url
+
+    if (Array.isArray(rawImages)) {
+      for (let i = 0; i < rawImages.length; i++) {
+        const item = rawImages[i]
+        if (typeof item === 'string') {
+          const trimmed = item.trim()
+          if (trimmed) result.push(trimmed)
+        }
+      }
+    } else if (typeof rawImages === 'string' && rawImages.trim()) {
+      try {
+        const parsed = JSON.parse(rawImages)
+        if (Array.isArray(parsed)) {
+          for (let i = 0; i < parsed.length; i++) {
+            const item = parsed[i]
+            if (typeof item === 'string') {
+              const trimmed = item.trim()
+              if (trimmed) result.push(trimmed)
+            }
+          }
+        } else if (typeof parsed === 'string' && parsed.trim()) {
+          result.push(parsed.trim())
+        }
+      } catch {
+        result.push(rawImages.trim())
+      }
+    }
+
+    if (result.length === 0 && typeof mainUrl === 'string' && mainUrl.trim()) {
+      result.push(mainUrl.trim())
+    }
+    return result
+  }, [product.images, product.image_url])
 
   // Helper to extract option value from variant robustly (supporting option_values object & title fallback)
   const getOptionValue = (variant: any, optionName: string, optionIdx: number): string | null => {
@@ -319,7 +353,7 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                 className="aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 relative group cursor-pointer"
                 onClick={() => images.length > 0 && setIsLightboxOpen(true)}
               >
-                {images.length > 0 ? (
+                {images.length > 0 && !imgError ? (
                   <>
                     <Image
                       src={images[activeImage]}
@@ -328,6 +362,30 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                       className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, 50vw"
                       priority
+                      onError={() => setImgError(true)}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsLightboxOpen(true)
+                      }}
+                      className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-700 p-2.5 rounded-full border border-slate-100 shadow-sm hover:scale-110 transition-all z-10"
+                      aria-label="Expand view"
+                    >
+                      <Maximize2 className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : images.length > 0 && imgError ? (
+                  <>
+                    {/* Native fallback img if Next Image optimizer fails */}
+                    <img
+                      src={images[activeImage]}
+                      alt={product.name}
+                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
                     />
                     <button
                       type="button"
