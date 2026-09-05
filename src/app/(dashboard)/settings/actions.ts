@@ -571,8 +571,12 @@ export async function updateShopSettings(formData: FormData) {
     }
 
     revalidatePath('/my-store')
-    revalidatePath('/store/[shopSlug]', 'layout')
-    revalidatePath('/store/[shopSlug]', 'page')
+    const { data: prof } = await adminSupabase.from('profiles').select('shop_slug').eq('id', userId).single()
+    if (prof?.shop_slug) {
+      revalidatePath(`/store/${prof.shop_slug}`, 'layout')
+      revalidatePath(`/store/${prof.shop_slug}`)
+      revalidatePath(`/store/${prof.shop_slug}/shop`)
+    }
 
     return { success: true, message: 'Shop settings updated successfully' }
   } catch (error: any) {
