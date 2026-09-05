@@ -144,7 +144,7 @@ export function CartDrawer() {
                 </div>
               ) : (
                 items.map((item) => (
-                  <div key={item.productId} className="flex gap-3.5 bg-slate-50 rounded-2xl p-3.5 border border-slate-100 items-center">
+                  <div key={item.variantId ? `${item.productId}-${item.variantId}` : item.productId} className="flex gap-3.5 bg-slate-50 rounded-2xl p-3.5 border border-slate-100 items-center">
                     {/* Image */}
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0 border border-slate-200/60">
                       {item.image ? (
@@ -168,7 +168,9 @@ export function CartDrawer() {
                         <div className="min-w-0">
                           <p className="font-semibold text-sm text-slate-900 truncate">{item.name}</p>
                           {item.variantName && (
-                            <p className="text-xs text-slate-500">{item.variantName}</p>
+                            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded inline-block mt-0.5">
+                              {item.variantName}
+                            </p>
                           )}
                           <p className="font-bold text-xs mt-0.5" style={{ color: 'var(--store-primary, #6366f1)' }}>
                             ₹{item.price.toLocaleString('en-IN')}
@@ -180,7 +182,7 @@ export function CartDrawer() {
                         {/* Quantity */}
                         <div className="flex items-center gap-0.5 bg-white rounded-xl border border-slate-200 shadow-sm px-1 py-0.5">
                           <button
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
                             className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
                             aria-label="Decrease quantity"
                           >
@@ -190,7 +192,7 @@ export function CartDrawer() {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
                             className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
                             aria-label="Increase quantity"
                           >
@@ -204,7 +206,7 @@ export function CartDrawer() {
                             ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                           </span>
                           <button
-                            onClick={() => removeItem(item.productId)}
+                            onClick={() => removeItem(item.productId, item.variantId)}
                             className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             aria-label="Remove item"
                           >

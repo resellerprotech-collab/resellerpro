@@ -179,6 +179,9 @@ function CheckoutPageInner({
           image: item.image,
           price: item.price,
           quantity: item.quantity,
+          variantId: item.variantId,
+          variantName: item.variantName,
+          variantOptions: item.variantOptions,
         })),
         subtotal,
         shippingFee,
@@ -507,7 +510,7 @@ function CheckoutPageInner({
                 {/* Product List */}
                 <div className="space-y-3">
                   {items.map((item) => (
-                    <div key={item.productId} className="bg-white border border-slate-200/80 rounded-2xl p-3.5 flex gap-3.5 items-center shadow-xs">
+                    <div key={item.variantId ? `${item.productId}-${item.variantId}` : item.productId} className="bg-white border border-slate-200/80 rounded-2xl p-3.5 flex gap-3.5 items-center shadow-xs">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 relative shrink-0">
                         {item.image ? (
                           <Image src={item.image} alt={item.name} fill className="object-cover" sizes="56px" />
@@ -519,6 +522,11 @@ function CheckoutPageInner({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-900 truncate">{item.name}</p>
+                        {item.variantName && (
+                          <p className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
+                            {item.variantName}
+                          </p>
+                        )}
                         <p className="text-[11px] text-slate-400 font-medium mt-0.5">Qty: {item.quantity}</p>
                       </div>
                       <span className="text-xs font-black text-slate-900 shrink-0">

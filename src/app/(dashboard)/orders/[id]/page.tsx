@@ -178,16 +178,21 @@ export default async function OrderDetailsPage({
                     </div>
                     <div className="flex-1">
                       <p className="font-medium">{item.product_name}</p>
+                      {item.variant_name && (
+                        <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md inline-block my-1">
+                          Variant: {item.variant_name}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         Qty: {item.quantity}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">
-                        ₹{parseFloat(item.subtotal).toFixed(2)}
+                        ₹{parseFloat(item.subtotal || item.total_price || (item.unit_selling_price * item.quantity)).toFixed(2)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        @ ₹{parseFloat(item.unit_selling_price).toFixed(2)}
+                        @ ₹{parseFloat(item.unit_selling_price || item.unit_price || 0).toFixed(2)}
                       </p>
                     </div>
                   </div>
