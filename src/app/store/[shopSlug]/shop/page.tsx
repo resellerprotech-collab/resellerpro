@@ -32,12 +32,16 @@ export default async function DedicatedShopPage({ params }: Props) {
 
   const supabase = await createAdminClient()
 
-  // Fetch active products with explicit columns
-  const { data: rawProducts } = await supabase
+  // Fetch active products using select('*') to guarantee query success across DB schemas
+  const { data: rawProducts, error: productsError } = await supabase
     .from('products')
-    .select('id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, tags, created_at, updated_at')
+    .select('*')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
+
+  if (productsError) {
+    console.error('[SHOP] Products fetch error:', productsError)
+  }
 
   const products: Product[] = (rawProducts || []).map((p: any) => {
     return {
