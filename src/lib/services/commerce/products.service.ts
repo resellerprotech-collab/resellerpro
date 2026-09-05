@@ -47,18 +47,48 @@ export class CommerceProductsService {
   /**
    * Get product details by ID or Slug for a specific store tenant
    */
-  static async getProductById(storeId: string, productId: string) {
+  /**
+   * Get product details by ID or Slug for a specific store tenant
+   */
+  static async getProductById(storeId: string, productIdOrSlug: string) {
     const supabase = await createAdminClient()
-    const { data, error } = await supabase
+    
+    // Test if productIdOrSlug is a valid UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productIdOrSlug)
+
+    let query = supabase
       .from('products')
       .select('*')
       .eq('user_id', storeId)
-      .eq('id', productId)
-      .single()
+
+    if (isUuid) {
+      query = query.eq('id', productIdOrSlug)
+    } else {
+      query = query.eq('slug', productIdOrSlug)
+    }
+
+    const { data, error } = await query.single()
 
     if (error || !data) return null
+
+    let options: any[] = []
+    let variants: any[] = []
+
+    if (data.has_variants) {
+      const [{ data: optsData }, { data: varsData }] = await Promise.all([
+        supabase.from('product_options').select('*').eq('product_id', data.id).order('position', { ascending: true }),
+        supabase.from('product_variants').select('*').eq('product_id', data.id).eq('is_active', true).order('position', { ascending: true })
+      ])
+      options = optsData || []
+      variants = (varsData || []).map(({ cost_price, ...v }) => v)
+    }
+
     const { cost_price, ...sanitized } = data
-    return sanitized
+    return {
+      ...sanitized,
+      options,
+      variants
+    }
   }
 
   /**

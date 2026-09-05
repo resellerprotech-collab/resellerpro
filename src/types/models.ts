@@ -58,6 +58,34 @@ export interface Customer {
   updated_at: string
 }
 
+export interface ProductOption {
+  id: string
+  product_id: string
+  name: string
+  position: number
+  values: string[]
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ProductVariant {
+  id: string
+  product_id: string
+  title: string
+  sku?: string
+  barcode?: string
+  cost_price: number
+  selling_price: number
+  compare_at_price?: number | null
+  stock_quantity: number
+  image_url?: string
+  option_values: Record<string, string>
+  is_active: boolean
+  position?: number
+  created_at?: string
+  updated_at?: string
+}
+
 export interface Product {
   id: string
   user_id: string
@@ -75,6 +103,9 @@ export interface Product {
   stock_status: StockStatus
   stock_quantity: number
   is_active: boolean
+  has_variants?: boolean
+  options?: ProductOption[]
+  variants?: ProductVariant[]
   created_at: string
   updated_at: string
 }
@@ -115,6 +146,8 @@ export interface OrderItem {
   id: string
   order_id: string
   product_id?: string
+  variant_id?: string
+  variant_options?: Record<string, string>
   product_name: string
   product_sku?: string
   quantity: number
@@ -125,6 +158,7 @@ export interface OrderItem {
   
   // Relations
   product?: Product
+  variant?: ProductVariant
 }
 
 export interface OrderStatusHistory {

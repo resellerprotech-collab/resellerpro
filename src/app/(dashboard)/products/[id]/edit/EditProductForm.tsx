@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -18,6 +18,7 @@ import { Save, Upload, X, Loader2, Trash2, AlertTriangle, Lock, Video, Music, Tr
 import Image from 'next/image'
 import Link from 'next/link'
 import { CreateCategoryModal } from '@/components/categories/CreateCategoryModal'
+import { VariantBuilder } from '@/components/products/VariantBuilder'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,9 +44,9 @@ export default function EditProductForm({ product }: { product: any }) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Get existing images
-  const existingImages = product.images && product.images.length > 0
+  const existingImages = product?.images && product.images.length > 0
     ? product.images
-    : product.image_url
+    : product?.image_url
       ? [product.image_url]
       : []
 
@@ -54,9 +55,9 @@ export default function EditProductForm({ product }: { product: any }) {
   const [keepExistingImages, setKeepExistingImages] = useState<string[]>(existingImages)
 
   // Form state
-  const [name, setName] = useState(product.name)
-  const [description, setDescription] = useState(product.description || '')
-  const [category, setCategory] = useState(product.category || '')
+  const [name, setName] = useState(product?.name || '')
+  const [description, setDescription] = useState(product?.description || '')
+  const [category, setCategory] = useState(product?.category || '')
   const [categories, setCategories] = useState<{label: string, value: string}[]>([])
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
@@ -80,16 +81,35 @@ export default function EditProductForm({ product }: { product: any }) {
     }
     fetchCategories()
   }, [supabase.auth])
-  const [sku, setSku] = useState(product.sku || '')
-  const [costPrice, setCostPrice] = useState(product.cost_price.toString())
-  const [sellingPrice, setSellingPrice] = useState(product.selling_price.toString())
-  const [compareAtPrice, setCompareAtPrice] = useState(product.compare_at_price?.toString() || '')
-  const [badge, setBadge] = useState(product.badge || '')
-  const [stockQuantity, setStockQuantity] = useState(product.stock_quantity?.toString() || '0')
-  const [stockStatus, setStockStatus] = useState(product.stock_status)
-  const [videoUrl, setVideoUrl] = useState(product.video_url || '')
+  const [sku, setSku] = useState(product?.sku || '')
+  const [costPrice, setCostPrice] = useState(product?.cost_price != null ? product.cost_price.toString() : '0')
+  const [sellingPrice, setSellingPrice] = useState(product?.selling_price != null ? product.selling_price.toString() : '0')
+  const [compareAtPrice, setCompareAtPrice] = useState(product?.compare_at_price != null ? product.compare_at_price.toString() : '')
+  const [badge, setBadge] = useState(product?.badge || '')
+  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity != null ? product.stock_quantity.toString() : '0')
+  const [stockStatus, setStockStatus] = useState(product?.stock_status || 'in_stock')
+  const [videoUrl, setVideoUrl] = useState(product?.video_url || '')
   const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [existingAudioUrl, setExistingAudioUrl] = useState<string>(product.audio_url || '')
+  const [existingAudioUrl, setExistingAudioUrl] = useState<string>(product?.audio_url || '')
+
+  // Variant state
+  const [variantData, setVariantData] = useState<{
+    hasVariants: boolean
+    optionsJson: string
+    variantsJson: string
+  }>({
+    hasVariants: product?.has_variants || false,
+    optionsJson: JSON.stringify(product?.options || []),
+    variantsJson: JSON.stringify(product?.variants || []),
+  })
+
+  const handleVariantChange = useCallback((data: {
+    hasVariants: boolean
+    optionsJson: string
+    variantsJson: string
+  }) => {
+    setVariantData(data)
+  }, [])
 
   // Calculate profit
   const profit = parseFloat(sellingPrice || '0') - parseFloat(costPrice || '0')
@@ -277,6 +297,7 @@ export default function EditProductForm({ product }: { product: any }) {
           badge: badge && badge !== 'none' ? badge : null,
           stock_quantity: parseInt(stockQuantity),
           stock_status: stockStatus,
+          has_variants: variantData.hasVariants,
           video_url: videoUrl.trim() || null,
           audio_url: existingAudioUrl || null, // Will be updated below if new file
           image_url: allImages[0],
@@ -294,6 +315,67 @@ export default function EditProductForm({ product }: { product: any }) {
         })
         setIsLoading(false)
         return
+      }
+
+      // Handle options & variants sync
+      if (variantData.hasVariants) {
+        try {
+          const parsedOptions: Array<{ name: string; values: string[] }> = JSON.parse(variantData.optionsJson || '[]')
+          const parsedVariants: Array<{
+            title: string
+            option_values: Record<string, string>
+            cost_price: number
+            selling_price: number
+            compare_at_price?: number | null
+            stock_quantity: number
+            sku?: string
+          }> = JSON.parse(variantData.variantsJson || '[]')
+
+          // Replace options
+          await supabase.from('product_options').delete().eq('product_id', product.id)
+          if (parsedOptions.length > 0) {
+            await supabase.from('product_options').insert(
+              parsedOptions.map((opt, idx) => ({
+                product_id: product.id,
+                name: opt.name,
+                values: opt.values,
+                position: idx,
+              }))
+            )
+          }
+
+          // Replace variants
+          await supabase.from('product_variants').delete().eq('product_id', product.id)
+          if (parsedVariants.length > 0) {
+            await supabase.from('product_variants').insert(
+              parsedVariants.map((v, idx) => ({
+                product_id: product.id,
+                title: v.title,
+                option_values: v.option_values,
+                cost_price: v.cost_price || 0,
+                selling_price: v.selling_price || selling,
+                compare_at_price: v.compare_at_price || null,
+                stock_quantity: v.stock_quantity ?? 0,
+                sku: v.sku || null,
+                position: idx,
+                is_active: true,
+              }))
+            )
+
+            // Sync total stock to parent product
+            const totalVariantStock = parsedVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0)
+            const parentStockStatus = totalVariantStock === 0 ? 'out_of_stock' : totalVariantStock < 5 ? 'low_stock' : 'in_stock'
+            await supabase
+              .from('products')
+              .update({ stock_quantity: totalVariantStock, stock_status: parentStockStatus })
+              .eq('id', product.id)
+          }
+        } catch (variantErr) {
+          console.error('[VARIANTS] Error saving variants:', variantErr)
+        }
+      } else {
+        await supabase.from('product_options').delete().eq('product_id', product.id)
+        await supabase.from('product_variants').delete().eq('product_id', product.id)
       }
 
       // Delete removed images from storage
@@ -741,6 +823,18 @@ export default function EditProductForm({ product }: { product: any }) {
             <p className="text-xs text-muted-foreground">
               Optional unique identifier for inventory tracking
             </p>
+          </div>
+
+          {/* Product Variants & Options Section */}
+          <div className="border-t pt-6 mt-2">
+            <VariantBuilder
+              initialHasVariants={product?.has_variants || false}
+              initialOptions={product?.options || []}
+              initialVariants={product?.variants || []}
+              defaultCostPrice={parseFloat(costPrice) || 0}
+              defaultSellingPrice={parseFloat(sellingPrice) || 0}
+              onChange={handleVariantChange}
+            />
           </div>
 
           {/* Media (Optional) */}

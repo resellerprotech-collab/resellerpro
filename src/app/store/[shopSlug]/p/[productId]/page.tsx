@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ProductDetailClient } from './ProductDetailClient'
 import type { Product, ShopTheme } from '@/types'
 
-export const revalidate = 3600 // ISR: background revalidation every hour, instant on-demand via revalidatePath
+export const revalidate = 3600 // ISR: Static Edge CDN caching with instant on-demand purging via revalidatePath
 
 interface Props {
   params: { shopSlug: string; productId: string }
@@ -29,6 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+import { CommerceProductsService } from '@/lib/services/commerce/products.service'
+
 export default async function ProductDetailPage({ params }: Props) {
   const resolvedParams = await Promise.resolve(params)
   const { shopSlug, productId } = resolvedParams
@@ -43,13 +45,8 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!profile) return notFound()
 
-  // Get product
-  const { data: product } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .eq('user_id', profile.id)
-    .single()
+  // Get product with full options & variants
+  const product = await CommerceProductsService.getProductById(profile.id, productId)
 
   if (!product) return notFound()
 

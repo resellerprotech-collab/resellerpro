@@ -1,5 +1,4 @@
-// src/types/index.ts
-// Centralised type definitions for ResellerPro
+import type { ProductOption, ProductVariant } from './models'
 
 // ─── Enums / Literals ───────────────────────────────────────────────────────
 
@@ -242,6 +241,9 @@ export interface Product {
   stock_quantity: number
   track_inventory?: boolean
   is_active: boolean
+  has_variants?: boolean
+  options?: ProductOption[]
+  variants?: ProductVariant[]
   tags?: string[]
   created_at: string
   updated_at: string
@@ -342,6 +344,8 @@ export interface CartItem {
   image: string | null
   quantity: number
   variantName?: string
+  variantId?: string
+  variantOptions?: Record<string, string>
   stockQuantity?: number
 }
 
@@ -505,3 +509,5 @@ export interface FollowUpActivity {
   whatsapp_message?: string | null
   created_at: string
 }
+
+export type { ProductOption, ProductVariant } from './models'
