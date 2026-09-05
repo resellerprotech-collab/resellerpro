@@ -62,8 +62,11 @@ export default async function StorePage({ params }: Props) {
 
   const managedCategoriesMap = new Map((dbCategories || []).map(c => [c.name.toLowerCase(), c]))
 
-  // Extract categories from products and merge with DB categories
-  const categoriesSet = new Set(products.filter((p) => p.category).map((p) => p.category!))
+  // Merge DB managed categories and product categories so all store categories display
+  const categoriesSet = new Set([
+    ...(dbCategories || []).map(c => c.name),
+    ...products.filter((p) => p.category).map((p) => p.category!)
+  ])
   const categories = Array.from(categoriesSet).map(name => {
     return managedCategoriesMap.get(name.toLowerCase()) || { name, image_url: undefined }
   })

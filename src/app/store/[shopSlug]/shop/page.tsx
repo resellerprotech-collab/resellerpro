@@ -49,12 +49,17 @@ export default async function DedicatedShopPage({ params }: Props) {
     }
   })
 
+  // Fetch DB managed categories
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('name')
+    .eq('user_id', profile.id)
+
   const categories = Array.from(
-    new Map(
-      products
-        .filter((p) => p.category)
-        .map((p) => [p.category, p.category])
-    ).values()
+    new Set([
+      ...(dbCategories || []).map((c) => c.name),
+      ...products.filter((p) => p.category).map((p) => p.category!),
+    ])
   ) as string[]
 
   const theme = profile.shop_theme as ShopTheme | null
