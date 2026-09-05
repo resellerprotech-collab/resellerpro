@@ -45,6 +45,7 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme,
   const hasWishlist = useWishlistStore((s) => s.hasItem)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [added, setAdded] = useState(false)
+  const [imgError, setImgError] = useState(false)
   const showPrices = theme?.showPrices !== false
 
   useEffect(() => {
@@ -61,7 +62,37 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme,
 
   const price = product.selling_price ?? product.price ?? 0
   const compareAt = product.compare_at_price ?? null
-  const imageUrl = product.image_url || (product.images && product.images[0]) || null
+  const imageUrl = (() => {
+    const rawImages: any = product.images
+    const mainUrl: any = product.image_url
+
+    if (Array.isArray(rawImages)) {
+      for (let i = 0; i < rawImages.length; i++) {
+        const item = rawImages[i]
+        if (typeof item === 'string') {
+          const trimmed = item.trim()
+          if (trimmed) return trimmed
+        }
+      }
+    } else if (typeof rawImages === 'string' && rawImages.trim()) {
+      try {
+        const parsed = JSON.parse(rawImages)
+        if (Array.isArray(parsed)) {
+          for (let i = 0; i < parsed.length; i++) {
+            const item = parsed[i]
+            if (typeof item === 'string') {
+              const trimmed = item.trim()
+              if (trimmed) return trimmed
+            }
+          }
+        }
+      } catch {}
+    }
+    if (typeof mainUrl === 'string' && mainUrl.trim()) {
+      return mainUrl.trim()
+    }
+    return null
+  })()
 
   const savings = compareAt && compareAt > price ? compareAt - price : null
   const discountPct = savings ? Math.round((savings / compareAt!) * 100) : null
@@ -208,13 +239,23 @@ export function StoreProductCard({ product, storeUserId, layout = 'grid', theme,
 
         {/* Optimized Product Image Frame */}
         <div className="relative aspect-[4/4.5] bg-slate-50 overflow-hidden">
-          {imageUrl ? (
+          {imageUrl && !imgError ? (
             <Image
               src={imageUrl}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={() => setImgError(true)}
+            />
+          ) : imageUrl && imgError ? (
+            <img
+              src={imageUrl}
+              alt={product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300 text-4xl">📦</div>

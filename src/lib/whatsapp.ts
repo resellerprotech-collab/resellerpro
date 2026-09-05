@@ -15,11 +15,18 @@ export function generateOrderConfirmationMessage(
 
   const items =
     order.order_items
-      ?.map(
-        (item) =>
-          `  • ${item.product_name} × ${item.quantity} = ₹${item.total_price.toLocaleString('en-IN')}`
-      )
-      .join('\n') ?? '  (items not available)'
+      ?.map((item) => {
+        let line = `  • *${item.product_name}* × ${item.quantity} = ₹${(item.total_price || 0).toLocaleString('en-IN')}`
+        if ((item as any).variant_name) {
+          line += ` (${(item as any).variant_name})`
+        }
+        const img = (item as any).product_image || (item as any).image_url || (item as any).image
+        if (img && typeof img === 'string' && img.trim()) {
+          line += `\n    🖼️ Image: ${img.trim()}`
+        }
+        return line
+      })
+      .join('\n\n') ?? '  (items not available)'
 
   if (isUPI) {
     const upiId = profile.upi_id ?? 'Contact seller for UPI ID'
