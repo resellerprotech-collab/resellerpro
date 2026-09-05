@@ -35,6 +35,12 @@ export async function updateCmsSectionAction(sectionType: string, payload: { is_
     revalidatePath('/my-store/cms')
     revalidatePath('/settings/shop')
     
+    const { data: prof } = await supabase.from('profiles').select('shop_slug').eq('id', user.id).single()
+    if (prof?.shop_slug) {
+      revalidatePath(`/store/${prof.shop_slug}`, 'layout')
+      revalidatePath(`/store/${prof.shop_slug}`)
+    }
+    
     return { success: true, data: updated, message: 'Section updated successfully' }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to update section' }
@@ -55,6 +61,12 @@ export async function reorderCmsSectionsAction(orderedSectionTypes: string[]) {
     revalidatePath('/my-store')
     revalidatePath('/my-store/cms')
     revalidatePath('/settings/shop')
+
+    const { data: prof } = await supabase.from('profiles').select('shop_slug').eq('id', user.id).single()
+    if (prof?.shop_slug) {
+      revalidatePath(`/store/${prof.shop_slug}`, 'layout')
+      revalidatePath(`/store/${prof.shop_slug}`)
+    }
 
     return { success: true, message: 'Section order saved successfully' }
   } catch (err: any) {
