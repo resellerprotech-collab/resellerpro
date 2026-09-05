@@ -81,6 +81,14 @@ export async function createCategoryAction(formData: FormData) {
       return { success: false, message: error.message }
     }
 
+    // Revalidate storefront cache
+    const { data: profile } = await supabase.from('profiles').select('shop_slug').eq('id', user.id).single()
+    if (profile?.shop_slug) {
+      revalidatePath(`/store/${profile.shop_slug}`, 'layout')
+      revalidatePath(`/store/${profile.shop_slug}`)
+      revalidatePath(`/store/${profile.shop_slug}/shop`)
+    }
+
     return { success: true, data }
   } catch (error: any) {
     console.error('Unexpected error creating category:', error)
@@ -160,6 +168,7 @@ export async function updateCategoryAction(formData: FormData) {
     // Revalidate storefront cache
     const { data: profile } = await supabase.from('profiles').select('shop_slug').eq('id', user.id).single()
     if (profile?.shop_slug) {
+      revalidatePath(`/store/${profile.shop_slug}`, 'layout')
       revalidatePath(`/store/${profile.shop_slug}`)
       revalidatePath(`/store/${profile.shop_slug}/shop`)
     }
@@ -204,6 +213,7 @@ export async function deleteCategoryAction(id: string, categoryName: string) {
     // Revalidate storefront cache
     const { data: profile } = await supabase.from('profiles').select('shop_slug').eq('id', user.id).single()
     if (profile?.shop_slug) {
+      revalidatePath(`/store/${profile.shop_slug}`, 'layout')
       revalidatePath(`/store/${profile.shop_slug}`)
       revalidatePath(`/store/${profile.shop_slug}/shop`)
     }

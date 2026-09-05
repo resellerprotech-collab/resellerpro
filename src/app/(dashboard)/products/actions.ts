@@ -219,6 +219,7 @@ export async function createProduct(prev: FormState, formData: FormData): Promis
 
   revalidatePath('/products');
   if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`, 'layout');
     revalidatePath(`/store/${profile.shop_slug}`);
     revalidatePath(`/store/${profile.shop_slug}/shop`);
   }
@@ -363,6 +364,7 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
 
   revalidatePath('/products');
   if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`, 'layout');
     revalidatePath(`/store/${profile.shop_slug}`);
     revalidatePath(`/store/${profile.shop_slug}/shop`);
   }
