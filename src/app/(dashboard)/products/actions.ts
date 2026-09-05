@@ -130,21 +130,84 @@ export async function createProduct(prev: FormState, formData: FormData): Promis
   }
 
   // --- insert product ---
-  const { image_urls_json, audio_url: _unused_audio, ...dbInput } = input;
-  const { error } = await supabase.from("products").insert({
-    ...dbInput,
-    compare_at_price: dbInput.compare_at_price || null,
-    badge: dbInput.badge || null,
-    video_url: dbInput.video_url || null,
-    audio_url: audioUrl,
-    user_id: user.id,
-    image_url: imageUrls[0] || null,
-    images: imageUrls.length ? imageUrls : null,
-  });
+  const hasVariants = formData.get('has_variants') === 'true';
+  const optionsJson = formData.get('options_json') as string | null;
+  const variantsJson = formData.get('variants_json') as string | null;
 
-  if (error) {
-    console.error("Database error creating product:", error.message);
-    return { success: false, message: error.message };
+  const { image_urls_json, audio_url: _unused_audio, ...dbInput } = input;
+  const { data: createdProduct, error } = await supabase
+    .from("products")
+    .insert({
+      ...dbInput,
+      compare_at_price: dbInput.compare_at_price || null,
+      badge: dbInput.badge || null,
+      video_url: dbInput.video_url || null,
+      audio_url: audioUrl,
+      user_id: user.id,
+      image_url: imageUrls[0] || null,
+      images: imageUrls.length ? imageUrls : null,
+      has_variants: hasVariants,
+    })
+    .select('id')
+    .single();
+
+  if (error || !createdProduct) {
+    console.error("Database error creating product:", error?.message);
+    return { success: false, message: error?.message || "Failed to create product" };
+  }
+
+  // --- handle variants & options insertion ---
+  if (hasVariants && createdProduct.id) {
+    try {
+      const parsedOptions: Array<{ name: string; values: string[] }> = optionsJson ? JSON.parse(optionsJson) : [];
+      const parsedVariants: Array<{
+        title: string;
+        option_values: Record<string, string>;
+        cost_price: number;
+        selling_price: number;
+        compare_at_price?: number | null;
+        stock_quantity: number;
+        sku?: string;
+      }> = variantsJson ? JSON.parse(variantsJson) : [];
+
+      if (parsedOptions.length > 0) {
+        await supabase.from('product_options').insert(
+          parsedOptions.map((opt, idx) => ({
+            product_id: createdProduct.id,
+            name: opt.name,
+            values: opt.values,
+            position: idx,
+          }))
+        );
+      }
+
+      if (parsedVariants.length > 0) {
+        await supabase.from('product_variants').insert(
+          parsedVariants.map((v, idx) => ({
+            product_id: createdProduct.id,
+            title: v.title,
+            option_values: v.option_values,
+            cost_price: v.cost_price || 0,
+            selling_price: v.selling_price || dbInput.selling_price,
+            compare_at_price: v.compare_at_price || null,
+            stock_quantity: v.stock_quantity ?? 0,
+            sku: v.sku || null,
+            position: idx,
+            is_active: true,
+          }))
+        );
+
+        // Sync total parent product stock with sum of variant stocks
+        const totalVariantStock = parsedVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+        const parentStockStatus = totalVariantStock === 0 ? 'out_of_stock' : totalVariantStock < 5 ? 'low_stock' : 'in_stock';
+        await supabase
+          .from('products')
+          .update({ stock_quantity: totalVariantStock, stock_status: parentStockStatus })
+          .eq('id', createdProduct.id);
+      }
+    } catch (variantErr) {
+      console.error("[VARIANTS] Error saving product variants:", variantErr);
+    }
   }
 
   // Revalidate specific seller storefront & admin products list
@@ -208,12 +271,17 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
     }
   }
 
+  const hasVariants = formData.get('has_variants') === 'true';
+  const optionsJson = formData.get('options_json') as string | null;
+  const variantsJson = formData.get('variants_json') as string | null;
+
   const { error } = await supabase
     .from("products")
     .update({ 
       ...input, 
       compare_at_price: input.compare_at_price || null,
       badge: input.badge || null,
+      has_variants: hasVariants,
       ...(image_url ? { image_url } : {}) 
     })
     .eq("id", id);
@@ -221,6 +289,69 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
   if (error) {
     console.error("Database error updating product:", error.message);
     return { success: false, message: error.message };
+  }
+
+  // --- update variants & options ---
+  if (hasVariants) {
+    try {
+      const parsedOptions: Array<{ name: string; values: string[] }> = optionsJson ? JSON.parse(optionsJson) : [];
+      const parsedVariants: Array<{
+        id?: string;
+        title: string;
+        option_values: Record<string, string>;
+        cost_price: number;
+        selling_price: number;
+        compare_at_price?: number | null;
+        stock_quantity: number;
+        sku?: string;
+      }> = variantsJson ? JSON.parse(variantsJson) : [];
+
+      // Replace options
+      await supabase.from('product_options').delete().eq('product_id', id);
+      if (parsedOptions.length > 0) {
+        await supabase.from('product_options').insert(
+          parsedOptions.map((opt, idx) => ({
+            product_id: id,
+            name: opt.name,
+            values: opt.values,
+            position: idx,
+          }))
+        );
+      }
+
+      // Replace variants
+      await supabase.from('product_variants').delete().eq('product_id', id);
+      if (parsedVariants.length > 0) {
+        await supabase.from('product_variants').insert(
+          parsedVariants.map((v, idx) => ({
+            product_id: id,
+            title: v.title,
+            option_values: v.option_values,
+            cost_price: v.cost_price || 0,
+            selling_price: v.selling_price || input.selling_price,
+            compare_at_price: v.compare_at_price || null,
+            stock_quantity: v.stock_quantity ?? 0,
+            sku: v.sku || null,
+            position: idx,
+            is_active: true,
+          }))
+        );
+
+        // Sync total parent product stock with sum of variant stocks
+        const totalVariantStock = parsedVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+        const parentStockStatus = totalVariantStock === 0 ? 'out_of_stock' : totalVariantStock < 5 ? 'low_stock' : 'in_stock';
+        await supabase
+          .from('products')
+          .update({ stock_quantity: totalVariantStock, stock_status: parentStockStatus })
+          .eq('id', id);
+      }
+    } catch (variantErr) {
+      console.error("[VARIANTS] Error updating product variants:", variantErr);
+    }
+  } else {
+    // If variants turned off, cleanup options and variants for this product
+    await supabase.from('product_options').delete().eq('product_id', id);
+    await supabase.from('product_variants').delete().eq('product_id', id);
   }
 
   // Revalidate specific seller storefront & admin products list
@@ -240,7 +371,7 @@ export async function updateProduct(prev: FormState, formData: FormData): Promis
 }
 
 // ⛳ REVALIDATE STOREFRONT ACTION (for client component triggers)
-export async function revalidateStorefrontAction() {
+export async function revalidateStorefrontAction(productId?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
@@ -253,8 +384,12 @@ export async function revalidateStorefrontAction() {
 
   revalidatePath('/products');
   if (profile?.shop_slug) {
+    revalidatePath(`/store/${profile.shop_slug}`, 'layout');
     revalidatePath(`/store/${profile.shop_slug}`);
     revalidatePath(`/store/${profile.shop_slug}/shop`);
+    if (productId) {
+      revalidatePath(`/store/${profile.shop_slug}/p/${productId}`, 'page');
+    }
   }
 }
 
@@ -277,3 +412,178 @@ export async function deleteProductAction(productId: string): Promise<FormState>
   await revalidateStorefrontAction();
   return { success: true, message: "Product deleted" };
 }
+
+// ⛳ DELETE SINGLE PRODUCT VARIANT ACTION
+export async function deleteProductVariantAction(variantId: string, productId: string): Promise<FormState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "Not authenticated" };
+
+  // Verify ownership of the parent product
+  const { data: product } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!product) return { success: false, message: "Product not found or access denied" };
+
+  // Delete the variant
+  const { error } = await supabase
+    .from("product_variants")
+    .delete()
+    .eq("id", variantId)
+    .eq("product_id", productId);
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  // Recalculate remaining variants and parent product stock
+  const { data: remainingVariants } = await supabase
+    .from("product_variants")
+    .select("stock_quantity")
+    .eq("product_id", productId);
+
+  if (!remainingVariants || remainingVariants.length === 0) {
+    // If no variants left, toggle has_variants off or mark out of stock
+    await supabase
+      .from("products")
+      .update({ has_variants: false, stock_quantity: 0, stock_status: "out_of_stock" })
+      .eq("id", productId);
+  } else {
+    const totalStock = remainingVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+    const stockStatus = totalStock === 0 ? "out_of_stock" : totalStock < 5 ? "low_stock" : "in_stock";
+    await supabase
+      .from("products")
+      .update({ stock_quantity: totalStock, stock_status: stockStatus })
+      .eq("id", productId);
+  }
+
+  revalidatePath(`/products/${productId}`);
+  await revalidateStorefrontAction(productId);
+  return { success: true, message: "Variant combination deleted successfully" };
+}
+
+// ⛳ UPDATE SINGLE PRODUCT VARIANT ACTION
+export async function updateProductVariantAction(
+  variantId: string,
+  productId: string,
+  updates: { selling_price?: number; cost_price?: number; stock_quantity?: number; sku?: string }
+): Promise<FormState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "Not authenticated" };
+
+  // Verify ownership of parent product
+  const { data: product } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!product) return { success: false, message: "Product not found or access denied" };
+
+  const { error } = await supabase
+    .from("product_variants")
+    .update({
+      ...(updates.selling_price !== undefined ? { selling_price: updates.selling_price } : {}),
+      ...(updates.cost_price !== undefined ? { cost_price: updates.cost_price } : {}),
+      ...(updates.stock_quantity !== undefined ? { stock_quantity: updates.stock_quantity } : {}),
+      ...(updates.sku !== undefined ? { sku: updates.sku || null } : {}),
+    })
+    .eq("id", variantId)
+    .eq("product_id", productId);
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  // Recalculate parent product stock
+  const { data: allVariants } = await supabase
+    .from("product_variants")
+    .select("stock_quantity")
+    .eq("product_id", productId);
+
+  if (allVariants && allVariants.length > 0) {
+    const totalStock = allVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+    const stockStatus = totalStock === 0 ? "out_of_stock" : totalStock < 5 ? "low_stock" : "in_stock";
+    await supabase
+      .from("products")
+      .update({ stock_quantity: totalStock, stock_status: stockStatus })
+      .eq("id", productId);
+  }
+
+  revalidatePath(`/products/${productId}`);
+  await revalidateStorefrontAction(productId);
+  return { success: true, message: "Variant updated successfully" };
+}
+
+// ⛳ ADD SINGLE PRODUCT VARIANT ACTION (RE-ADD DELETED COMBINATION)
+export async function addProductVariantAction(
+  productId: string,
+  variant: {
+    title: string;
+    option_values: Record<string, string>;
+    selling_price?: number;
+    cost_price?: number;
+    stock_quantity?: number;
+    sku?: string;
+  }
+): Promise<FormState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "Not authenticated" };
+
+  // Verify ownership
+  const { data: product } = await supabase
+    .from("products")
+    .select("id, selling_price, cost_price")
+    .eq("id", productId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!product) return { success: false, message: "Product not found or access denied" };
+
+  // Insert new variant into product_variants
+  const { error } = await supabase
+    .from("product_variants")
+    .insert({
+      product_id: productId,
+      title: variant.title,
+      option_values: variant.option_values,
+      cost_price: variant.cost_price || product.cost_price || 0,
+      selling_price: variant.selling_price || product.selling_price || 0,
+      stock_quantity: variant.stock_quantity ?? 10,
+      sku: variant.sku || null,
+      is_active: true,
+      position: 999,
+    });
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  // Recalculate parent product stock
+  const { data: allVariants } = await supabase
+    .from("product_variants")
+    .select("stock_quantity")
+    .eq("product_id", productId);
+
+  if (allVariants && allVariants.length > 0) {
+    const totalStock = allVariants.reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+    const stockStatus = totalStock === 0 ? "out_of_stock" : totalStock < 5 ? "low_stock" : "in_stock";
+    await supabase
+      .from("products")
+      .update({ has_variants: true, stock_quantity: totalStock, stock_status: stockStatus })
+      .eq("id", productId);
+  }
+
+  revalidatePath(`/products/${productId}`);
+  await revalidateStorefrontAction(productId);
+  return { success: true, message: `Added combination "${variant.title}"` };
+}
+
+

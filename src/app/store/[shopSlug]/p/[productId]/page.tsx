@@ -4,8 +4,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStoreProfile } from '@/lib/storefront'
 import { ProductDetailClient } from './ProductDetailClient'
 import type { Product, ShopTheme } from '@/types'
+import { CommerceProductsService } from '@/lib/services/commerce/products.service'
 
-export const revalidate = 86400 // ISR: 24h cache — reduces Fluid CPU. Use revalidatePath() on product mutations.
+export const revalidate = 3600 // ISR: Static Edge CDN caching with instant on-demand purging via revalidatePath
 
 const STOREFRONT_PRODUCT_COLUMNS = 'id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, is_active, tags, created_at, updated_at'
 
@@ -42,13 +43,8 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const supabase = await createAdminClient()
 
-  // Get product with explicit storefront columns
-  const { data: rawProduct } = await supabase
-    .from('products')
-    .select(STOREFRONT_PRODUCT_COLUMNS)
-    .eq('id', productId)
-    .eq('user_id', profile.id)
-    .single()
+  // Get product with full options & variants
+  const rawProduct = await CommerceProductsService.getProductById(profile.id, productId)
 
   if (!rawProduct) return notFound()
 

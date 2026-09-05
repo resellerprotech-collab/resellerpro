@@ -22,8 +22,13 @@ export default function Error({
         <AlertCircle className="h-16 w-16 text-destructive mx-auto" />
         <h2 className="text-2xl font-bold">Oops! Something went wrong.</h2>
         <p className="text-muted-foreground max-w-md">
-          There was an error loading the products. Please try again.
+          {error.message || "There was an error loading the products. Please try again."}
         </p>
+        {error.digest && (
+          <p className="text-xs font-mono text-red-500 bg-red-50 p-2 rounded max-w-md mx-auto">
+            Digest: {error.digest}
+          </p>
+        )}
         <Button
           onClick={
             // Attempt to recover by trying to re-render the segment

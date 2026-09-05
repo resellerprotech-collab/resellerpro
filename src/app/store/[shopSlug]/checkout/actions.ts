@@ -24,6 +24,9 @@ interface PlaceOrderInput {
     image: string | null
     price: number
     quantity: number
+    variantId?: string
+    variantName?: string
+    variantOptions?: Record<string, string>
   }[]
   subtotal: number
   shippingFee: number
@@ -239,12 +242,15 @@ export async function placeOrder(input: PlaceOrderInput) {
     return { error: orderError?.message || 'Failed to create order record' }
   }
 
-  // 3. Insert order items (write to both legacy & new pricing/image fields)
+  // 3. Insert order items (write to both legacy & new pricing/image/variant fields)
   const orderItems = input.items.map((item) => {
     const unitCost = costMap.get(item.productId) || 0
     return {
       order_id: order.id,
       product_id: item.productId,
+      variant_id: item.variantId || null,
+      variant_name: item.variantName || (item.variantOptions ? Object.values(item.variantOptions).join(' / ') : null),
+      variant_options: item.variantOptions || {},
       product_name: item.name,
       product_image: item.image,
       quantity: item.quantity,
@@ -302,7 +308,36 @@ export async function placeOrder(input: PlaceOrderInput) {
     }
   }
 
-  // 4. Send instant email notifications to Reseller and Customer
+  // 4. Decrement inventory stock quantity safely
+  try {
+    for (const item of input.items) {
+      if (item.variantId) {
+        const { data: v } = await supabase
+          .from('product_variants')
+          .select('stock_quantity')
+          .eq('id', item.variantId)
+          .single()
+        if (v && typeof v.stock_quantity === 'number') {
+          const newQty = Math.max(0, v.stock_quantity - item.quantity)
+          await supabase.from('product_variants').update({ stock_quantity: newQty }).eq('id', item.variantId)
+        }
+      }
+      const { data: p } = await supabase
+        .from('products')
+        .select('stock_quantity')
+        .eq('id', item.productId)
+        .single()
+      if (p && typeof p.stock_quantity === 'number') {
+        const newQty = Math.max(0, p.stock_quantity - item.quantity)
+        const stockStatus = newQty === 0 ? 'out_of_stock' : newQty < 5 ? 'low_stock' : 'in_stock'
+        await supabase.from('products').update({ stock_quantity: newQty, stock_status: stockStatus }).eq('id', item.productId)
+      }
+    }
+  } catch (stockErr) {
+    console.warn('Stock decrement warning:', stockErr)
+  }
+
+  // 5. Send instant email notifications to Reseller and Customer
   try {
     const { data: resellerProfile } = await supabase
       .from('profiles')

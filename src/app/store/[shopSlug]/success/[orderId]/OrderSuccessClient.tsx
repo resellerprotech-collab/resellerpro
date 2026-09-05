@@ -121,7 +121,14 @@ export function OrderSuccessClient({ order, profile, theme, shopSlug }: OrderSuc
                 <div key={item.id} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 min-w-0">
                     <Package className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
-                    <span className="text-slate-600 truncate font-semibold">{item.product_name} × {item.quantity}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-slate-600 truncate font-semibold block">{item.product_name} × {item.quantity}</span>
+                      {item.variant_name && (
+                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded inline-block mt-0.5">
+                          {item.variant_name}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span className="font-bold text-slate-900 flex-shrink-0 ml-2">
                     ₹{((item as any).total_price || ((item as any).unit_selling_price || (item as any).unit_price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}
