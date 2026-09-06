@@ -109,8 +109,8 @@ export async function placeOrder(input: PlaceOrderInput) {
 
   const theme = storeProfile?.shop_theme as any
   const shippingType = theme?.shippingType || 'free'
-  const freeThreshold = theme?.freeShippingThreshold ?? 0
-  const flatFee = theme?.flatShippingFee ?? 0
+  const freeThreshold = Number(theme?.freeShippingThreshold) || 0
+  const flatFee = Number(theme?.flatShippingFee) || 0
 
   let serverShippingFee = 0
   if (shippingType === 'free') {
