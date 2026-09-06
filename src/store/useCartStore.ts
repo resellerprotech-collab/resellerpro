@@ -8,6 +8,7 @@ interface CartStore {
   shopSlug: string | null
   isOpen: boolean
   addItem: (item: CartItem, options?: { openDrawer?: boolean }) => void
+  buyNowItem: (item: CartItem) => void
   removeItem: (productId: string, variantId?: string) => void
   updateQuantity: (productId: string, quantity: number, variantId?: string) => void
   clearCart: (targetSlug?: string) => void
@@ -60,6 +61,39 @@ export const useCartStore = create<CartStore>()(
             items: updatedItems,
             carts: updatedCarts,
             ...(shouldOpen ? { isOpen: true } : {}),
+          }
+        })
+      },
+
+      buyNowItem: (newItem) => {
+        set((state) => {
+          const currentSlug = state.shopSlug
+          const activeItems = state.items || []
+          const existingIndex = activeItems.findIndex(
+            (item) =>
+              item.productId === newItem.productId &&
+              (newItem.variantId ? item.variantId === newItem.variantId : !item.variantId)
+          )
+          let updatedItems: CartItem[]
+          if (existingIndex >= 0) {
+            updatedItems = [...activeItems]
+            const maxQty = newItem.stockQuantity ?? Infinity
+            updatedItems[existingIndex] = {
+              ...newItem,
+              quantity: Math.min(newItem.quantity, maxQty),
+            }
+          } else {
+            updatedItems = [...activeItems, newItem]
+          }
+
+          const updatedCarts = currentSlug
+            ? { ...(state.carts || {}), [currentSlug]: updatedItems }
+            : state.carts || {}
+
+          return {
+            items: updatedItems,
+            carts: updatedCarts,
+            isOpen: false,
           }
         })
       },

@@ -31,7 +31,7 @@ interface ProductDetailClientProps {
 export function ProductDetailClient({ product, relatedProducts, profile, theme, shopSlug }: ProductDetailClientProps) {
   const router = useRouter()
 
-  const { addItem, closeCart, setShopSlug } = useCartStore()
+  const { addItem, buyNowItem, closeCart, setShopSlug } = useCartStore()
 
   const [quantity, setQuantity] = useState(1)
   const [activeImage, setActiveImage] = useState(0)
@@ -263,22 +263,17 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
   function handleBuyNow() {
     if (!validateVariantSelection()) return
 
-    closeCart()
-    addItem(
-      {
-        productId: product.id,
-        name: product.name,
-        price,
-        image: activeVariant?.image_url || images[0] || null,
-        quantity,
-        stockQuantity: maxQty,
-        variantId: activeVariant?.id,
-        variantName: variantTitle || undefined,
-        variantOptions: selectedOptions,
-      },
-      { openDrawer: false }
-    )
-    closeCart()
+    buyNowItem({
+      productId: product.id,
+      name: product.name,
+      price,
+      image: activeVariant?.image_url || images[0] || null,
+      quantity,
+      stockQuantity: maxQty,
+      variantId: activeVariant?.id,
+      variantName: variantTitle || undefined,
+      variantOptions: selectedOptions,
+    })
     router.push(`/store/${shopSlug}/checkout`)
   }
 
@@ -626,7 +621,6 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                   disabled={isOutOfStock}
                   className="h-12 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider border-2 border-[#00a650] text-[#00a650] bg-white hover:bg-emerald-50 rounded-xl transition-all active:scale-[0.98] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ShoppingCart className="w-4 h-4 shrink-0" />
                   <span>{added ? '✓ ADDED!' : 'ADD TO CART'}</span>
                 </button>
 
@@ -636,7 +630,6 @@ export function ProductDetailClient({ product, relatedProducts, profile, theme, 
                   disabled={isOutOfStock}
                   className="h-12 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider text-white bg-[#00a650] hover:bg-[#008d43] rounded-xl transition-all active:scale-[0.98] shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Zap className="w-4 h-4 shrink-0 fill-white" />
                   <span>BUY NOW</span>
                 </button>
               </div>
