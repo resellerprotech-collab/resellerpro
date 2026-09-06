@@ -715,6 +715,8 @@ export default function ShopSettingsForm({
       
       // Pack everything else into shop_theme JSON
       const { shop_slug, shop_description, shop_logo_url, upi_id, upi_name, upi_instructions, ...themeData } = formData
+      themeData.freeShippingThreshold = Number(themeData.freeShippingThreshold) || 0
+      themeData.flatShippingFee = Number(themeData.flatShippingFee) || 0
       data.append('shop_theme', JSON.stringify(themeData))
 
       const result = await updateShopSettings(data)

@@ -38,8 +38,8 @@ export function CartDrawer() {
           const theme = data.shop_theme as any
           setShippingConfig({
             shippingType: theme.shippingType || 'free',
-            freeShippingThreshold: theme.freeShippingThreshold ?? 0,
-            flatShippingFee: theme.flatShippingFee ?? 0,
+            freeShippingThreshold: Number(theme.freeShippingThreshold) || 0,
+            flatShippingFee: Number(theme.flatShippingFee) || 0,
           })
         }
       })
