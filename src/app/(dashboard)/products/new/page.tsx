@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createProduct } from '../actions'
 import { RequireVerification } from '@/components/shared/RequireVerification'
 import { CreateCategoryModal } from '@/components/categories/CreateCategoryModal'
+import { VariantBuilder } from '@/components/products/VariantBuilder'
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -74,6 +75,25 @@ export default function NewProductPage() {
   const [stockStatus, setStockStatus] = useState('in_stock')
   const [videoUrl, setVideoUrl] = useState('')
   const [audioFile, setAudioFile] = useState<File | null>(null)
+
+  // Variant state
+  const [variantData, setVariantData] = useState<{
+    hasVariants: boolean
+    optionsJson: string
+    variantsJson: string
+  }>({
+    hasVariants: false,
+    optionsJson: '[]',
+    variantsJson: '[]',
+  })
+
+  const handleVariantChange = useCallback((data: {
+    hasVariants: boolean
+    optionsJson: string
+    variantsJson: string
+  }) => {
+    setVariantData(data)
+  }, [])
 
   const handleCostPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -315,6 +335,11 @@ export default function NewProductPage() {
       formData.append('stock_quantity', stockQuantity)
       formData.append('stock_status', stockStatus)
       if (videoUrl) formData.append('video_url', videoUrl)
+
+      // Add variant details
+      formData.append('has_variants', variantData.hasVariants ? 'true' : 'false')
+      formData.append('options_json', variantData.optionsJson)
+      formData.append('variants_json', variantData.variantsJson)
 
       // Send the uploaded URLs instead of the raw files
       if (uploadedImageUrls.length > 0) {
@@ -628,6 +653,18 @@ export default function NewProductPage() {
                   onChange={(e) => setSku(e.target.value)}
                   placeholder="e.g., WE-BLK-001"
                   disabled={isLoading}
+                />
+              </div>
+
+              {/* Product Variants & Options Section */}
+              <div className="border-t pt-6 mt-2">
+                <VariantBuilder
+                  initialHasVariants={false}
+                  initialOptions={[]}
+                  initialVariants={[]}
+                  defaultCostPrice={parseFloat(costPrice) || 0}
+                  defaultSellingPrice={parseFloat(sellingPrice) || 0}
+                  onChange={handleVariantChange}
                 />
               </div>
 
