@@ -7,6 +7,7 @@ import { Providers } from './providers'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { Analytics } from "@vercel/analytics/next"
+import ClarityAnalytics from "@/components/analytics/ClarityAnalytics"
 import Script from "next/script";
 
 const splineSans = Spline_Sans({ subsets: ['latin'], display: 'swap', variable: '--font-spline-sans' })
@@ -170,6 +171,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <OfflineBanner />
               {children}
               <Analytics />
+              <ClarityAnalytics />
               <Sonner
                 position="top-right"
                 richColors={false}
