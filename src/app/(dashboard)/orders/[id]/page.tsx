@@ -25,6 +25,8 @@ import { CollapsibleSection } from '@/components/orders/CollapsibleSection'
 import { WhatsAppOrderMessages } from '@/components/orders/WhatsAppOrderMessages'
 import { InvoiceActions } from '@/components/orders/InvoiceActions'
 import { InvoiceLayout } from '@/components/orders/InvoiceLayout'
+import { getSellerShippingConfig } from '@/lib/services/shipping/shipping-storage'
+import { ShiprocketOrderDispatcher } from '@/components/orders/ShiprocketOrderDispatcher'
 
 //  FIXED: params is now a Promise
 export default async function OrderDetailsPage({
@@ -45,6 +47,9 @@ export default async function OrderDetailsPage({
     .select('business_name, business_email, full_name, avatar_url, upi_id')
     .eq('id', user?.id)
     .single()
+
+  // Fetch seller's Shiprocket shipping integration config
+  const shippingConfig = user?.id ? await getSellerShippingConfig(user.id) : null
 
   //  Get business name or fallback
   const businessName = profile?.business_name || 'Your Store'
@@ -406,6 +411,18 @@ export default async function OrderDetailsPage({
                 </CardContent>
               </Card>
             )}
+
+            {/* 1-Click Shiprocket Courier Dispatch */}
+            <ShiprocketOrderDispatcher
+              orderId={order.id}
+              orderNumber={order.order_number}
+              status={order.status}
+              courierService={order.courier_service}
+              trackingNumber={order.tracking_number}
+              shippingLabelUrl={(order as any).shipping_label_url}
+              isShiprocketConnected={Boolean(shippingConfig?.isConnected)}
+              pickupLocationName={shippingConfig?.pickupLocation}
+            />
 
             {/* Payment Status Update - Collapsible */}
             <CollapsibleSection

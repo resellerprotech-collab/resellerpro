@@ -7,6 +7,8 @@ interface SessionData {
     ipAddress?: string
     userAgent?: string
     deviceName?: string // New: Optional custom device name from client
+    city?: string
+    country?: string
     isCurrent?: boolean
 }
 
@@ -45,27 +47,35 @@ export function parseUserAgent(userAgent: string): DeviceInfo {
 }
 
 /**
- * Get approximate location from IP address using free API
+ * Get approximate location from IP address
  */
-export async function getLocationFromIP(ip: string): Promise<string> {
+export async function getLocationFromIP(ip: string, cityHint?: string | null, countryHint?: string | null): Promise<string> {
+    if (cityHint && countryHint) {
+        return `${cityHint}, ${countryHint}`
+    } else if (cityHint) {
+        return cityHint
+    } else if (countryHint) {
+        return countryHint
+    }
+
     // Skip for localhost/private IPs - provide descriptive dev message
-    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
-        // Professional engineering label for dev mode
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.') || ip.toLowerCase() === 'unknown') {
         return 'Current Network (Local)'
     }
 
     try {
-        const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,city,regionName,country,isp`, {
-            signal: AbortSignal.timeout(3000)
+        // Use HTTPS with a strict 1000ms timeout so logins are never blocked
+        const response = await fetch(`https://ipapi.co/${ip}/json/`, {
+            signal: AbortSignal.timeout(1000)
         })
 
-        if (!response.ok) return 'Location (Unavailable)'
+        if (!response.ok) return 'Remote Device'
 
         const data = await response.json()
-        if (data.status === 'success' && data.city && data.country) {
-            return `${data.city}, ${data.country}`
+        if (data.city && data.country_name) {
+            return `${data.city}, ${data.country_name}`
         }
-        return data.country || data.message || 'Remote Device'
+        return data.country_name || 'Remote Device'
     } catch {
         return 'Remote Device'
     }
@@ -101,7 +111,9 @@ export async function trackSession(data: SessionData): Promise<void> {
         const modelName = data.deviceName || deviceInfo?.deviceModel || null
         const vendorName = deviceInfo?.deviceVendor || null
 
-        const location = data.ipAddress ? await getLocationFromIP(data.ipAddress) : null
+        const location = data.city || data.country
+            ? await getLocationFromIP(data.ipAddress || '', data.city, data.country)
+            : (data.ipAddress ? await getLocationFromIP(data.ipAddress) : null)
 
         // Hash the session token for security (we just need to identify it)
         const hashedToken = await hashToken(data.sessionToken)

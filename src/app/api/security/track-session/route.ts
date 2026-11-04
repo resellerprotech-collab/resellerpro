@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
 
         const userAgent = body.userAgent || headersList.get('user-agent') || 'Unknown'
         const deviceName = body.deviceName || null
+        const city = headersList.get('x-vercel-ip-city') || null
+        const country = headersList.get('x-vercel-ip-country') || null
 
         // Use the unified tracking utility for consistency
         const { trackSession } = await import('@/lib/security/session-tracker')
@@ -41,6 +43,8 @@ export async function POST(request: NextRequest) {
             ipAddress: ip,
             userAgent: userAgent,
             deviceName: deviceName,
+            city: city || undefined,
+            country: country || undefined,
             isCurrent: true
         })
 

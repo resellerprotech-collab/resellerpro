@@ -9,6 +9,7 @@ import {
   Gift,
   ShieldCheck,
   Globe,
+  Truck,
 } from "lucide-react"
 import Link from 'next/link'
 import { usePathname } from "next/navigation"
@@ -24,6 +25,11 @@ const settingsNavItems = [
     title: "Business",
     href: "/settings/business",
     icon: Building,
+  },
+  {
+    title: "Delivery",
+    href: "/settings/delivery",
+    icon: Truck,
   },
   {
     title: "Domain",
@@ -60,7 +66,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       <div className="space-y-0.5">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Settings</h2>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Manage your account settings, domain web address, wallet payouts, and preferences.
+          Manage your account settings, courier delivery, domain web address, and wallet payouts.
         </p>
       </div>
       <Separator className="my-5" />

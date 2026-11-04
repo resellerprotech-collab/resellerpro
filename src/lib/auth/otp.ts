@@ -33,7 +33,7 @@ export class OtpService {
             .from('auth_otp_attempts')
             .select('*')
             .eq('email', normalizedEmail)
-            .single()
+            .maybeSingle()
 
         let currentAttemptCount = attemptData?.attempt_count || 0
         const lastAttemptAt = attemptData?.last_attempt_at ? new Date(attemptData.last_attempt_at) : null
@@ -63,7 +63,7 @@ export class OtpService {
             .gte('created_at', sixtySecondsAgo)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
+            .maybeSingle()
 
         if (recentOtp) {
             const createdAt = new Date(recentOtp.created_at)
@@ -150,7 +150,7 @@ export class OtpService {
             .gt('expires_at', new Date().toISOString())
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
+            .maybeSingle()
 
         return recentOtp || null
     }
@@ -168,7 +168,7 @@ export class OtpService {
             .from('auth_otp_attempts')
             .select('*')
             .eq('email', normalizedEmail)
-            .single()
+            .maybeSingle()
 
         if (attemptData?.blocked_until) {
             const blockedUntil = new Date(attemptData.blocked_until)
@@ -188,7 +188,7 @@ export class OtpService {
             .eq('otp_code', hash)
             .eq('verified', false)
             .gt('expires_at', now.toISOString())
-            .single()
+            .maybeSingle()
 
         if (error || !data) {
             // Track failure
