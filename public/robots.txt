@@ -1,6 +1,35 @@
-# *
+# Disallow indexing of admin panel, internal dashboards, and API endpoints
 User-agent: *
+Disallow: /ekodrix-panel/
+Disallow: /ekodrix-panel/*
+Disallow: /api/
+Disallow: /api/*
+Disallow: /auth/
+Disallow: /auth/*
+Disallow: /onboarding
+Disallow: /onboarding/*
+Disallow: /settings/
+Disallow: /settings/*
+Disallow: /orders/
+Disallow: /orders/*
+Disallow: /billing/
+Disallow: /billing/*
+Disallow: /customers/
+Disallow: /customers/*
+Disallow: /products/
+Disallow: /products/*
+Disallow: /categories/
+Disallow: /categories/*
+Disallow: /my-store/
+Disallow: /my-store/*
 Allow: /
+Allow: /store/
+Allow: /features
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /signin
+Allow: /signup
 
 # Host
 Host: https://resellerpro.in

@@ -1,4 +1,31 @@
-/** @type {import('next-sitemap').IConfig} */ module.exports = {
-  siteUrl: 'https://resellerpro.in',
-  generateRobotsTxt: true,
+/** @type {import('next-sitemap').IConfig} */
+module.exports = {
+  siteUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://resellerpro.in',
+  generateRobotsTxt: false, // We maintain a hardened custom robots.txt in public/robots.txt
+  exclude: [
+    '/ekodrix-panel',
+    '/ekodrix-panel/*',
+    '/api/*',
+    '/auth/*',
+    '/onboarding',
+    '/onboarding/*',
+    '/dashboard',
+    '/dashboard/*',
+    '/orders',
+    '/orders/*',
+    '/products',
+    '/products/*',
+    '/customers',
+    '/customers/*',
+    '/categories',
+    '/categories/*',
+    '/settings',
+    '/settings/*',
+    '/billing',
+    '/billing/*',
+    '/my-store',
+    '/my-store/*',
+    '/analytics',
+    '/analytics/*',
+  ],
 }

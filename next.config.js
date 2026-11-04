@@ -25,6 +25,23 @@ const nextConfig = withPWA({
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/ekodrix-panel/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
   experimental: {
     staleTimes: {
       dynamic: 0,
@@ -43,8 +60,6 @@ const nextConfig = withPWA({
     };
     return config;
   },
-
-
 });
 
 module.exports = nextConfig;

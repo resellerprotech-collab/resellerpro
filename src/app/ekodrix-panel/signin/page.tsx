@@ -1,11 +1,24 @@
+import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import EkodrixLoginForm from '@/components/ekodrix-panel/ekodrix-login-form'
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
 
-export const metadata = {
-  title: 'Ekodrix Panel - Login',
-  description: 'Secure admin access panel',
+export const metadata: Metadata = {
+  title: 'System Access',
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'none',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function EkodrixLoginPage() {
