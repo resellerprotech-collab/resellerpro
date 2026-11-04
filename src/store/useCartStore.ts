@@ -8,8 +8,9 @@ interface CartStore {
   shopSlug: string | null
   isOpen: boolean
   addItem: (item: CartItem, options?: { openDrawer?: boolean }) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  buyNowItem: (item: CartItem) => void
+  removeItem: (productId: string, variantId?: string) => void
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void
   clearCart: (targetSlug?: string) => void
   openCart: () => void
   closeCart: () => void
@@ -33,7 +34,9 @@ export const useCartStore = create<CartStore>()(
           const currentSlug = state.shopSlug
           const activeItems = state.items || []
           const existingIndex = activeItems.findIndex(
-            (item) => item.productId === newItem.productId
+            (item) =>
+              item.productId === newItem.productId &&
+              (newItem.variantId ? item.variantId === newItem.variantId : !item.variantId)
           )
           let updatedItems: CartItem[]
           if (existingIndex >= 0) {
@@ -62,9 +65,48 @@ export const useCartStore = create<CartStore>()(
         })
       },
 
-      removeItem: (productId) => {
+      buyNowItem: (newItem) => {
         set((state) => {
-          const updatedItems = (state.items || []).filter((item) => item.productId !== productId)
+          const currentSlug = state.shopSlug
+          const activeItems = state.items || []
+          const existingIndex = activeItems.findIndex(
+            (item) =>
+              item.productId === newItem.productId &&
+              (newItem.variantId ? item.variantId === newItem.variantId : !item.variantId)
+          )
+          let updatedItems: CartItem[]
+          if (existingIndex >= 0) {
+            updatedItems = [...activeItems]
+            const maxQty = newItem.stockQuantity ?? Infinity
+            updatedItems[existingIndex] = {
+              ...newItem,
+              quantity: Math.min(newItem.quantity, maxQty),
+            }
+          } else {
+            updatedItems = [...activeItems, newItem]
+          }
+
+          const updatedCarts = currentSlug
+            ? { ...(state.carts || {}), [currentSlug]: updatedItems }
+            : state.carts || {}
+
+          return {
+            items: updatedItems,
+            carts: updatedCarts,
+            isOpen: false,
+          }
+        })
+      },
+
+      removeItem: (productId, variantId) => {
+        set((state) => {
+          const updatedItems = (state.items || []).filter(
+            (item) =>
+              !(
+                item.productId === productId &&
+                (variantId ? item.variantId === variantId : !item.variantId)
+              )
+          )
           const updatedCarts = state.shopSlug
             ? { ...(state.carts || {}), [state.shopSlug]: updatedItems }
             : state.carts || {}
@@ -75,14 +117,16 @@ export const useCartStore = create<CartStore>()(
         })
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, quantity, variantId) => {
         if (quantity <= 0) {
-          get().removeItem(productId)
+          get().removeItem(productId, variantId)
           return
         }
         set((state) => {
           const updatedItems = (state.items || []).map((item) =>
-            item.productId === productId ? { ...item, quantity } : item
+            item.productId === productId && (variantId ? item.variantId === variantId : !item.variantId)
+              ? { ...item, quantity }
+              : item
           )
           const updatedCarts = state.shopSlug
             ? { ...(state.carts || {}), [state.shopSlug]: updatedItems }

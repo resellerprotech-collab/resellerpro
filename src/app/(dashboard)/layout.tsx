@@ -164,11 +164,11 @@ export default async function DashboardLayout({
           initialVerified={profile?.email_verified ?? false}
           email={user.email || ''}
         >
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
             {/* Also pass it to the Header component */}
             <Header />
 
-            <main className="flex-1 overflow-y-auto p-2 sm:p-6 pb-40 lg:pb-6">
+            <main className="flex-1 overflow-y-auto min-h-0 p-2 sm:p-6 pb-24 lg:pb-8">
               {children}
             </main>
           </div>

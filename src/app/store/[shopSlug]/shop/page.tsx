@@ -6,7 +6,7 @@ import { getStoreProfile } from '@/lib/storefront'
 import type { ShopTheme, Product } from '@/types'
 import { ShopClient } from './ShopClient'
 
-export const revalidate = 86400 // ISR: 24h cache — reduces Fluid CPU. Use revalidatePath() on product mutations.
+export const revalidate = 60 // ISR: 1-minute cache window — ultra-fast Edge performance with instant 60s freshness
 
 interface Props {
   params: { shopSlug: string }
@@ -32,12 +32,16 @@ export default async function DedicatedShopPage({ params }: Props) {
 
   const supabase = await createAdminClient()
 
-  // Fetch active products with explicit columns
-  const { data: rawProducts } = await supabase
+  // Fetch active products using select('*') to guarantee query success across DB schemas
+  const { data: rawProducts, error: productsError } = await supabase
     .from('products')
-    .select('id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, is_active, tags, created_at, updated_at')
+    .select('*')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
+
+  if (productsError) {
+    console.error('[SHOP] Products fetch error:', productsError)
+  }
 
   const products: Product[] = (rawProducts || []).map((p: any) => {
     return {
@@ -49,12 +53,17 @@ export default async function DedicatedShopPage({ params }: Props) {
     }
   })
 
+  // Fetch DB managed categories
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('name')
+    .eq('user_id', profile.id)
+
   const categories = Array.from(
-    new Map(
-      products
-        .filter((p) => p.category)
-        .map((p) => [p.category, p.category])
-    ).values()
+    new Set([
+      ...(dbCategories || []).map((c) => c.name),
+      ...products.filter((p) => p.category).map((p) => p.category!),
+    ])
   ) as string[]
 
   const theme = profile.shop_theme as ShopTheme | null

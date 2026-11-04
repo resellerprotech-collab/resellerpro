@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Edit, Package } from 'lucide-react'
 import Link from 'next/link'
 import ImageGallery from './ImageGallery'
+import VariantMatrixManager from './VariantMatrixManager'
 
 export default async function ProductDetailsPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params 
@@ -20,6 +21,22 @@ export default async function ProductDetailsPage(props: { params: Promise<{ id: 
     .single()
 
   if (error || !product) return notFound()
+
+  let options: any[] = []
+  let variants: any[] = []
+
+  if (product.has_variants) {
+    try {
+      const [{ data: optsData }, { data: varsData }] = await Promise.all([
+        supabase.from('product_options').select('*').eq('product_id', id).order('position', { ascending: true }),
+        supabase.from('product_variants').select('*').eq('product_id', id).order('position', { ascending: true }),
+      ])
+      options = optsData || []
+      variants = varsData || []
+    } catch (e) {
+      console.warn('Could not load options/variants for product detail:', e)
+    }
+  }
 
   const profit = product.selling_price - product.cost_price
   const profitMargin = ((profit / product.selling_price) * 100).toFixed(1)
@@ -78,6 +95,11 @@ export default async function ProductDetailsPage(props: { params: Promise<{ id: 
               >
                 {product.stock_status.replace('_', ' ')}
               </Badge>
+              {product.has_variants && (
+                <Badge variant="outline" className="border-indigo-500 text-indigo-600 font-bold">
+                  {variants.length} Variants
+                </Badge>
+              )}
             </div>
 
             {product.description && (
@@ -129,6 +151,15 @@ export default async function ProductDetailsPage(props: { params: Promise<{ id: 
           </div>
         </CardContent>
       </Card>
+
+      {/* Options & Variants Management Section */}
+      {product.has_variants && (
+        <Card>
+          <CardContent className="p-6">
+            <VariantMatrixManager productId={product.id} options={options} variants={variants} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

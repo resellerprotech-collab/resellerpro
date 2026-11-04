@@ -91,13 +91,20 @@ export function InvoiceLayout({ order, profile, businessEmail, displayName }: In
                         <tbody>
                             {order.order_items?.map((item: any) => (
                                 <tr key={item.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-3">{item.product_name}</td>
+                                    <td className="p-3">
+                                        <div className="font-semibold">{item.product_name}</div>
+                                        {item.variant_name && (
+                                            <div className="text-xs text-indigo-600 font-medium mt-0.5">
+                                                {item.variant_name}
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="p-3 text-center">{item.quantity}</td>
                                     <td className="p-3 text-right">
-                                        ₹{parseFloat(item.unit_selling_price).toFixed(2)}
+                                        ₹{parseFloat(item.unit_selling_price || item.unit_price || 0).toFixed(2)}
                                     </td>
                                     <td className="p-3 text-right">
-                                        ₹{parseFloat(item.subtotal).toFixed(2)}
+                                        ₹{parseFloat(item.subtotal || item.total_price || ((item.unit_selling_price || item.unit_price || 0) * item.quantity)).toFixed(2)}
                                     </td>
                                 </tr>
                             ))}

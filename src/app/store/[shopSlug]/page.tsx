@@ -5,7 +5,7 @@ import { getStoreProfile } from '@/lib/storefront'
 import type { ShopTheme, Product } from '@/types'
 import { StorefrontClient } from './StorefrontClient'
 
-export const revalidate = 86400 // ISR: 24h cache — reduces Fluid CPU. Use revalidatePath() on product/theme mutations for instant refresh.
+export const revalidate = 60 // ISR: 1-minute cache window — ultra-fast Edge performance with instant 60s freshness
 
 interface Props {
   params: { shopSlug: string }
@@ -37,12 +37,16 @@ export default async function StorePage({ params }: Props) {
 
   const supabase = await createAdminClient()
 
-  // Fetch active products with explicit storefront columns (zero cost_price overhead)
-  const { data: rawProducts } = await supabase
+  // Fetch active products using select('*') to guarantee query success across DB schemas
+  const { data: rawProducts, error: productsError } = await supabase
     .from('products')
-    .select('id, user_id, name, description, category, sku, image_url, images, selling_price, compare_at_price, badge, stock_status, stock_quantity, track_inventory, is_active, tags, created_at, updated_at')
+    .select('*')
     .eq('user_id', profile.id)
     .order('created_at', { ascending: false })
+
+  if (productsError) {
+    console.error('[STOREFRONT] Products fetch error:', productsError)
+  }
 
   const products: Product[] = (rawProducts || []).map((p: any) => {
     return {
@@ -62,8 +66,11 @@ export default async function StorePage({ params }: Props) {
 
   const managedCategoriesMap = new Map((dbCategories || []).map(c => [c.name.toLowerCase(), c]))
 
-  // Extract categories from products and merge with DB categories
-  const categoriesSet = new Set(products.filter((p) => p.category).map((p) => p.category!))
+  // Merge DB managed categories and product categories so all store categories display
+  const categoriesSet = new Set([
+    ...(dbCategories || []).map(c => c.name),
+    ...products.filter((p) => p.category).map((p) => p.category!)
+  ])
   const categories = Array.from(categoriesSet).map(name => {
     return managedCategoriesMap.get(name.toLowerCase()) || { name, image_url: undefined }
   })

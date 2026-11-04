@@ -29,7 +29,7 @@ type Order = {
   payment_method?: string | null
   total_amount: number
   total_profit: number
-  order_items?: Array<{ product_name: string; quantity: number }> | null
+  order_items?: Array<{ product_name: string; variant_name?: string | null; quantity: number }> | null
   customers?: {
     id: string
     name: string
@@ -115,7 +115,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
       undefined, // Tracking
       undefined, // Courier
       {
-        products: order.order_items?.map(i => `${i.product_name} × ${i.quantity}`) || [],
+        products: order.order_items?.map(i => `${i.product_name}${i.variant_name ? ' (' + i.variant_name + ')' : ''} × ${i.quantity}`) || [],
         totalAmount: order.total_amount,
         paymentMethod: order.payment_method || 'cod',
         upiId: merchantProfile?.upi_id,

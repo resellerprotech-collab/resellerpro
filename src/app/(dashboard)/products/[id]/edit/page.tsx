@@ -22,6 +22,28 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
     return notFound()
   }
 
+  let options: any[] = []
+  let variants: any[] = []
+
+  if (product?.has_variants) {
+    try {
+      const [{ data: optsData }, { data: varsData }] = await Promise.all([
+        supabase.from('product_options').select('*').eq('product_id', id).order('position', { ascending: true }),
+        supabase.from('product_variants').select('*').eq('product_id', id).order('position', { ascending: true }),
+      ])
+      options = optsData || []
+      variants = varsData || []
+    } catch (err) {
+      console.warn('Could not load variants/options:', err)
+    }
+  }
+
+  const enrichedProduct = {
+    ...product,
+    options,
+    variants,
+  }
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
@@ -36,7 +58,7 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
         </div>
       </div>
 
-      <EditProductForm product={product} />
+      <EditProductForm product={enrichedProduct} />
     </div>
   )
 }
